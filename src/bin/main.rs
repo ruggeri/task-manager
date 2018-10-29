@@ -9,8 +9,7 @@ fn main() {
   use task_manager::schema::tasks::dsl::*;
 
   let connection = task_manager::establish_connection();
-
   let results = tasks.load::<Task>(&connection).unwrap();
   let reviewer = Reviewer::new(results);
-  reviewer.print();
+  reviewer.run();
 }
