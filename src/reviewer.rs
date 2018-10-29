@@ -1,5 +1,6 @@
 use diesel::pg::PgConnection;
 use ncurses::*;
+use self::CommandResult::*;
 use super::models::Task;
 
 #[repr(C)]
@@ -14,6 +15,11 @@ pub struct Reviewer {
   connection: PgConnection,
 }
 
+enum CommandResult {
+  DoNothing,
+  ShutDown,
+}
+
 impl Reviewer {
   pub fn new() -> Reviewer {
     let connection = ::establish_connection();
@@ -26,15 +32,16 @@ impl Reviewer {
     }
   }
 
-  pub fn initialize_curses(&self) {
+  fn initialize_curses(&self) {
     initscr();
     start_color();
     use_default_colors();
     init_pair(ColorPair::Default as i16, -1, -1);
     init_pair(ColorPair::Highlight as i16, -1, COLOR_BLUE);
+    noecho();
   }
 
-  pub fn print(&self) {
+  fn print(&self) {
     clear();
     attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
     printw("== Tasks ==\n");
@@ -58,13 +65,13 @@ impl Reviewer {
     }
   }
 
-  pub fn scroll_forward(&mut self) {
+  fn scroll_forward(&mut self) {
     if self.current_task_idx < self.tasks.len() - 1 {
       self.current_task_idx += 1
     }
   }
 
-  pub fn scroll_backward(&mut self) {
+  fn scroll_backward(&mut self) {
     if self.current_task_idx > 0 {
       self.current_task_idx -= 1;
     }
@@ -77,11 +84,14 @@ impl Reviewer {
       self.print();
 
       let ch = (getch() as u8) as char;
-      self.handle_cmd(ch);
+      if let ShutDown = self.handle_cmd(ch) {
+        endwin();
+        break;
+      }
     }
   }
 
-  pub fn destroy(&mut self) {
+  fn destroy(&mut self) {
     self.tasks[self.current_task_idx].destroy(&self.connection);
     self.tasks.remove(self.current_task_idx);
     if self.current_task_idx == self.tasks.len() {
@@ -89,12 +99,30 @@ impl Reviewer {
     }
   }
 
-  pub fn handle_cmd(&mut self, ch: char) {
+  fn create(&self) {
+    printw("Create new task: ");
+    let mut task_title = String::new();
+
+    echo();
+    getstr(&mut task_title);
+    noecho();
+
+    Task::create(&self.connection, task_title);
+  }
+
+  fn handle_cmd(&mut self, ch: char) -> CommandResult {
     match ch {
       'j' => self.scroll_forward(),
       'k' => self.scroll_backward(),
       'd' => self.destroy(),
+      'n' => {
+        self.create();
+        self.tasks = Task::all(&self.connection);
+      },
+      'q' => return ShutDown,
       _ => {},
     }
+
+    DoNothing
   }
 }
