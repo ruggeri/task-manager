@@ -1,6 +1,12 @@
 use diesel::pg::PgConnection;
-use std::io::stdin;
+use ncurses::*;
 use super::models::Task;
+
+#[repr(C)]
+enum ColorPair {
+  Default,
+  Highlight,
+}
 
 pub struct Reviewer {
   current_task_idx: usize,
@@ -20,13 +26,24 @@ impl Reviewer {
     }
   }
 
+  pub fn initialize_curses(&self) {
+    initscr();
+    start_color();
+    use_default_colors();
+    init_pair(ColorPair::Default as i16, -1, -1);
+    init_pair(ColorPair::Highlight as i16, -1, COLOR_BLUE);
+  }
+
   pub fn print(&self) {
-    print!("\x1b[H[J");
-    println!("== Tasks ==");
+    clear();
+    attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
+    printw("== Tasks ==\n");
 
     for (idx, ref task) in self.tasks.iter().enumerate() {
       if idx == self.current_task_idx {
-        print!("\x1b[42m")
+        attron(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
+      } else {
+        attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
       }
 
       let s = format!(
@@ -36,13 +53,8 @@ impl Reviewer {
         created_at = task.created_at
       );
 
-      print!("{}", s);
-
-      if idx == self.current_task_idx {
-        print!("\x1b[49m")
-      }
-
-      println!("");
+      printw(&s);
+      printw("\n");
     }
   }
 
@@ -59,15 +71,13 @@ impl Reviewer {
   }
 
   pub fn run(&mut self) {
+    self.initialize_curses();
+
     loop {
       self.print();
 
-      let mut cmd = String::new();
-      stdin().read_line(&mut cmd).unwrap();
-      // remove newline
-      cmd.pop();
-
-      self.handle_cmd(&cmd);
+      let ch = (getch() as u8) as char;
+      self.handle_cmd(ch);
     }
   }
 
@@ -79,11 +89,11 @@ impl Reviewer {
     }
   }
 
-  pub fn handle_cmd(&mut self, cmd: &str) {
-    match cmd {
-      "next" => self.scroll_forward(),
-      "prev" => self.scroll_backward(),
-      "destroy" => self.destroy(),
+  pub fn handle_cmd(&mut self, ch: char) {
+    match ch {
+      'j' => self.scroll_forward(),
+      'k' => self.scroll_backward(),
+      'd' => self.destroy(),
       _ => {},
     }
   }
