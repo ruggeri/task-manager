@@ -6,27 +6,8 @@
 pub enum TaskStatus {
   Abandoned,
   AvailableToPerform,
-  Completed
+  Completed,
 }
-
-// pub struct ParseError();
-
-// impl FromStr for TaskStatus {
-//   type Err = ParseError;
-
-//   fn from_str(s: &str) -> Result<Self, Self::Err> {
-//     use self::TaskStatus::*;
-
-//     let value = match s {
-//       "ABANDONED" => Abandoned,
-//       "AVAILABLE_TO_PERFORM" => AvailableToPerform,
-//       "COMPLETED" => Completed,
-//       _ => return Err(ParseError())
-//     };
-
-//     Ok(value)
-//   }
-// }
 
 #[derive(Debug, Queryable)]
 pub struct Task {

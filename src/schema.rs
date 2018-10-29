@@ -1,3 +1,5 @@
+// Because Queryable triggers a Rust lang warning. They'll fix this in a
+// future release.
 #![allow(proc_macro_derive_resolution_fallback)]
 
 table! {
@@ -9,6 +11,7 @@ table! {
 }
 
 table! {
+    // Need this to do the mapping from PG enum to Rust enum.
     use diesel::sql_types::*;
     use models::TaskStatusMapping;
 
@@ -22,7 +25,4 @@ table! {
 
 joinable!(task_efforts -> tasks (task_id));
 
-allow_tables_to_appear_in_same_query!(
-    task_efforts,
-    tasks,
-);
+allow_tables_to_appear_in_same_query!(task_efforts, tasks,);
