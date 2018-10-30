@@ -49,7 +49,9 @@ impl Reviewer {
   fn print(&self) {
     clear();
     attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
-    printw("== Tasks ==\n");
+    attr_on(A_BOLD());
+    printw(&format!("  {} | {:50} | {}\n", "id", "title", "last_effort_at"));
+    attr_off(A_BOLD());
 
     for (idx, ref task) in self.tasks.iter().enumerate() {
       if idx == self.current_task_idx {
@@ -64,7 +66,7 @@ impl Reviewer {
       };
 
       let s = format!(
-        "{id:4} | {title:50} | {last_effort_at}",
+        "{id:4} | {title:50} | {last_effort_at:20}",
         id = task.id,
         title = task.title,
         last_effort_at = last_effort_at
