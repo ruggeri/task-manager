@@ -14,6 +14,7 @@ pub struct Reviewer {
   current_task_idx: usize,
   tasks: Vec<Task>,
   connection: PgConnection,
+  max_tasks: usize,
 }
 
 enum CommandResult {
@@ -22,14 +23,15 @@ enum CommandResult {
 }
 
 impl Reviewer {
-  pub fn new() -> Reviewer {
+  pub fn new(max_tasks: usize) -> Reviewer {
     let connection = ::establish_connection();
     let tasks = Task::all(&connection);
 
     let mut reviewer = Reviewer {
       current_task_idx: 0,
       tasks,
-      connection
+      connection,
+      max_tasks,
     };
 
     reviewer.sort_tasks();
@@ -53,7 +55,7 @@ impl Reviewer {
     printw(&format!("  {} | {:50} | {:20} | {:12}\n", "id", "title", "last_effort_at", "status"));
     attr_off(A_BOLD());
 
-    for (idx, ref task) in self.tasks.iter().enumerate() {
+    for (idx, ref task) in self.tasks.iter().enumerate().take(self.max_tasks) {
       if idx == self.current_task_idx {
         attron(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
       } else {
@@ -160,12 +162,17 @@ impl Reviewer {
     match ch {
       'j' => self.scroll_forward(),
       'k' => self.scroll_backward(),
-      'a' => self.abandon(),
-      'c' => self.complete(),
-      'd' => self.destroy(),
+      'a' => {
+        self.abandon();
+      },
+      'c' => {
+        self.complete();
+      },
+      'd' => {
+        self.destroy();
+      },
       'n' => {
         self.create();
-        self.tasks = Task::all(&self.connection);
       },
       'q' => return ShutDown,
       'r' => self.record_task_effort(),
