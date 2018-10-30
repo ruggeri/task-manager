@@ -1,6 +1,6 @@
 use chrono::{Duration, Utc};
 use diesel::pg::PgConnection;
-use ncurses::*;
+use pancurses;
 use ::connection;
 use ::models::Task;
 use super::commands::{Commands, CommandResult};
@@ -13,18 +13,18 @@ enum ColorPair {
 }
 
 pub struct Reviewer {
+  window: pancurses::Window,
   pub scroller: Scroller,
   pub connection: PgConnection,
   pub max_tasks: usize,
 }
 
 fn initialize_curses() {
-  initscr();
-  start_color();
-  use_default_colors();
-  init_pair(ColorPair::Default as i16, -1, -1);
-  init_pair(ColorPair::Highlight as i16, -1, COLOR_BLUE);
-  noecho();
+  pancurses::start_color();
+  pancurses::use_default_colors();
+  pancurses::init_pair(ColorPair::Default as i16, -1, -1);
+  pancurses::init_pair(ColorPair::Highlight as i16, -1, pancurses::COLOR_BLUE);
+  pancurses::noecho();
 }
 
 fn format_age(age: Duration) -> String {
@@ -51,6 +51,7 @@ impl Reviewer {
     let connection = connection::get();
 
     let mut reviewer = Reviewer {
+      window: pancurses::initscr(),
       scroller: Scroller::new(vec![]),
       connection,
       max_tasks,
@@ -67,23 +68,28 @@ impl Reviewer {
     loop {
       self.display();
 
-      let ch = (getch() as u8) as char;
+      let ch = match self.window.getch().unwrap() {
+        pancurses::Input::Character(ch) => ch,
+        _ => continue,
+      };
+
       if let CommandResult::ShutDown = Commands::handle_key(self, ch) {
-        endwin();
         break;
       }
     }
+
+    pancurses::endwin();
   }
 
   fn display_header(&self) {
-    attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
-    attr_on(A_BOLD());
-    printw(&format!("  {} | {:50} | {:20} | {:12}\n", "id", "title", "last_effort_at", "status"));
-    attr_off(A_BOLD());
+    self.window.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
+    self.window.attron(pancurses::A_BOLD);
+    self.window.printw(&format!("  {} | {:50} | {:20} | {:12}\n", "id", "title", "last_effort_at", "status"));
+    self.window.attroff(pancurses::A_BOLD);
   }
 
   fn display(&self) {
-    clear();
+    self.window.clear();
     self.display_header();
 
     let iter = self.scroller.tasks.iter().enumerate().take(self.max_tasks);
@@ -95,9 +101,7 @@ impl Reviewer {
   fn display_task(&self, idx: usize, task: &Task) {
     // Choose appropriate color.
     if idx == self.scroller.current_task_idx {
-      attron(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
-    } else {
-      attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
+      self.window.attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
 
     // Display the task line.
@@ -110,16 +114,40 @@ impl Reviewer {
     );
 
     // Print the line!
-    printw(&s);
+    self.window.printw(&s);
+
+    if idx == self.scroller.current_task_idx {
+      self.window.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
+    }
   }
 
   pub fn get_new_task_title(&self) -> String {
-    printw("Create new task: ");
+    self.window.printw("Create new task: ");
     let mut task_title = String::new();
 
-    echo();
-    getstr(&mut task_title);
-    noecho();
+    loop {
+      use pancurses::Input::*;
+
+      match self.window.getch().unwrap() {
+        Character('\n') => break,
+        Character('\x7f') => {
+          if task_title.len() == 0 {
+            continue;
+          }
+
+          task_title.pop();
+
+          let (y, x) = self.window.get_cur_yx();
+          self.window.mv(y, x - 1);
+          self.window.delch();
+        },
+        Character(c) => {
+          self.window.addch(c);
+          task_title.push(c);
+        },
+        _ => continue,
+      }
+    }
 
     task_title
   }

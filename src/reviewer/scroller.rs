@@ -57,7 +57,7 @@ impl Scroller {
 
     if num_tasks == 0 {
       self.current_task_idx = 0;
-    } else if self.current_task_idx > num_tasks {
+    } else if self.current_task_idx >= num_tasks {
       self.current_task_idx = num_tasks - 1;
     }
   }

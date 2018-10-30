@@ -4,7 +4,7 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_derive_enum;
 extern crate dotenv;
-extern crate ncurses;
+extern crate pancurses;
 
 pub mod connection;
 pub mod models;
