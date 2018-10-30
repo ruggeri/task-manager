@@ -1,4 +1,4 @@
-use ::models::Task;
+use models::Task;
 
 pub struct Scroller {
   pub current_task_idx: usize,
@@ -48,7 +48,6 @@ impl Scroller {
       Some(self.tasks.remove(self.current_task_idx))
     }
   }
-
 
   pub fn refresh(&mut self, tasks: Vec<Task>) {
     self.tasks = tasks;

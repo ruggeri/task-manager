@@ -1,8 +1,8 @@
-use ::models::{Task, TaskStatus};
 use super::reviewer::Reviewer;
+use models::{Task, TaskStatus};
 
-use self::Commands::*;
 use self::CommandResult::*;
+use self::Commands::*;
 
 pub enum CommandResult {
   DoNothing,
@@ -37,7 +37,7 @@ fn destroy(reviewer: &mut Reviewer) {
 fn record_task_effort(reviewer: &mut Reviewer) {
   match reviewer.scroller.current_task() {
     None => return,
-    Some(task) => task.record_effort(&reviewer.connection)
+    Some(task) => task.record_effort(&reviewer.connection),
   };
 
   reviewer.refresh();
@@ -46,7 +46,7 @@ fn record_task_effort(reviewer: &mut Reviewer) {
 fn update_status(reviewer: &mut Reviewer, status: TaskStatus) {
   match reviewer.scroller.mut_current_task() {
     None => return,
-    Some(task) => task.update_status(status, &reviewer.connection)
+    Some(task) => task.update_status(status, &reviewer.connection),
   };
 
   reviewer.refresh();

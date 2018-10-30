@@ -5,8 +5,8 @@
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use ::models::Task;
-use ::schema::task_efforts;
+use models::Task;
+use schema::task_efforts;
 
 type DateTime = ::chrono::DateTime<::chrono::Utc>;
 
@@ -19,29 +19,29 @@ pub struct TaskEffort {
 }
 
 #[derive(Insertable)]
-#[table_name="task_efforts"]
+#[table_name = "task_efforts"]
 struct NewTaskEffort {
   pub task_id: i32,
 }
 
 impl TaskEffort {
   pub fn last_effort_at(task: &Task, connection: &PgConnection) -> Option<DateTime> {
-    use ::schema::task_efforts::dsl::*;
+    use schema::task_efforts::dsl::*;
 
     let te = TaskEffort::belonging_to(task)
       .order(created_at.desc())
-      .first::<TaskEffort>(connection).optional().unwrap();
+      .first::<TaskEffort>(connection)
+      .optional()
+      .unwrap();
 
     match te {
       None => None,
-      Some(te) => Some(te.created_at)
+      Some(te) => Some(te.created_at),
     }
   }
 
   pub fn record_effort(task: &Task, connection: &PgConnection) -> TaskEffort {
-    let new_te = NewTaskEffort {
-      task_id: task.id,
-    };
+    let new_te = NewTaskEffort { task_id: task.id };
 
     let te = diesel::insert_into(::schema::task_efforts::table)
       .values(&new_te)

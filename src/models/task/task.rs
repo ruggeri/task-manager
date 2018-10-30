@@ -2,11 +2,11 @@
 // future release.
 #![allow(proc_macro_derive_resolution_fallback)]
 
+use super::queries;
 use chrono::{DateTime, Duration, Utc};
 use diesel::pg::PgConnection;
-use ::models::{TaskEffort, TaskStatus};
-use ::schema::tasks;
-use super::queries;
+use models::{TaskEffort, TaskStatus};
+use schema::tasks;
 
 #[derive(Debug, Identifiable, Queryable)]
 pub struct Task {

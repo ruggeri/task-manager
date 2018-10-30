@@ -1,10 +1,10 @@
-use chrono::{Duration, Utc};
-use diesel::pg::PgConnection;
-use pancurses;
-use ::connection;
-use ::models::Task;
-use super::commands::{Commands, CommandResult};
+use super::commands::{CommandResult, Commands};
 use super::scroller::Scroller;
+use chrono::{Duration, Utc};
+use connection;
+use diesel::pg::PgConnection;
+use models::Task;
+use pancurses;
 
 #[repr(C)]
 enum ColorPair {
@@ -82,9 +82,14 @@ impl Reviewer {
   }
 
   fn display_header(&self) {
-    self.window.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
+    self
+      .window
+      .attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     self.window.attron(pancurses::A_BOLD);
-    self.window.printw(&format!("  {} | {:50} | {:20} | {:12}\n", "id", "title", "last_effort_at", "status"));
+    self.window.printw(&format!(
+      "  {} | {:50} | {:20} | {:12}\n",
+      "id", "title", "last_effort_at", "status"
+    ));
     self.window.attroff(pancurses::A_BOLD);
   }
 
@@ -101,7 +106,9 @@ impl Reviewer {
   fn display_task(&self, idx: usize, task: &Task) {
     // Choose appropriate color.
     if idx == self.scroller.current_task_idx {
-      self.window.attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
+      self
+        .window
+        .attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
 
     // Display the task line.
@@ -117,7 +124,9 @@ impl Reviewer {
     self.window.printw(&s);
 
     if idx == self.scroller.current_task_idx {
-      self.window.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
+      self
+        .window
+        .attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
   }
 
@@ -140,11 +149,11 @@ impl Reviewer {
           let (y, x) = self.window.get_cur_yx();
           self.window.mv(y, x - 1);
           self.window.delch();
-        },
+        }
         Character(c) => {
           self.window.addch(c);
           task_title.push(c);
-        },
+        }
         _ => continue,
       }
     }
