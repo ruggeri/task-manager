@@ -120,6 +120,14 @@ impl Reviewer {
     }
   }
 
+  fn destroy(&mut self) {
+    let task = self.tasks.remove(self.current_task_idx);
+    task.destroy(&self.connection);
+    if self.current_task_idx == self.tasks.len() {
+      self.current_task_idx -= 1;
+    }
+  }
+
   fn create(&mut self) {
     printw("Create new task: ");
     let mut task_title = String::new();
@@ -154,6 +162,7 @@ impl Reviewer {
       'k' => self.scroll_backward(),
       'a' => self.abandon(),
       'c' => self.complete(),
+      'd' => self.destroy(),
       'n' => {
         self.create();
         self.tasks = Task::all(&self.connection);
