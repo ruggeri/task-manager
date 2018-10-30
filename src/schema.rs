@@ -13,7 +13,7 @@ table! {
 table! {
     // Need this to do the mapping from PG enum to Rust enum.
     use diesel::sql_types::*;
-    use models::TaskStatusMapping;
+    use models::task_status::TaskStatusMapping;
 
     tasks (id) {
         id -> Int4,
