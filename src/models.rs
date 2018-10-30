@@ -79,7 +79,7 @@ impl Task {
     use super::schema::task_efforts::dsl::*;
 
     let te = TaskEffort::belonging_to(self)
-      .order(created_at.asc())
+      .order(created_at.desc())
       .first::<TaskEffort>(connection).optional().unwrap();
 
     match te {

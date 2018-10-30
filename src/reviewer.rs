@@ -1,3 +1,4 @@
+use chrono::Local;
 use diesel::pg::PgConnection;
 use ncurses::*;
 use self::CommandResult::*;
@@ -23,14 +24,17 @@ enum CommandResult {
 impl Reviewer {
   pub fn new() -> Reviewer {
     let connection = ::establish_connection();
-    let mut tasks = Task::all(&connection);
-    tasks.sort_by_key(|t| t.sort_time(&connection));
+    let tasks = Task::all(&connection);
 
-    Reviewer {
+    let mut reviewer = Reviewer {
       current_task_idx: 0,
       tasks,
       connection
-    }
+    };
+
+    reviewer.sort_tasks();
+
+    reviewer
   }
 
   fn initialize_curses(&self) {
@@ -56,7 +60,7 @@ impl Reviewer {
 
       let last_effort_at = match task.last_effort_at(&self.connection) {
         None => String::from("NONE"),
-        Some(t) => format!("{}", t),
+        Some(t) => format!("{}", t.with_timezone(&Local).format("%Y-%m-%d %I:%M %p"))
       };
 
       let s = format!(
@@ -114,11 +118,8 @@ impl Reviewer {
     noecho();
 
     let t = Task::create(&self.connection, task_title);
-
     self.tasks.push(t);
-    // If I close over self.connection then that's a second borrow?
-    let connection = &self.connection;
-    self.tasks.sort_by_key(|t|t.sort_time(connection));
+    self.sort_tasks();
   }
 
   fn record_task_effort(&mut self) {
@@ -127,9 +128,13 @@ impl Reviewer {
       current_task.record_effort(&self.connection);
     }
 
+    self.sort_tasks();
+  }
+
+  fn sort_tasks(&mut self) {
     // If I close over self.connection then that's a second borrow?
     let connection = &self.connection;
-    self.tasks.sort_by_key(|t| t.sort_time(connection));
+    self.tasks.sort_by_key(|t|t.sort_time(connection));
   }
 
   fn handle_cmd(&mut self, ch: char) -> CommandResult {
