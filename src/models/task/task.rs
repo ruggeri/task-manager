@@ -14,6 +14,7 @@ pub struct Task {
   pub title: String,
   pub status: TaskStatus,
   pub created_at: DateTime<Utc>,
+  pub requires_internet: bool,
 }
 
 impl Task {

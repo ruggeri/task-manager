@@ -1,0 +1,4 @@
+ALTER TABLE
+  tasks
+ADD COLUMN
+  requires_internet BOOLEAN NOT NULL DEFAULT FALSE;

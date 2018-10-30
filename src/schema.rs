@@ -20,6 +20,7 @@ table! {
         title -> Varchar,
         status -> TaskStatusMapping,
         created_at -> Timestamptz,
+        requires_internet -> Bool,
     }
 }
 
