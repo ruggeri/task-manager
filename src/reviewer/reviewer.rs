@@ -1,4 +1,4 @@
-use chrono::Local;
+use chrono::{Duration, Utc};
 use diesel::pg::PgConnection;
 use ncurses::*;
 use ::connection;
@@ -25,6 +25,25 @@ fn initialize_curses() {
   init_pair(ColorPair::Default as i16, -1, -1);
   init_pair(ColorPair::Highlight as i16, -1, COLOR_BLUE);
   noecho();
+}
+
+fn format_age(age: Duration) -> String {
+  let weeks = age.num_weeks();
+  let days = age.num_days() - 7 * age.num_weeks();
+  let hours = age.num_hours() - 24 * age.num_days();
+  let mins = age.num_minutes() - 60 * age.num_hours();
+
+  if weeks > 0 {
+    format!("{} weeks {} days", weeks, days)
+  } else if days > 0 {
+    format!("{} days {} hours", days, hours)
+  } else if hours > 0 {
+    format!("{} hours {} mins", hours, mins)
+  } else if mins > 0 {
+    format!("{} mins", mins)
+  } else {
+    String::from("now")
+  }
 }
 
 impl Reviewer {
@@ -81,18 +100,12 @@ impl Reviewer {
       attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
     }
 
-    // Format time zone.
-    let last_effort_at = match task.last_effort_at(&self.connection) {
-      None => String::from("NONE"),
-      Some(t) => format!("{}", t.with_timezone(&Local).format("%Y-%m-%d %I:%M %p"))
-    };
-
     // Display the task line.
     let s = format!(
-      "{id:4} | {title:50} | {last_effort_at:20} | {status:?}\n",
+      "{id:4} | {title:50} | {age:20} | {status:?}\n",
       id = task.id,
       title = task.title,
-      last_effort_at = last_effort_at,
+      age = format_age(task.age_at(Utc::now(), &self.connection)),
       status = task.status,
     );
 
@@ -113,7 +126,11 @@ impl Reviewer {
 
   pub fn refresh(&mut self) {
     let mut tasks = Task::all(&self.connection);
-    tasks.sort_by_key(|t| t.sort_time(&self.connection));
+
+    let current_time = Utc::now();
+    tasks.sort_by_key(|t| t.age_at(current_time, &self.connection));
+    tasks.reverse();
+
     self.scroller.refresh(tasks);
   }
 }
