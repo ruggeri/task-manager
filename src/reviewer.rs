@@ -103,8 +103,8 @@ impl Reviewer {
     }
   }
 
-  fn destroy(&mut self) {
-    self.tasks[self.current_task_idx].destroy(&self.connection);
+  fn abandon(&mut self) {
+    self.tasks[self.current_task_idx].abandon(&self.connection);
     self.tasks.remove(self.current_task_idx);
     if self.current_task_idx == self.tasks.len() {
       self.current_task_idx -= 1;
@@ -143,7 +143,7 @@ impl Reviewer {
     match ch {
       'j' => self.scroll_forward(),
       'k' => self.scroll_backward(),
-      'd' => self.destroy(),
+      'a' => self.abandon(),
       'n' => {
         self.create();
         self.tasks = Task::all(&self.connection);

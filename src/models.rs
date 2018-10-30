@@ -48,7 +48,8 @@ pub struct NewTaskEffort {
 impl Task {
   pub fn all(connection: &PgConnection) -> Vec<Task> {
     use super::schema::tasks::dsl::*;
-    tasks.load::<Task>(connection).unwrap()
+    tasks.filter(status.eq(TaskStatus::AvailableToPerform))
+      .load::<Task>(connection).unwrap()
   }
 
   pub fn create(connection: &PgConnection, title: String) -> Task {
@@ -66,12 +67,25 @@ impl Task {
   pub fn destroy(&self, connection: &PgConnection) {
     use super::schema::tasks::dsl::*;
 
-    let num_deleted = diesel::delete(tasks.filter(id.eq(self.id)))
+    let num_deleted = diesel::delete(tasks.find(self.id))
         .execute(connection)
         .expect("Error deleting task");
 
     if num_deleted != 1 {
       panic!("Didn't delete just one task?");
+    }
+  }
+
+  pub fn abandon(&self, connection: &PgConnection) {
+    use super::schema::tasks::dsl::*;
+
+    let num_deleted = diesel::update(tasks.find(self.id))
+        .set(status.eq(TaskStatus::Abandoned))
+        .execute(connection)
+        .expect("Error updating task");
+
+    if num_deleted != 1 {
+      panic!("Didn't updating just one task?");
     }
   }
 
