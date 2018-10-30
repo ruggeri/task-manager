@@ -26,7 +26,7 @@ pub fn all(connection: &PgConnection) -> Vec<Task> {
 
 pub fn create(connection: &PgConnection, title: String) -> Task {
   let new_task = NewTask {
-    title: title,
+    title,
     status: TaskStatus::AvailableToPerform,
   };
 
@@ -37,6 +37,9 @@ pub fn create(connection: &PgConnection, title: String) -> Task {
 }
 
 pub fn destroy(task: Task, connection: &PgConnection) {
+  // I do want to consume the task for safety.
+  #![allow(needless_pass_by_value)]
+
   {
     use schema::task_efforts::dsl::*;
     diesel::delete(task_efforts.filter(task_id.eq(task.id)))

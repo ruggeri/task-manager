@@ -140,7 +140,7 @@ impl Reviewer {
       match self.window.getch().unwrap() {
         Character('\n') => break,
         Character('\x7f') => {
-          if task_title.len() == 0 {
+          if task_title.is_empty() {
             continue;
           }
 

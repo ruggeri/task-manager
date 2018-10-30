@@ -43,11 +43,9 @@ impl TaskEffort {
   pub fn record_effort(task: &Task, connection: &PgConnection) -> TaskEffort {
     let new_te = NewTaskEffort { task_id: task.id };
 
-    let te = diesel::insert_into(::schema::task_efforts::table)
+    diesel::insert_into(::schema::task_efforts::table)
       .values(&new_te)
       .get_result(connection)
-      .unwrap();
-
-    te
+      .unwrap()
   }
 }

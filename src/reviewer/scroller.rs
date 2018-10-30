@@ -26,7 +26,7 @@ impl Scroller {
   }
 
   pub fn current_task(&self) -> Option<&Task> {
-    if self.tasks.len() == 0 {
+    if self.tasks.is_empty() {
       None
     } else {
       Some(&self.tasks[self.current_task_idx])
@@ -34,7 +34,7 @@ impl Scroller {
   }
 
   pub fn mut_current_task(&mut self) -> Option<&mut Task> {
-    if self.tasks.len() == 0 {
+    if self.tasks.is_empty() {
       None
     } else {
       Some(&mut self.tasks[self.current_task_idx])
@@ -42,7 +42,7 @@ impl Scroller {
   }
 
   pub fn remove_current_task(&mut self) -> Option<Task> {
-    if self.tasks.len() == 0 {
+    if self.tasks.is_empty() {
       None
     } else {
       Some(self.tasks.remove(self.current_task_idx))
