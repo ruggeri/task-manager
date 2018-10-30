@@ -23,7 +23,8 @@ enum CommandResult {
 impl Reviewer {
   pub fn new() -> Reviewer {
     let connection = ::establish_connection();
-    let tasks = Task::all(&connection);
+    let mut tasks = Task::all(&connection);
+    tasks.sort_by_key(|t| t.sort_time(&connection));
 
     Reviewer {
       current_task_idx: 0,
@@ -53,11 +54,16 @@ impl Reviewer {
         attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
       }
 
+      let last_effort_at = match task.last_effort_at(&self.connection) {
+        None => String::from("NONE"),
+        Some(t) => format!("{}", t),
+      };
+
       let s = format!(
-        "{id:4} | {title:50} | {created_at}",
+        "{id:4} | {title:50} | {last_effort_at}",
         id = task.id,
         title = task.title,
-        created_at = task.created_at
+        last_effort_at = last_effort_at
       );
 
       printw(&s);
@@ -99,7 +105,7 @@ impl Reviewer {
     }
   }
 
-  fn create(&self) {
+  fn create(&mut self) {
     printw("Create new task: ");
     let mut task_title = String::new();
 
@@ -107,7 +113,23 @@ impl Reviewer {
     getstr(&mut task_title);
     noecho();
 
-    Task::create(&self.connection, task_title);
+    let t = Task::create(&self.connection, task_title);
+
+    self.tasks.push(t);
+    // If I close over self.connection then that's a second borrow?
+    let connection = &self.connection;
+    self.tasks.sort_by_key(|t|t.sort_time(connection));
+  }
+
+  fn record_task_effort(&mut self) {
+    {
+      let current_task = &self.tasks[self.current_task_idx];
+      current_task.record_effort(&self.connection);
+    }
+
+    // If I close over self.connection then that's a second borrow?
+    let connection = &self.connection;
+    self.tasks.sort_by_key(|t| t.sort_time(connection));
   }
 
   fn handle_cmd(&mut self, ch: char) -> CommandResult {
@@ -120,6 +142,7 @@ impl Reviewer {
         self.tasks = Task::all(&self.connection);
       },
       'q' => return ShutDown,
+      'r' => self.record_task_effort(),
       _ => {},
     }
 

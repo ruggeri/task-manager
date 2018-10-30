@@ -5,7 +5,9 @@
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use super::schema::tasks;
+use super::schema::{tasks, task_efforts};
+
+type DateTime = ::chrono::DateTime<::chrono::Utc>;
 
 #[derive(DbEnum, Debug)]
 pub enum TaskStatus {
@@ -14,12 +16,12 @@ pub enum TaskStatus {
   Completed,
 }
 
-#[derive(Debug, Queryable)]
+#[derive(Debug, Identifiable, Queryable)]
 pub struct Task {
   pub id: i32,
   pub title: String,
   pub status: TaskStatus,
-  pub created_at: ::chrono::DateTime<::chrono::Utc>,
+  pub created_at: DateTime,
 }
 
 #[derive(Insertable)]
@@ -27,6 +29,20 @@ pub struct Task {
 pub struct NewTask {
   pub title: String,
   pub status: TaskStatus,
+}
+
+#[derive(Associations, Debug, Identifiable, Queryable)]
+#[belongs_to(Task)]
+pub struct TaskEffort {
+  pub id: i32,
+  pub task_id: i32,
+  pub created_at: DateTime,
+}
+
+#[derive(Insertable)]
+#[table_name="task_efforts"]
+pub struct NewTaskEffort {
+  pub task_id: i32,
 }
 
 impl Task {
@@ -57,5 +73,38 @@ impl Task {
     if num_deleted != 1 {
       panic!("Didn't delete just one task?");
     }
+  }
+
+  pub fn last_effort_at(&self, connection: &PgConnection) -> Option<DateTime> {
+    use super::schema::task_efforts::dsl::*;
+
+    let te = TaskEffort::belonging_to(self)
+      .order(created_at.asc())
+      .first::<TaskEffort>(connection).optional().unwrap();
+
+    match te {
+      None => None,
+      Some(te) => Some(te.created_at)
+    }
+  }
+
+  pub fn sort_time(&self, connection: &PgConnection) -> DateTime {
+    match self.last_effort_at(connection) {
+      None => self.created_at,
+      Some(t) => t,
+    }
+  }
+
+  pub fn record_effort(&self, connection: &PgConnection) -> TaskEffort {
+    let new_te = NewTaskEffort {
+      task_id: self.id,
+    };
+
+    let te = diesel::insert_into(super::schema::task_efforts::table)
+      .values(&new_te)
+      .get_result(connection)
+      .unwrap();
+
+    te
   }
 }

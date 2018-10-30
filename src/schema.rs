@@ -5,7 +5,7 @@
 table! {
     task_efforts (id) {
         id -> Int4,
-        task_id -> Nullable<Int4>,
+        task_id -> Int4,
         created_at -> Timestamptz,
     }
 }
