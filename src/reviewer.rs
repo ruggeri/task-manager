@@ -2,6 +2,7 @@ use chrono::Local;
 use diesel::pg::PgConnection;
 use ncurses::*;
 use self::CommandResult::*;
+use super::connection;
 use super::models::Task;
 
 #[repr(C)]
@@ -24,7 +25,7 @@ enum CommandResult {
 
 impl Reviewer {
   pub fn new(max_tasks: usize) -> Reviewer {
-    let connection = ::establish_connection();
+    let connection = connection::get();
     let tasks = Task::all(&connection);
 
     let mut reviewer = Reviewer {
