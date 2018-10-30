@@ -50,7 +50,7 @@ impl Reviewer {
     clear();
     attroff(COLOR_PAIR(ColorPair::Highlight as i16) as chtype);
     attr_on(A_BOLD());
-    printw(&format!("  {} | {:50} | {}\n", "id", "title", "last_effort_at"));
+    printw(&format!("  {} | {:50} | {:20} | {:12}\n", "id", "title", "last_effort_at", "status"));
     attr_off(A_BOLD());
 
     for (idx, ref task) in self.tasks.iter().enumerate() {
@@ -66,10 +66,11 @@ impl Reviewer {
       };
 
       let s = format!(
-        "{id:4} | {title:50} | {last_effort_at:20}",
+        "{id:4} | {title:50} | {last_effort_at:20} | {status:?}",
         id = task.id,
         title = task.title,
-        last_effort_at = last_effort_at
+        last_effort_at = last_effort_at,
+        status = task.status,
       );
 
       printw(&s);
@@ -111,6 +112,14 @@ impl Reviewer {
     }
   }
 
+  fn complete(&mut self) {
+    self.tasks[self.current_task_idx].mark_completed(&self.connection);
+    self.tasks.remove(self.current_task_idx);
+    if self.current_task_idx == self.tasks.len() {
+      self.current_task_idx -= 1;
+    }
+  }
+
   fn create(&mut self) {
     printw("Create new task: ");
     let mut task_title = String::new();
@@ -144,6 +153,7 @@ impl Reviewer {
       'j' => self.scroll_forward(),
       'k' => self.scroll_backward(),
       'a' => self.abandon(),
+      'c' => self.complete(),
       'n' => {
         self.create();
         self.tasks = Task::all(&self.connection);
