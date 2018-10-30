@@ -106,28 +106,30 @@ impl Reviewer {
     }
   }
 
+  fn fix_current_task_idx(&mut self) {
+    if self.tasks.len() == 0 {
+      self.current_task_idx = 0;
+    } else if self.current_task_idx >= self.tasks.len() {
+      self.current_task_idx = self.tasks.len() - 1;
+    }
+  }
+
   fn abandon(&mut self) {
     self.tasks[self.current_task_idx].abandon(&self.connection);
     self.tasks.remove(self.current_task_idx);
-    if self.current_task_idx == self.tasks.len() {
-      self.current_task_idx -= 1;
-    }
+    self.fix_current_task_idx();
   }
 
   fn complete(&mut self) {
     self.tasks[self.current_task_idx].mark_completed(&self.connection);
     self.tasks.remove(self.current_task_idx);
-    if self.current_task_idx == self.tasks.len() {
-      self.current_task_idx -= 1;
-    }
+    self.fix_current_task_idx();
   }
 
   fn destroy(&mut self) {
     let task = self.tasks.remove(self.current_task_idx);
     task.destroy(&self.connection);
-    if self.current_task_idx == self.tasks.len() {
-      self.current_task_idx -= 1;
-    }
+    self.fix_current_task_idx();
   }
 
   fn create(&mut self) {

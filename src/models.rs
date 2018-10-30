@@ -66,8 +66,14 @@ impl Task {
   }
 
   pub fn destroy(self, connection: &PgConnection) {
-    use super::schema::tasks::dsl::*;
+    {
+      use super::schema::task_efforts::dsl::*;
+      diesel::delete(task_efforts.filter(task_id.eq(self.id)))
+            .execute(connection)
+            .expect("Error deleting task");
+    }
 
+    use super::schema::tasks::dsl::*;
     let num_deleted = diesel::delete(tasks.find(self.id))
         .execute(connection)
         .expect("Error deleting task");
@@ -80,12 +86,12 @@ impl Task {
   pub fn abandon(&mut self, connection: &PgConnection) {
     use super::schema::tasks::dsl::*;
 
-    let num_deleted = diesel::update(tasks.find(self.id))
+    let num_updated = diesel::update(tasks.find(self.id))
         .set(status.eq(TaskStatus::Abandoned))
         .execute(connection)
         .expect("Error updating task");
 
-    if num_deleted != 1 {
+    if num_updated != 1 {
       panic!("Didn't updating just one task?");
     }
   }
@@ -93,12 +99,12 @@ impl Task {
   pub fn mark_completed(&mut self, connection: &PgConnection) {
     use super::schema::tasks::dsl::*;
 
-    let num_deleted = diesel::update(tasks.find(self.id))
+    let num_updated = diesel::update(tasks.find(self.id))
         .set(status.eq(TaskStatus::Completed))
         .execute(connection)
         .expect("Error updating task");
 
-    if num_deleted != 1 {
+    if num_updated != 1 {
       panic!("Didn't updating just one task?");
     }
   }
