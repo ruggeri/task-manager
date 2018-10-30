@@ -1,4 +1,4 @@
-#[derive(DbEnum, Debug)]
+#[derive(Clone, Copy, DbEnum, Debug)]
 pub enum TaskStatus {
   Abandoned,
   AvailableToPerform,

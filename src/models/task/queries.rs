@@ -64,4 +64,6 @@ pub fn update_status(task: &mut Task, status: TaskStatus, connection: &PgConnect
   if num_updated != 1 {
     panic!("Expected to update exactly one task");
   }
+
+  task.status = status;
 }

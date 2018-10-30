@@ -27,19 +27,23 @@ impl Task {
   }
 
   pub fn abandon(&mut self, connection: &PgConnection) {
-    queries::update_status(self, TaskStatus::Abandoned, connection)
+    self.update_status(TaskStatus::Abandoned, connection)
   }
 
   pub fn destroy(self, connection: &PgConnection) {
     queries::destroy(self, connection)
   }
 
-  pub fn mark_completed(&mut self, connection: &PgConnection) {
-    queries::update_status(self, TaskStatus::Completed, connection)
-  }
-
   pub fn last_effort_at(&self, connection: &PgConnection) -> Option<DateTime> {
     TaskEffort::last_effort_at(self, connection)
+  }
+
+  pub fn mark_completed(&mut self, connection: &PgConnection) {
+    self.update_status(TaskStatus::Completed, connection)
+  }
+
+  pub fn record_effort(&self, connection: &PgConnection) -> TaskEffort {
+    TaskEffort::record_effort(self, connection)
   }
 
   pub fn sort_time(&self, connection: &PgConnection) -> DateTime {
@@ -49,7 +53,7 @@ impl Task {
     }
   }
 
-  pub fn record_effort(&self, connection: &PgConnection) -> TaskEffort {
-    TaskEffort::record_effort(self, connection)
+  pub fn update_status(&mut self, status: TaskStatus, connection: &PgConnection) {
+    queries::update_status(self, status, connection)
   }
 }
