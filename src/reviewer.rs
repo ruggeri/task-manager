@@ -115,18 +115,30 @@ impl Reviewer {
   }
 
   fn abandon(&mut self) {
+    if self.tasks.len() == 0 {
+      return;
+    }
+
     self.tasks[self.current_task_idx].abandon(&self.connection);
     self.tasks.remove(self.current_task_idx);
     self.fix_current_task_idx();
   }
 
   fn complete(&mut self) {
+    if self.tasks.len() == 0 {
+      return;
+    }
+
     self.tasks[self.current_task_idx].mark_completed(&self.connection);
     self.tasks.remove(self.current_task_idx);
     self.fix_current_task_idx();
   }
 
   fn destroy(&mut self) {
+    if self.tasks.len() == 0 {
+      return;
+    }
+
     let task = self.tasks.remove(self.current_task_idx);
     task.destroy(&self.connection);
     self.fix_current_task_idx();
@@ -146,6 +158,10 @@ impl Reviewer {
   }
 
   fn record_task_effort(&mut self) {
+    if self.tasks.len() == 0 {
+      return;
+    }
+
     {
       let current_task = &self.tasks[self.current_task_idx];
       current_task.record_effort(&self.connection);
