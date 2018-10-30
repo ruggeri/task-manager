@@ -87,8 +87,8 @@ impl Reviewer {
       .attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     self.window.attron(pancurses::A_BOLD);
     self.window.printw(&format!(
-      "  {} | {:50} | {:20} | {:12}\n",
-      "id", "title", "last_effort_at", "status"
+      "  {} | {:50} | {:20} | {:10} | {:6} \n",
+      "id", "title", "last_effort_at", "status", "internet"
     ));
     self.window.attroff(pancurses::A_BOLD);
   }
@@ -111,13 +111,20 @@ impl Reviewer {
         .attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
 
+    let requires_internet = if task.requires_internet {
+      "Yes Internet"
+    } else {
+      "No Internet"
+    };
+
     // Display the task line.
     let s = format!(
-      "{id:4} | {title:50} | {age:20} | {status:?}\n",
+      "{id:4} | {title:50} | {age:20} | {status:10} | {requires_internet:6}\n",
       id = task.id,
       title = task.title,
       age = format_age(task.age_at(Utc::now(), &self.connection)),
-      status = task.status,
+      status = format!("{}", task.status),
+      requires_internet = requires_internet,
     );
 
     // Print the line!
