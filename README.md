@@ -132,10 +132,11 @@ initialized values of A: I can't feed &A.B when making C. That feels
 like the compiler just being grumpy...
 
 No matter what I tried, I could get this to work. I think what I am
-trying to do is simply not supported. You could say that it is not safe
-for A.C to have a reference to A.B, because it is not for sure what the
-*destruction order* will be. Imagine that the destructor of A.C uses the
-A.B reference. Then this is unsafe if A.B will be destroyed first.
+trying to do is simply not supported. You could say that it is truly not
+safe for A.C to have a reference to A.B, because it is not for sure what
+the *destruction order* will be. Imagine that the destructor of A.C uses
+the A.B reference. Then this is unsafe if A.B will be destroyed first.
+So maybe it makes sense Rust doesn't want me to do this.
 
 ## My solution: `Rc` everywhere
 
@@ -168,10 +169,28 @@ That would ease ownership and mutability complaints.
 
 However, it also feels pretty unnatural...
 
+## StackOverflow Advice
+
+This directly addresses my concerns:
+
+    https://stackoverflow.com/questions/28113504/structure-containing-fields-that-know-each-other
+
+They suggest the idea of `Cell<Option<&'a T>`, which I also considered.
+It feels horribly hacky though.
+
+They also show a way to get things to work through some unsafe tricks.
+They rely on `Box` never moving the underlying data, just like I wanted
+to rely on. I commented about the destruction order problem.
+
+They recommend not taking this approach where there is unclear
+ownership. Or accepting life with `Rc`. And they mention the mutability
+concerns. So pretty much everything I thought about was valid.
+
+That makes me feel a bit better :-)
+
 ## TODO
 
 * What is the true point of enforcing just one mutable reference?
   * I guess it's allocation stuff like vectors?
   * Is the idea reentrancy? Many scenarios don't have a problem where
     moves are going to happen...
-* Look up destruciton order question. Do I *have* to use `Rc`?
