@@ -13,6 +13,8 @@ table! {
 table! {
     // Need this to do the mapping from PG enum to Rust enum.
     use diesel::sql_types::*;
+    use models::task_duration::TaskDurationMapping;
+    use models::task_priority::TaskPriorityMapping;
     use models::task_status::TaskStatusMapping;
 
     tasks (id) {
@@ -21,8 +23,8 @@ table! {
         status -> TaskStatusMapping,
         created_at -> Timestamptz,
         requires_internet -> Bool,
-        priority -> Task_priority,
-        duration -> Task_duration,
+        priority -> TaskPriorityMapping,
+        duration -> TaskDurationMapping,
     }
 }
 

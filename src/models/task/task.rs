@@ -5,7 +5,7 @@
 use super::queries;
 use chrono::{DateTime, Duration, Utc};
 use diesel::pg::PgConnection;
-use models::{TaskEffort, TaskStatus};
+use models::{TaskDuration, TaskEffort, TaskPriority, TaskStatus};
 use schema::tasks;
 
 #[derive(Clone, Debug, Identifiable, Queryable)]
@@ -15,6 +15,8 @@ pub struct Task {
   pub status: TaskStatus,
   pub created_at: DateTime<Utc>,
   pub requires_internet: bool,
+  pub priority: TaskPriority,
+  pub duration: TaskDuration,
 }
 
 impl Task {

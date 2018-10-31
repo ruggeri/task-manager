@@ -58,8 +58,8 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     pwindow.attron(pancurses::A_BOLD);
     pwindow.printw(&format!(
-      "  {} | {:50} | {:20} | {:10} | {:6} \n",
-      "id", "title", "last_effort_at", "status", "internet"
+      "  {} | {:50} | {:20} | {:10} | {:12} | {:8} | {:9} \n",
+      "id", "title", "last_effort_at", "status", "internet", "priority", "duration"
     ));
     pwindow.attroff(pancurses::A_BOLD);
   }
@@ -80,12 +80,14 @@ impl TaskResultsWindow {
 
     // Display the task line.
     let s = format!(
-      "{id:4} | {title:50} | {age:20} | {status:10} | {requires_internet:6}\n",
+      "{id:4} | {title:50} | {age:20} | {status:10} | {requires_internet:12} | {priority:8} | {duration:9} \n",
       id = result.task.id,
       title = result.task.title,
       age = format_task_age(result.task_age),
       status = format!("{}", result.task.status),
       requires_internet = requires_internet,
+      priority = format!("{}", result.task.priority),
+      duration = format!("{}", result.task.duration),
     );
 
     // Print the line!
