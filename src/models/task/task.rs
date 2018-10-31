@@ -22,8 +22,8 @@ impl Task {
     queries::all(connection)
   }
 
-  pub fn create(connection: &PgConnection, title: String) -> Task {
-    queries::create(connection, title)
+  pub fn create(title: String, connection: &PgConnection) -> Task {
+    queries::create(title, connection)
   }
 
   pub fn abandon(&mut self, connection: &PgConnection) {
@@ -61,5 +61,9 @@ impl Task {
 
   pub fn update_status(&mut self, status: TaskStatus, connection: &PgConnection) {
     queries::update_status(self, status, connection)
+  }
+
+  pub fn update_title(&mut self, new_title: &str, connection: &PgConnection) {
+    queries::update_title(self, new_title, connection)
   }
 }

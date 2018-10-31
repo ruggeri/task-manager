@@ -33,8 +33,8 @@ impl Window {
     }
   }
 
-  pub fn read_line(&self) -> String {
-    self.window.printw("Create new task: ");
+  pub fn read_line(&self, prompt: &str) -> String {
+    self.window.printw(prompt);
     let mut line = String::new();
 
     loop {

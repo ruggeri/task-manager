@@ -25,7 +25,7 @@ pub fn all(connection: &PgConnection) -> Vec<Task> {
     .unwrap()
 }
 
-pub fn create(connection: &PgConnection, title: String) -> Task {
+pub fn create(title: String, connection: &PgConnection) -> Task {
   let new_task = NewTask {
     title,
     status: TaskStatus::AvailableToPerform,
@@ -69,11 +69,11 @@ pub fn toggle_internet(task: &mut Task, connection: &PgConnection) {
   }
 }
 
-pub fn update_status(task: &mut Task, status: TaskStatus, connection: &PgConnection) {
-  use schema::tasks::dsl;
+pub fn update_status(task: &mut Task, new_status: TaskStatus, connection: &PgConnection) {
+  use schema::tasks::dsl::*;
 
-  let num_updated = diesel::update(dsl::tasks.find(task.id))
-    .set(dsl::status.eq(status))
+  let num_updated = diesel::update(tasks.find(task.id))
+    .set(status.eq(new_status))
     .execute(connection)
     .expect("Error updating task");
 
@@ -81,5 +81,20 @@ pub fn update_status(task: &mut Task, status: TaskStatus, connection: &PgConnect
     panic!("Expected to update exactly one task");
   }
 
-  task.status = status;
+  task.status = new_status;
+}
+
+pub fn update_title(task: &mut Task, new_title: &str, connection: &PgConnection) {
+  use schema::tasks::dsl::*;
+
+  let num_updated = diesel::update(tasks.find(task.id))
+    .set(title.eq(new_title))
+    .execute(connection)
+    .expect("Error updating task");
+
+  if num_updated != 1 {
+    panic!("Expected to update exactly one task");
+  }
+
+  task.title = String::from(new_title);
 }

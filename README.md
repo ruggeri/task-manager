@@ -2,7 +2,6 @@
 
 * Add whether the task needs outside travel.
 * Add priorities and weighting.
-* Add internet/no internet boolean.
 
 ## Maybe TODOs
 
