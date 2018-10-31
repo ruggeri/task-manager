@@ -8,7 +8,7 @@ use diesel::pg::PgConnection;
 use models::{TaskEffort, TaskStatus};
 use schema::tasks;
 
-#[derive(Debug, Identifiable, Queryable)]
+#[derive(Clone, Debug, Identifiable, Queryable)]
 pub struct Task {
   pub id: i32,
   pub title: String,
@@ -30,7 +30,7 @@ impl Task {
     self.update_status(TaskStatus::Abandoned, connection)
   }
 
-  pub fn destroy(self, connection: &PgConnection) {
+  pub fn destroy(&mut self, connection: &PgConnection) {
     queries::destroy(self, connection)
   }
 

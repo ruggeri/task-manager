@@ -5,8 +5,10 @@ use self::CommandResult::*;
 use self::Commands::*;
 
 pub enum CommandResult {
-  DoNothing,
-  ShutDown,
+  DidNothing,
+  DidUpdateScroller,
+  DidUpdateTaskData,
+  RequestedShutDown,
 }
 
 #[derive(Debug)]
@@ -20,46 +22,37 @@ pub enum Commands {
   UpdateStatus(TaskStatus),
 }
 
-fn create_task(reviewer: &mut Reviewer) {
-  let task_title = reviewer.get_new_task_title();
+fn create_task(reviewer: &Reviewer) {
+  let task_title = reviewer.window.read_line();
   Task::create(&reviewer.connection, task_title);
-  reviewer.refresh();
 }
 
-fn destroy(reviewer: &mut Reviewer) {
-  match reviewer.scroller.remove_current_task() {
+fn destroy(reviewer: &Reviewer) {
+  match reviewer.scroller.current_task() {
     None => return,
-    Some(task) => task.destroy(&reviewer.connection),
+    Some(mut task) => task.destroy(&reviewer.connection),
   };
-
-  reviewer.refresh();
 }
 
-fn record_task_effort(reviewer: &mut Reviewer) {
+fn record_task_effort(reviewer: &Reviewer) {
   match reviewer.scroller.current_task() {
     None => return,
     Some(task) => task.record_effort(&reviewer.connection),
   };
-
-  reviewer.refresh();
 }
 
 fn toggle_internet(reviewer: &mut Reviewer) {
-  match reviewer.scroller.mut_current_task() {
+  match reviewer.scroller.current_task() {
     None => return,
-    Some(task) => task.toggle_internet(&reviewer.connection),
+    Some(mut task) => task.toggle_internet(&reviewer.connection),
   };
-
-  reviewer.refresh();
 }
 
 fn update_status(reviewer: &mut Reviewer, status: TaskStatus) {
-  match reviewer.scroller.mut_current_task() {
+  match reviewer.scroller.current_task() {
     None => return,
-    Some(task) => task.update_status(status, &reviewer.connection),
+    Some(mut task) => task.update_status(status, &reviewer.connection),
   };
-
-  reviewer.refresh();
 }
 
 impl Commands {
@@ -72,9 +65,9 @@ impl Commands {
       'c' => UpdateStatus(TaskStatus::Completed),
       'd' => Destroy,
       'n' => Create,
-      'q' => return ShutDown,
+      'q' => return RequestedShutDown,
       'r' => RecordTaskEffort,
-      _ => return DoNothing,
+      _ => return DidNothing,
     };
 
     command.execute(reviewer)
@@ -82,15 +75,34 @@ impl Commands {
 
   pub fn execute(self, reviewer: &mut Reviewer) -> CommandResult {
     match self {
-      Create => create_task(reviewer),
-      Destroy => destroy(reviewer),
-      RecordTaskEffort => record_task_effort(reviewer),
-      ScrollBackward => reviewer.scroller.scroll_backward(),
-      ScrollForward => reviewer.scroller.scroll_forward(),
-      ToggleInternet => toggle_internet(reviewer),
-      UpdateStatus(status) => update_status(reviewer, status),
+      Create => {
+        create_task(reviewer);
+        DidUpdateTaskData
+      },
+      Destroy => {
+        destroy(reviewer);
+        DidUpdateTaskData
+      },
+      RecordTaskEffort => {
+        record_task_effort(reviewer);
+        DidUpdateTaskData
+      },
+      ScrollBackward => {
+        reviewer.scroller.scroll_backward();
+        DidUpdateScroller
+      },
+      ScrollForward => {
+        reviewer.scroller.scroll_forward();
+        DidUpdateScroller
+      },
+      ToggleInternet => {
+        toggle_internet(reviewer);
+        DidUpdateTaskData
+      },
+      UpdateStatus(status) => {
+        update_status(reviewer, status);
+        DidUpdateTaskData
+      },
     }
-
-    DoNothing
   }
 }

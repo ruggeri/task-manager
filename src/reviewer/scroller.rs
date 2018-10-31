@@ -1,68 +1,65 @@
+use super::data_source::TaskResult;
 use models::Task;
+use std::cell::{Cell, Ref, RefCell};
 
 pub struct Scroller {
-  pub current_task_idx: usize,
-  pub tasks: Vec<Task>,
+  pub current_result_idx: Cell<usize>,
+  pub max_results_to_display: usize,
+  pub results: RefCell<Vec<TaskResult>>,
 }
 
 impl Scroller {
-  pub fn new(tasks: Vec<Task>) -> Scroller {
+  pub fn new(results: Vec<TaskResult>, max_results_to_display: usize) -> Scroller {
     Scroller {
-      current_task_idx: 0,
-      tasks,
+      current_result_idx: Cell::new(0),
+      max_results_to_display,
+      results: RefCell::new(results),
     }
   }
 
-  pub fn scroll_forward(&mut self) {
-    if self.current_task_idx < self.tasks.len() - 1 {
-      self.current_task_idx += 1
+  pub fn current_result_idx(&self) -> usize {
+    self.current_result_idx.get()
+  }
+
+  pub fn results(&self) -> Ref<Vec<TaskResult>> {
+    self.results.borrow()
+  }
+
+  pub fn scroll_forward(&self) {
+    let current_result_idx = self.current_result_idx();
+    if current_result_idx < self.results().len() - 1 {
+      self.current_result_idx.set(current_result_idx + 1);
     }
   }
 
-  pub fn scroll_backward(&mut self) {
-    if self.current_task_idx > 0 {
-      self.current_task_idx -= 1;
+  pub fn scroll_backward(&self) {
+    let current_result_idx = self.current_result_idx();
+    if current_result_idx > 0 {
+      self.current_result_idx.set(current_result_idx - 1);
     }
   }
 
-  pub fn current_task(&self) -> Option<&Task> {
-    if self.tasks.is_empty() {
+  pub fn current_task(&self) -> Option<Task> {
+    if self.results().is_empty() {
       None
     } else {
-      Some(&self.tasks[self.current_task_idx])
+      let result = self.results()[self.current_result_idx()].clone();
+      Some(result.task)
     }
   }
 
-  pub fn mut_current_task(&mut self) -> Option<&mut Task> {
-    if self.tasks.is_empty() {
-      None
-    } else {
-      Some(&mut self.tasks[self.current_task_idx])
-    }
-  }
-
-  pub fn remove_current_task(&mut self) -> Option<Task> {
-    if self.tasks.is_empty() {
-      None
-    } else {
-      let task = self.tasks.remove(self.current_task_idx);
-      self.fix_index();
-      Some(task)
-    }
-  }
-
-  pub fn refresh(&mut self, tasks: Vec<Task>) {
-    self.tasks = tasks;
+  pub fn refresh(&self, results: Vec<TaskResult>) {
+    *self.results.borrow_mut() = results;
     self.fix_index();
   }
 
-  fn fix_index(&mut self) {
-    let num_tasks = self.tasks.len();
+  fn fix_index(&self) {
+    let num_results = self.results().len();
 
-    if num_tasks == 0 {
-      self.current_task_idx = 0;
-    } else if self.current_task_idx >= num_tasks {
-      self.current_task_idx = num_tasks - 1;
+    if num_results == 0 {
+      self.current_result_idx.set(0);
+    } else if self.current_result_idx() >= num_results {
+      self.current_result_idx.set(num_results - 1);
     }
   }
 }

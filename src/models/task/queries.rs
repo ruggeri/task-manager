@@ -37,10 +37,7 @@ pub fn create(connection: &PgConnection, title: String) -> Task {
     .expect("Error creating task")
 }
 
-pub fn destroy(task: Task, connection: &PgConnection) {
-  // I do want to consume the task for safety.
-  #![allow(needless_pass_by_value)]
-
+pub fn destroy(task: &mut Task, connection: &PgConnection) {
   {
     use schema::task_efforts::dsl::*;
     diesel::delete(task_efforts.filter(task_id.eq(task.id)))
