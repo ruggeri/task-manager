@@ -49,7 +49,7 @@ impl TaskResultsWindow {
     // TODO: This is a bad idea. I want to have interior mutability, but
     // here we can see it's sneaking out.
     for (idx, ref result) in self.scroller.results().iter().enumerate() {
-      self.display_result(idx, result);
+      self.display_result(idx as i32, result);
     }
   }
 
@@ -64,7 +64,7 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::A_BOLD);
   }
 
-  fn display_result(&self, idx: usize, result: &TaskResult) {
+  fn display_result(&self, idx: i32, result: &TaskResult) {
     let pwindow = self.pwindow();
 
     // Choose appropriate color.

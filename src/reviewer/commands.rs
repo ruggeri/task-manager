@@ -20,6 +20,8 @@ pub enum Commands {
   RecordTaskEffort,
   ScrollBackward,
   ScrollForward,
+  JumpToBottom,
+  JumpToTop,
   ToggleInternet,
   UpdateDuration(Direction),
   UpdatePriority(Direction),
@@ -99,6 +101,8 @@ impl Commands {
       'P' => UpdatePriority(Increase),
       'd' => UpdateDuration(Decrease),
       'D' => UpdateDuration(Increase),
+      '$' => JumpToBottom,
+      'g' => JumpToTop,
       _ => return DidNothing,
     };
 
@@ -146,6 +150,14 @@ impl Commands {
       UpdateDuration(dir) => {
         update_duration(reviewer, dir);
         DidUpdateTaskData
+      }
+      JumpToBottom => {
+        reviewer.scroller.jump_to_bottom();
+        DidUpdateScroller
+      }
+      JumpToTop => {
+        reviewer.scroller.jump_to_top();
+        DidUpdateScroller
       }
     }
   }
