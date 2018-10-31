@@ -18,21 +18,26 @@ pub struct Reviewer {
 impl Reviewer {
   pub fn new(max_tasks: usize) -> Reviewer {
     let connection = Rc::new(connection::get());
-    let mut data_source = DataSource::new(&connection);
+    let data_source = DataSource::new(&connection);
     let window = Rc::new(Window::new());
     let scroller = Rc::new(Scroller::new(vec![], max_tasks));
     let task_results_window = Rc::new(TaskResultsWindow::new(&window, &scroller));
 
-    data_source.refresh();
-    // TODO: Need to install callback to pump down to scroller et al.
-
-    Reviewer {
+    let mut reviewer = Reviewer {
       connection,
       data_source,
       window,
       scroller,
       task_results_window
-    }
+    };
+
+    let scroller2 = Rc::clone(&reviewer.scroller);
+    reviewer.data_source.add_callback(Box::new(move |results| {
+      scroller2.refresh(results.clone());
+    }));
+    reviewer.data_source.refresh();
+
+    reviewer
   }
 
   pub fn run(&mut self) {
