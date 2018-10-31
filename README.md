@@ -2,6 +2,11 @@
 
 * Add whether the task needs outside travel.
 * Add priorities and weighting.
+  * Can't just let high priority kill background tasks.
+  * Want high priority, short duration at top.
+  * Want low priority long duration at bottom.
+  * HS, HL, LS, LL ===  HS -> LS -> HL -> LL
+  * And I think it makes sense to produce a "multiplier" idea.
 
 ## Maybe TODOs
 

@@ -21,6 +21,8 @@ table! {
         status -> TaskStatusMapping,
         created_at -> Timestamptz,
         requires_internet -> Bool,
+        priority -> Task_priority,
+        duration -> Task_duration,
     }
 }
 
