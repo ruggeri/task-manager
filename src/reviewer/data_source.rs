@@ -1,6 +1,7 @@
 use chrono::{Duration, Utc};
 use diesel::pg::PgConnection;
 use models::Task;
+use super::scorer;
 use std::rc::Rc;
 
 type Callback = dyn Fn(&Vec<TaskResult>) -> ();
@@ -37,7 +38,7 @@ impl DataSource {
         TaskResult { task, task_age }
       }).collect();
 
-    results.sort_by_key(|t| t.task_age);
+    results.sort_by_key(|t| scorer::score(t));
     results.reverse();
 
     for callback in &self.callbacks {
