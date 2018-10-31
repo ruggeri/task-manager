@@ -13,6 +13,10 @@ pub struct Window {
 impl Window {
   #![allow(new_without_default)]
   pub fn new() -> Window {
+    // Important! You must initscr before you can do any of the start
+    // color stuff. Otherwise you get a wonderful segfault...
+    let window = pancurses::initscr();
+
     pancurses::start_color();
     pancurses::use_default_colors();
     pancurses::init_pair(ColorPair::Default as i16, -1, -1);
@@ -20,7 +24,7 @@ impl Window {
     pancurses::noecho();
 
     Window {
-      window: pancurses::initscr()
+      window,
     }
   }
 
