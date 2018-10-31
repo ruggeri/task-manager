@@ -16,6 +16,7 @@ pub enum Commands {
   RecordTaskEffort,
   ScrollBackward,
   ScrollForward,
+  ToggleInternet,
   UpdateStatus(TaskStatus),
 }
 
@@ -43,6 +44,15 @@ fn record_task_effort(reviewer: &mut Reviewer) {
   reviewer.refresh();
 }
 
+fn toggle_internet(reviewer: &mut Reviewer) {
+  match reviewer.scroller.mut_current_task() {
+    None => return,
+    Some(task) => task.toggle_internet(&reviewer.connection),
+  };
+
+  reviewer.refresh();
+}
+
 fn update_status(reviewer: &mut Reviewer, status: TaskStatus) {
   match reviewer.scroller.mut_current_task() {
     None => return,
@@ -57,6 +67,7 @@ impl Commands {
     let command = match ch {
       'j' => ScrollForward,
       'k' => ScrollBackward,
+      'i' => ToggleInternet,
       'a' => UpdateStatus(TaskStatus::Abandoned),
       'c' => UpdateStatus(TaskStatus::Completed),
       'd' => Destroy,
@@ -76,6 +87,7 @@ impl Commands {
       RecordTaskEffort => record_task_effort(reviewer),
       ScrollBackward => reviewer.scroller.scroll_backward(),
       ScrollForward => reviewer.scroller.scroll_forward(),
+      ToggleInternet => toggle_internet(reviewer),
       UpdateStatus(status) => update_status(reviewer, status),
     }
 

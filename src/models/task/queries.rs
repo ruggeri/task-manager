@@ -20,6 +20,7 @@ pub fn all(connection: &PgConnection) -> Vec<Task> {
   use schema::tasks::dsl::*;
   tasks
     .filter(status.eq(TaskStatus::AvailableToPerform))
+    .order(id)
     .load::<Task>(connection)
     .unwrap()
 }
