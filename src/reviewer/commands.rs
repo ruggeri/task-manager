@@ -21,6 +21,7 @@ pub enum Commands {
   ScrollBackward,
   ScrollForward,
   JumpToBottom,
+  JumpToTask,
   JumpToTop,
   ToggleInternet,
   UpdateDuration(Direction),
@@ -85,6 +86,13 @@ fn update_priority(reviewer: &mut Reviewer, dir: Direction) {
   };
 }
 
+fn jump_to_task(reviewer: &mut Reviewer) {
+  let task_id = reviewer.window.read_line("Task id to jump to: ");
+  task_id.parse().ok().map(|task_id:i32| {
+    reviewer.scroller.jump_to_task_id(task_id)
+  });
+}
+
 impl Commands {
   pub fn handle_key(reviewer: &mut Reviewer, ch: char) -> CommandResult {
     let command = match ch {
@@ -103,6 +111,7 @@ impl Commands {
       'D' => UpdateDuration(Increase),
       '$' => JumpToBottom,
       'g' => JumpToTop,
+      '/' => JumpToTask,
       _ => return DidNothing,
     };
 
@@ -153,6 +162,10 @@ impl Commands {
       }
       JumpToBottom => {
         reviewer.scroller.jump_to_bottom();
+        DidUpdateScroller
+      }
+      JumpToTask => {
+        jump_to_task(reviewer);
         DidUpdateScroller
       }
       JumpToTop => {

@@ -76,31 +76,29 @@ impl Scroller {
     self.results().get(idx as usize).map(|r| r.task.clone())
   }
 
+  pub fn jump_to_task_id(&self, task_id: i32) -> bool {
+    self
+      .results()
+      .iter()
+      .position(|tr| tr.task.id == task_id)
+      .map(|result_idx| self.set_current_result_idx(result_idx as i32))
+      .is_some()
+  }
+
   pub fn refresh(&self, results: Vec<TaskResult>) {
     *self.results.borrow_mut() = results;
 
     // First try to match to prev task's id. Find that idx.
     let prev_task_id = self.current_task_id();
-    let moved_result_idx = if let Some(prev_task_id) = prev_task_id {
-      self
-        .results()
-        .iter()
-        .position(|tr| tr.task.id == prev_task_id)
-    } else {
-      None
-    };
-
-    match moved_result_idx {
-      Some(moved_result_idx) => {
-        // Found moved task; reset idx there.
-        self.set_current_result_idx(moved_result_idx as i32);
-      }
-      None => {
-        // Couldn't find moved task. Maintain current position. We'll
-        // deal with falling off the end in the setter.
-        let old_result_idx = self.current_result_idx();
-        self.set_current_result_idx(old_result_idx);
+    if let Some(prev_task_id) = prev_task_id {
+      if self.jump_to_task_id(prev_task_id) {
+        return
       }
     }
+
+    // Couldn't find moved task. Maintain current position. We'll
+    // deal with falling off the end in the setter.
+    let old_result_idx = self.current_result_idx();
+    self.set_current_result_idx(old_result_idx);
   }
 }
