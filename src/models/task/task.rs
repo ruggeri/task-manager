@@ -68,4 +68,12 @@ impl Task {
   pub fn update_title(&mut self, new_title: &str, connection: &PgConnection) {
     queries::update_title(self, new_title, connection)
   }
+
+  pub fn update_duration(&mut self, new_duration: TaskDuration, connection: &PgConnection) {
+    queries::update_duration(self, new_duration, connection)
+  }
+
+  pub fn update_priority(&mut self, new_priority: TaskPriority, connection: &PgConnection) {
+    queries::update_priority(self, new_priority, connection)
+  }
 }

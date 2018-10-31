@@ -6,7 +6,7 @@ use super::task::Task;
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use models::TaskStatus;
+use models::{TaskDuration, TaskPriority, TaskStatus};
 use schema::tasks;
 
 #[derive(Insertable)]
@@ -97,4 +97,34 @@ pub fn update_title(task: &mut Task, new_title: &str, connection: &PgConnection)
   }
 
   task.title = String::from(new_title);
+}
+
+pub fn update_duration(task: &mut Task, new_duration: TaskDuration, connection: &PgConnection) {
+  use schema::tasks::dsl::*;
+
+  let num_updated = diesel::update(tasks.find(task.id))
+    .set(duration.eq(new_duration))
+    .execute(connection)
+    .expect("Error updating task");
+
+  if num_updated != 1 {
+    panic!("Expected to update exactly one task");
+  }
+
+  task.duration = new_duration;
+}
+
+pub fn update_priority(task: &mut Task, new_priority: TaskPriority, connection: &PgConnection) {
+  use schema::tasks::dsl::*;
+
+  let num_updated = diesel::update(tasks.find(task.id))
+    .set(priority.eq(new_priority))
+    .execute(connection)
+    .expect("Error updating task");
+
+  if num_updated != 1 {
+    panic!("Expected to update exactly one task");
+  }
+
+  task.priority = new_priority;
 }
