@@ -21,6 +21,7 @@ impl Scroller {
     self.current_result_idx.get()
   }
 
+  // TODO: Bad idea to pass someone outside the class a Ref.
   pub fn results(&self) -> Ref<Vec<TaskResult>> {
     self.results.borrow()
   }
