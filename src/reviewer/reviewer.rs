@@ -3,8 +3,8 @@ use super::data_source::DataSource;
 use super::scroller::Scroller;
 use super::task_results_window::TaskResultsWindow;
 use super::ui::Window;
-use diesel::pg::PgConnection;
 use connection;
+use diesel::pg::PgConnection;
 use std::rc::Rc;
 
 pub struct Reviewer {
@@ -28,7 +28,7 @@ impl Reviewer {
       data_source,
       window,
       scroller,
-      task_results_window
+      task_results_window,
     };
 
     let scroller2 = Rc::clone(&reviewer.scroller);
@@ -46,19 +46,19 @@ impl Reviewer {
     loop {
       let ch = match self.window.getch() {
         None => continue,
-        Some(ch) => ch
+        Some(ch) => ch,
       };
 
       use self::CommandResult::*;
       match Commands::handle_key(self, ch) {
-        DidNothing => {},
+        DidNothing => {}
         DidUpdateScroller => {
           self.task_results_window.redraw();
-        },
+        }
         DidUpdateTaskData => {
           self.data_source.refresh();
           self.task_results_window.redraw();
-        },
+        }
         RequestedShutDown => {
           break;
         }

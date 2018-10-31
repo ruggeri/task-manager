@@ -1,9 +1,9 @@
-use super::scroller::Scroller;
-use super::ui::ColorPair;
 use super::data_source::TaskResult;
+use super::scroller::Scroller;
+use super::ui;
+use super::ui::ColorPair;
 use chrono::Duration;
 use pancurses;
-use super::ui;
 use std::rc::Rc;
 
 fn format_task_age(age: Duration) -> String {

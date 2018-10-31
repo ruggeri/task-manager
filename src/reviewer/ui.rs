@@ -23,9 +23,7 @@ impl Window {
     pancurses::init_pair(ColorPair::Highlight as i16, -1, pancurses::COLOR_BLUE);
     pancurses::noecho();
 
-    Window {
-      window,
-    }
+    Window { window }
   }
 
   pub fn getch(&self) -> Option<char> {

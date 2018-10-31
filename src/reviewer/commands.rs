@@ -78,31 +78,31 @@ impl Commands {
       Create => {
         create_task(reviewer);
         DidUpdateTaskData
-      },
+      }
       Destroy => {
         destroy(reviewer);
         DidUpdateTaskData
-      },
+      }
       RecordTaskEffort => {
         record_task_effort(reviewer);
         DidUpdateTaskData
-      },
+      }
       ScrollBackward => {
         reviewer.scroller.scroll_backward();
         DidUpdateScroller
-      },
+      }
       ScrollForward => {
         reviewer.scroller.scroll_forward();
         DidUpdateScroller
-      },
+      }
       ToggleInternet => {
         toggle_internet(reviewer);
         DidUpdateTaskData
-      },
+      }
       UpdateStatus(status) => {
         update_status(reviewer, status);
         DidUpdateTaskData
-      },
+      }
     }
   }
 }

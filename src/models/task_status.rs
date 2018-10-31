@@ -8,13 +8,13 @@ pub enum TaskStatus {
 }
 
 impl fmt::Display for TaskStatus {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      let s = match self {
-        TaskStatus::Abandoned => "Abandoned",
-        TaskStatus::AvailableToPerform => "Available",
-        TaskStatus::Completed => "Completed",
-      };
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    let s = match self {
+      TaskStatus::Abandoned => "Abandoned",
+      TaskStatus::AvailableToPerform => "Available",
+      TaskStatus::Completed => "Completed",
+    };
 
-      f.write_str(s)
-    }
+    f.write_str(s)
+  }
 }

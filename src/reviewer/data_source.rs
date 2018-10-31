@@ -8,7 +8,7 @@ type Callback = dyn Fn(&Vec<TaskResult>) -> ();
 #[derive(Clone)]
 pub struct TaskResult {
   pub task: Task,
-  pub task_age: Duration
+  pub task_age: Duration,
 }
 
 pub struct DataSource {
@@ -34,10 +34,7 @@ impl DataSource {
       .into_iter()
       .map(|task| {
         let task_age = task.age_at(current_time, &self.connection);
-        TaskResult {
-          task,
-          task_age
-        }
+        TaskResult { task, task_age }
       }).collect();
 
     results.sort_by_key(|t| t.task_age);
