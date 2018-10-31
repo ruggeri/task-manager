@@ -57,6 +57,20 @@ pub fn destroy(task: Task, connection: &PgConnection) {
   }
 }
 
+pub fn toggle_internet(task: &mut Task, connection: &PgConnection) {
+  use diesel::dsl::*;
+  use schema::tasks::dsl::*;
+
+  let num_updated = diesel::update(tasks.find(task.id))
+    .set(requires_internet.eq(not(requires_internet)))
+    .execute(connection)
+    .expect("Error updating task");
+
+  if num_updated != 1 {
+    panic!("Expected to update exactly one task");
+  }
+}
+
 pub fn update_status(task: &mut Task, status: TaskStatus, connection: &PgConnection) {
   use schema::tasks::dsl;
 

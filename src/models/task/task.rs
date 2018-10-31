@@ -55,6 +55,10 @@ impl Task {
     current_time.signed_duration_since(last_effort_at)
   }
 
+  pub fn toggle_internet(&mut self, connection: &PgConnection) {
+    queries::toggle_internet(self, connection)
+  }
+
   pub fn update_status(&mut self, status: TaskStatus, connection: &PgConnection) {
     queries::update_status(self, status, connection)
   }
