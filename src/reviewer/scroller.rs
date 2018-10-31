@@ -45,13 +45,18 @@ impl Scroller {
     if self.tasks.is_empty() {
       None
     } else {
-      Some(self.tasks.remove(self.current_task_idx))
+      let task = self.tasks.remove(self.current_task_idx);
+      self.fix_index();
+      Some(task)
     }
   }
 
   pub fn refresh(&mut self, tasks: Vec<Task>) {
     self.tasks = tasks;
+    self.fix_index();
+  }
 
+  fn fix_index(&mut self) {
     let num_tasks = self.tasks.len();
 
     if num_tasks == 0 {
