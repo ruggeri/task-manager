@@ -5,7 +5,7 @@
 use super::queries;
 use chrono::{DateTime, Duration, Utc};
 use diesel::pg::PgConnection;
-use models::{TaskDuration, TaskEffort, TaskPriority, TaskStatus};
+use models::{Direction, TaskDuration, TaskEffort, TaskPriority, TaskStatus};
 use schema::tasks;
 
 #[derive(Clone, Debug, Identifiable, Queryable)]
@@ -69,11 +69,35 @@ impl Task {
     queries::update_title(self, new_title, connection)
   }
 
-  pub fn update_duration(&mut self, new_duration: TaskDuration, connection: &PgConnection) {
+  pub fn update_duration(&mut self, dir: Direction, connection: &PgConnection) {
+    use self::Direction::*;
+    use self::TaskDuration::*;
+
+    let new_duration = match (dir, self.duration) {
+      (Decrease, Short) => return,
+      (Decrease, Medium) => Short,
+      (Decrease, Long) => Medium,
+      (Increase, Short) => Medium,
+      (Increase, Medium) => Long,
+      (Increase, Long) => return,
+    };
+
     queries::update_duration(self, new_duration, connection)
   }
 
-  pub fn update_priority(&mut self, new_priority: TaskPriority, connection: &PgConnection) {
+pub fn update_priority(&mut self, dir: Direction, connection: &PgConnection) {
+    use self::Direction::*;
+    use self::TaskPriority::*;
+
+    let new_priority = match (dir, self.priority) {
+      (Decrease, Low) => return,
+      (Decrease, Medium) => Low,
+      (Decrease, High) => Medium,
+      (Increase, Low) => Medium,
+      (Increase, Medium) => High,
+      (Increase, High) => return,
+    };
+
     queries::update_priority(self, new_priority, connection)
   }
 }

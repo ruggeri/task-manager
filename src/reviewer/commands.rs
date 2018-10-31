@@ -1,8 +1,9 @@
 use super::reviewer::Reviewer;
-use models::{Task, TaskStatus};
+use models::{Direction, Task, TaskStatus};
 
 use self::CommandResult::*;
 use self::Commands::*;
+use self::Direction::*;
 
 pub enum CommandResult {
   DidNothing,
@@ -20,6 +21,8 @@ pub enum Commands {
   ScrollBackward,
   ScrollForward,
   ToggleInternet,
+  UpdateDuration(Direction),
+  UpdatePriority(Direction),
   UpdateStatus(TaskStatus),
 }
 
@@ -66,6 +69,20 @@ fn update_status(reviewer: &mut Reviewer, status: TaskStatus) {
   };
 }
 
+fn update_duration(reviewer: &mut Reviewer, dir: Direction) {
+  match reviewer.scroller.current_task() {
+    None => return,
+    Some(mut task) => task.update_duration(dir, &reviewer.connection),
+  };
+}
+
+fn update_priority(reviewer: &mut Reviewer, dir: Direction) {
+  match reviewer.scroller.current_task() {
+    None => return,
+    Some(mut task) => task.update_priority(dir, &reviewer.connection),
+  };
+}
+
 impl Commands {
   pub fn handle_key(reviewer: &mut Reviewer, ch: char) -> CommandResult {
     let command = match ch {
@@ -74,11 +91,14 @@ impl Commands {
       'i' => ToggleInternet,
       'a' => UpdateStatus(TaskStatus::Abandoned),
       'c' => UpdateStatus(TaskStatus::Completed),
-      'd' => Destroy,
       'e' => EditTaskTitle,
       'n' => Create,
       'q' => return RequestedShutDown,
       'r' => RecordTaskEffort,
+      'p' => UpdatePriority(Decrease),
+      'P' => UpdatePriority(Increase),
+      'd' => UpdateDuration(Decrease),
+      'D' => UpdateDuration(Increase),
       _ => return DidNothing,
     };
 
@@ -117,6 +137,14 @@ impl Commands {
       }
       UpdateStatus(status) => {
         update_status(reviewer, status);
+        DidUpdateTaskData
+      }
+      UpdatePriority(dir) => {
+        update_priority(reviewer, dir);
+        DidUpdateTaskData
+      }
+      UpdateDuration(dir) => {
+        update_duration(reviewer, dir);
         DidUpdateTaskData
       }
     }
