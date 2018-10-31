@@ -109,12 +109,69 @@
     within the single class*.
   * Else we might as well just not use Rust, right?
 
+## Further thoughts about interacting components
+
+I have tried to factor my code into many interacting components.
+However, there isn't a clear hierarchy of components.
+
+If A were to contain B and C, but D needs to interact with both B and C,
+then A needs to present the union of B and C's interfaces. It quickly
+gets to the point where we just have a god object.
+
+I wanted to give everyone references to everyone else, and have everyone
+live in a `Reviewer` class which was kind of like the global state.
+
+However, I had a problem where no one understood the lifetimes of each
+other. I figured that if A contained B and C, then B and C could have
+references to each other, because neither would live past A.
+
+But if I do that, then it means that A is not moveable. So either: A
+must be boxed, or B and C must be boxed. The easiest solution would be
+to box A. But I also had problems that I can't reference even partially
+initialized values of A: I can't feed &A.B when making C. That feels
+like the compiler just being grumpy...
+
+No matter what I tried, I could get this to work. I think what I am
+trying to do is simply not supported. You could say that it is not safe
+for A.C to have a reference to A.B, because it is not for sure what the
+*destruction order* will be. Imagine that the destructor of A.C uses the
+A.B reference. Then this is unsafe if A.B will be destroyed first.
+
+## My solution: `Rc` everywhere
+
+I used `Rc` liberally to solve my problems. I felt a little dirty doing
+this. I worried about reference cycles. Now my top-level object didn't
+have quite the exclusive ownership it used to.
+
+I could have dealt with this by using weak references. But that would be
+a PITA because I'd have to constantly deal with `Option`s when
+dereferencing.
+
+Another problem was that `Rc` makes it hard to get mutable references to
+things. Back when I was using normal references, I could get mutable
+references when I needed them. But even if you own an `Rc`, that doesn't
+mean *other* `Rc`s exist pointing to the same data.
+
+This forced me to use `Cell` and `RefCell`, which I didn't really want
+to do. On the other hand, it was good to make my interfaces have fewer
+methods that require mutability.
+
+## For next time
+
+Maybe I have way too many references stored in my components: maybe I
+should just pass the `Reviewer` in to every method. I wanted to avoid
+this, by saving the "connections" between components in reference
+fields. But maybe that is too much trouble; perhaps the entire context
+should be constantly "pumped down."
+
+That would ease ownership and mutability complaints.
+
+However, it also feels pretty unnatural...
+
 ## TODO
 
-* Describe `Rc` situation.
 * What is the true point of enforcing just one mutable reference?
   * I guess it's allocation stuff like vectors?
   * Is the idea reentrancy? Many scenarios don't have a problem where
     moves are going to happen...
-* Cargo fmt and lint.
-* Talk about interior mutability from scroller.
+* Look up destruciton order question. Do I *have* to use `Rc`?
