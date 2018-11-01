@@ -1,7 +1,9 @@
 use super::{Action, ActionResult, TaskAction};
 use components::Reviewer;
-use models::TaskEffort;
-use queries::task as task_queries;
+use queries::{
+  task as task_queries,
+  task_effort as te_queries,
+};
 
 impl Action for TaskAction {
   fn execute(&mut self, reviewer: &mut Reviewer) -> ActionResult {
@@ -26,7 +28,7 @@ impl Action for TaskAction {
           panic!("Cannot redo a record effort action twice");
         }
 
-        *task_effort = Some(TaskEffort::record(*task_id, connection));
+        *task_effort = Some(te_queries::record(*task_id, connection));
         ActionResult::DidUpdateTaskData
       }
       TaskUpdate(update_action) => update_action.execute(connection),
@@ -54,7 +56,7 @@ impl Action for TaskAction {
         }
 
         let task_effort_id = task_effort.take().unwrap().id;
-        TaskEffort::destroy(task_effort_id, connection);
+        te_queries::destroy(task_effort_id, connection);
         ActionResult::DidUpdateTaskData
       }
       TaskUpdate(update_action) => update_action.unexecute(connection),

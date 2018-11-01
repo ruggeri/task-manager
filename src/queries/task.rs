@@ -5,8 +5,7 @@
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use models::Task;
-use models::{TaskDuration, TaskPriority, TaskStatus};
+use models::{Task, TaskDuration, TaskPriority, TaskStatus};
 use schema::tasks;
 
 #[derive(Insertable)]

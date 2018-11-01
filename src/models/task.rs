@@ -2,28 +2,31 @@
 // future release.
 #![allow(proc_macro_derive_resolution_fallback)]
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::Duration;
 use diesel::pg::PgConnection;
-use models::{TaskDuration, TaskEffort, TaskPriority, TaskStatus};
+use models::{TaskDuration, TaskPriority, TaskStatus};
+use queries::task_effort as te_queries;
 use schema::tasks;
+
+type DateTime = ::chrono::DateTime<::chrono::Utc>;
 
 #[derive(Clone, Debug, Identifiable, Queryable)]
 pub struct Task {
   pub id: i32,
   pub title: String,
   pub status: TaskStatus,
-  pub created_at: DateTime<Utc>,
+  pub created_at: DateTime,
   pub requires_internet: bool,
   pub priority: TaskPriority,
   pub duration: TaskDuration,
 }
 
 impl Task {
-  pub fn last_effort_at(&self, connection: &PgConnection) -> Option<DateTime<Utc>> {
-    TaskEffort::last_effort_at(self, connection)
+  pub fn last_effort_at(&self, connection: &PgConnection) -> Option<DateTime> {
+    te_queries::last_effort_at(self, connection)
   }
 
-  pub fn age_at(&self, current_time: DateTime<Utc>, connection: &PgConnection) -> Duration {
+  pub fn age_at(&self, current_time: DateTime, connection: &PgConnection) -> Duration {
     let last_effort_at = match self.last_effort_at(connection) {
       None => self.created_at,
       Some(t) => t,

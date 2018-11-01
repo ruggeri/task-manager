@@ -1,4 +1,4 @@
-use super::direction::Direction;
+use super::Direction;
 use std::fmt;
 
 #[derive(Clone, Copy, DbEnum, Debug, Eq, PartialEq)]
@@ -9,11 +9,11 @@ pub enum TaskDuration {
 }
 
 impl TaskDuration {
-  pub fn increment(&self, direction: Direction) -> TaskDuration {
+  pub fn increment(self, direction: Direction) -> TaskDuration {
     use self::Direction::*;
     use self::TaskDuration::*;
 
-    match (direction, *self) {
+    match (direction, self) {
       (Decrease, Short) => Short,
       (Decrease, Medium) => Short,
       (Decrease, Long) => Medium,

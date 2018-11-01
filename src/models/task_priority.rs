@@ -1,4 +1,4 @@
-use super::direction::Direction;
+use super::Direction;
 use std::fmt;
 
 #[derive(Clone, Copy, DbEnum, Debug, Eq, PartialEq)]
@@ -9,11 +9,11 @@ pub enum TaskPriority {
 }
 
 impl TaskPriority {
-  pub fn increment(&self, direction: Direction) -> TaskPriority {
+  pub fn increment(self, direction: Direction) -> TaskPriority {
     use self::Direction::*;
     use self::TaskPriority::*;
 
-    match (direction, *self) {
+    match (direction, self) {
       (Decrease, Low) => Low,
       (Decrease, Medium) => Low,
       (Decrease, High) => Medium,
