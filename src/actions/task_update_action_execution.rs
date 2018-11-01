@@ -1,5 +1,5 @@
 use diesel::pg::PgConnection;
-use models::task::queries;
+use queries::task as task_queries;
 use super::{ ActionResult, TaskUpdateAction};
 
 impl TaskUpdateAction {
@@ -8,19 +8,19 @@ impl TaskUpdateAction {
 
     match self {
       UpdateDuration(tvu) => {
-        queries::update_duration(tvu.task_id, tvu.new_value, connection);
+        task_queries::update_duration(tvu.task_id, tvu.new_value, connection);
       }
       UpdatePriority(tvu) => {
-        queries::update_priority(tvu.task_id, tvu.new_value, connection);
+        task_queries::update_priority(tvu.task_id, tvu.new_value, connection);
       }
       UpdateRequiresInternet(tvu) => {
-        queries::update_requires_internet(tvu.task_id, tvu.new_value, connection);
+        task_queries::update_requires_internet(tvu.task_id, tvu.new_value, connection);
       }
       UpdateStatus(tvu) => {
-        queries::update_status(tvu.task_id, tvu.new_value, connection);
+        task_queries::update_status(tvu.task_id, tvu.new_value, connection);
       }
       UpdateTaskTitle(tvu) => {
-        queries::update_title(tvu.task_id, &tvu.new_value, connection);
+        task_queries::update_title(tvu.task_id, &tvu.new_value, connection);
       }
     }
 
@@ -32,19 +32,19 @@ impl TaskUpdateAction {
 
     match self {
       UpdateDuration(tvu) => {
-        queries::update_duration(tvu.task_id, tvu.old_value, connection);
+        task_queries::update_duration(tvu.task_id, tvu.old_value, connection);
       }
       UpdatePriority(tvu) => {
-        queries::update_priority(tvu.task_id, tvu.old_value, connection);
+        task_queries::update_priority(tvu.task_id, tvu.old_value, connection);
       }
       UpdateRequiresInternet(tvu) => {
-        queries::update_requires_internet(tvu.task_id, tvu.old_value, connection);
+        task_queries::update_requires_internet(tvu.task_id, tvu.old_value, connection);
       }
       UpdateStatus(tvu) => {
-        queries::update_status(tvu.task_id, tvu.old_value, connection);
+        task_queries::update_status(tvu.task_id, tvu.old_value, connection);
       }
       UpdateTaskTitle(tvu) => {
-        queries::update_title(tvu.task_id, &tvu.old_value, connection);
+        task_queries::update_title(tvu.task_id, &tvu.old_value, connection);
       }
     }
 

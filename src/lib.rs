@@ -9,5 +9,6 @@ pub mod actions;
 pub mod commands;
 pub mod components;
 pub mod models;
+pub mod queries;
 pub mod schema;
 pub mod util;

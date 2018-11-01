@@ -1,8 +1,6 @@
 use components::Reviewer;
-use models::{
-  task::queries,
-  task_effort::TaskEffort,
-};
+use models::TaskEffort;
+use queries::task as task_queries;
 use super::{Action, ActionResult, TaskAction};
 
 impl Action for TaskAction {
@@ -17,7 +15,7 @@ impl Action for TaskAction {
           panic!("Cannot redo a create action twice");
         }
 
-        *task = Some(queries::create(task_title, connection));
+        *task = Some(task_queries::create(task_title, connection));
         ActionResult::DidUpdateTaskData
       }
       RecordTaskEffort{ task_id, task_effort } => {
@@ -44,7 +42,7 @@ impl Action for TaskAction {
         }
 
         let task_id = task.take().unwrap().id;
-        queries::destroy(task_id, connection);
+        task_queries::destroy(task_id, connection);
         ActionResult::DidUpdateTaskData
       }
       RecordTaskEffort{ task_effort, .. } => {

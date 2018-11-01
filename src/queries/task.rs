@@ -2,7 +2,7 @@
 // future release.
 #![allow(proc_macro_derive_resolution_fallback)]
 
-use super::task::Task;
+use models::Task;
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
