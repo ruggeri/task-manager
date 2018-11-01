@@ -1,6 +1,7 @@
 # Urgent TODOs
 
 * Undo!
+* Refactor directory structure.
 * Add ability to "sleep" a task.
 * Add whether the task needs outside travel.
 
