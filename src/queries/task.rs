@@ -55,30 +55,11 @@ pub fn create(title: &str, connection: &PgConnection) -> Task {
 //   }
 // }
 
-macro_rules! update_attribute_body {
-  ($task_id:expr, $field_name:expr, $connection:expr) => {
-    use schema::tasks::dsl::*;
-    let num_updated = diesel::update(tasks.find($task_id))
-      .set($field_name)
-      .execute($connection)
-      .expect("Error updating task");
-
-    if num_updated != 1 {
-      panic!("Expected to update exactly one task");
-    }
-  }
-}
-
-macro_rules! update_attribute_method {
-  ($name:ident, $value_type:ty, $field_name:expr) => {
-    pub fn $name(task_id: i32, new_value: $value_type, connection: &PgConnection) {
-      update_attribute_body!(task_id, $field_name.eq(new_value), connection);
-    }
-  }
-}
-
-update_attribute_method!(update_requires_internet, bool, requires_internet);
-update_attribute_method!(update_status, TaskStatus, status);
-update_attribute_method!(update_title, &str, title);
-update_attribute_method!(update_duration, TaskDuration, duration);
-update_attribute_method!(update_priority, TaskPriority, priority);
+define_update_attribute_fns!(
+  tasks,
+  (update_requires_internet, bool, requires_internet),
+  (update_status, TaskStatus, status),
+  (update_title, &str, title),
+  (update_duration, TaskDuration, duration),
+  (update_priority, TaskPriority, priority)
+);
