@@ -1,4 +1,5 @@
 pub mod direction;
+pub mod end;
 pub mod task;
 pub mod task_duration;
 pub mod task_effort;
@@ -6,6 +7,7 @@ pub mod task_priority;
 pub mod task_status;
 
 pub use self::direction::Direction;
+pub use self::end::End;
 pub use self::task::Task;
 pub use self::task_duration::TaskDuration;
 pub use self::task_effort::TaskEffort;

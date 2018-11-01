@@ -1,5 +1,5 @@
 use super::data_source;
-use models::Task;
+use models::{Direction, End, Task};
 use std::cell::{Cell, Ref, RefCell};
 
 pub struct Scroller {
@@ -18,10 +18,6 @@ impl Scroller {
       max_results_to_display,
       results: RefCell::new(results),
     }
-  }
-
-  pub fn current_task_id(&self) -> Option<i32> {
-    self.current_task_id.get()
   }
 
   pub fn current_result_idx(&self) -> i32 {
@@ -53,22 +49,19 @@ impl Scroller {
     self.results().len() as i32
   }
 
-  pub fn scroll_forward(&self) {
+  pub fn scroll(&self, direction: Direction) {
     let current_result_idx = self.current_result_idx();
-    self.set_current_result_idx(current_result_idx + 1);
+    match direction {
+      Direction::Decrease => self.set_current_result_idx(current_result_idx - 1),
+      Direction::Increase => self.set_current_result_idx(current_result_idx + 1),
+    };
   }
 
-  pub fn scroll_backward(&self) {
-    let current_result_idx = self.current_result_idx();
-    self.set_current_result_idx(current_result_idx - 1);
-  }
-
-  pub fn jump_to_top(&self) {
-    self.set_current_result_idx(0);
-  }
-
-  pub fn jump_to_bottom(&self) {
-    self.set_current_result_idx(self.num_results() - 1);
+  pub fn jump(&self, end: End) {
+    match end {
+      End::Top => self.set_current_result_idx(0),
+      End::Bottom => self.set_current_result_idx(self.num_results() - 1),
+    }
   }
 
   pub fn current_task(&self) -> Option<Task> {
@@ -89,7 +82,7 @@ impl Scroller {
     *self.results.borrow_mut() = results;
 
     // First try to match to prev task's id. Find that idx.
-    let prev_task_id = self.current_task_id();
+    let prev_task_id = self.current_task_id.get();
     if let Some(prev_task_id) = prev_task_id {
       if self.jump_to_task_id(prev_task_id) {
         return;

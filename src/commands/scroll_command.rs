@@ -1,13 +1,12 @@
 use actions::{Action, ActionResult};
 use components::Reviewer;
+use models::{Direction, End};
 
 #[derive(Clone, Copy, Debug)]
 pub enum ScrollCommand {
-  ScrollBackward,
-  ScrollForward,
-  JumpToBottom,
+  Jump(End),
   JumpToTask,
-  JumpToTop,
+  Move(Direction),
 }
 
 fn jump_to_task(reviewer: &mut Reviewer) {
@@ -23,11 +22,9 @@ impl Action for ScrollCommand {
     use self::ScrollCommand::*;
 
     match self {
-      ScrollBackward => reviewer.scroller.scroll_backward(),
-      ScrollForward => reviewer.scroller.scroll_forward(),
-      JumpToBottom => reviewer.scroller.jump_to_bottom(),
+      Jump(end) => reviewer.scroller.jump(*end),
       JumpToTask => jump_to_task(reviewer),
-      JumpToTop => reviewer.scroller.jump_to_top(),
+      Move(direction) => reviewer.scroller.scroll(*direction),
     }
 
     ActionResult::DidUpdateScroller

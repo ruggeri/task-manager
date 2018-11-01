@@ -1,7 +1,7 @@
 use super::{ScrollCommand, TaskCommand, TaskUpdateCommand};
 use actions::{Action, ShutdownAction};
 use components::Reviewer;
-use models::{Direction, TaskStatus};
+use models::{Direction, End, TaskStatus};
 
 #[derive(Clone, Copy, Debug)]
 pub enum Command {
@@ -13,16 +13,16 @@ pub enum Command {
 impl Command {
   pub fn from_key(ch: char) -> Option<Command> {
     use self::{
-      Command::*, Direction::*, ScrollCommand::*, TaskCommand::*, TaskStatus::*,
+      Command::*, Direction::*, End::*, ScrollCommand::*, TaskCommand::*, TaskStatus::*,
       TaskUpdateCommand::*,
     };
 
     let command = match ch {
-      '$' => Scroll(JumpToBottom),
+      '$' => Scroll(Jump(Bottom)),
+      'g' => Scroll(Jump(Top)),
       '/' => Scroll(JumpToTask),
-      'g' => Scroll(JumpToTop),
-      'k' => Scroll(ScrollBackward),
-      'j' => Scroll(ScrollForward),
+      'k' => Scroll(Move(Decrease)),
+      'j' => Scroll(Move(Increase)),
       'q' => Shutdown,
       'n' => Task(CreateTask),
       'r' => Task(RecordTaskEffort),
