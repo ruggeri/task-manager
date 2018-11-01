@@ -55,68 +55,30 @@ pub fn create(title: &str, connection: &PgConnection) -> Task {
 //   }
 // }
 
-// TODO: These various update methods require a lot of code...
-pub fn update_requires_internet(task_id: i32, new_value: bool, connection: &PgConnection) {
-  use schema::tasks::dsl::*;
+macro_rules! update_attribute_body {
+  ($task_id:expr, $field_name:expr, $connection:expr) => {
+    use schema::tasks::dsl::*;
+    let num_updated = diesel::update(tasks.find($task_id))
+      .set($field_name)
+      .execute($connection)
+      .expect("Error updating task");
 
-  let num_updated = diesel::update(tasks.find(task_id))
-    .set(requires_internet.eq(new_value))
-    .execute(connection)
-    .expect("Error updating task");
-
-  if num_updated != 1 {
-    panic!("Expected to update exactly one task");
+    if num_updated != 1 {
+      panic!("Expected to update exactly one task");
+    }
   }
 }
 
-pub fn update_status(task_id: i32, new_status: TaskStatus, connection: &PgConnection) {
-  use schema::tasks::dsl::*;
-
-  let num_updated = diesel::update(tasks.find(task_id))
-    .set(status.eq(new_status))
-    .execute(connection)
-    .expect("Error updating task");
-
-  if num_updated != 1 {
-    panic!("Expected to update exactly one task");
+macro_rules! update_attribute_method {
+  ($name:ident, $value_type:ty, $field_name:expr) => {
+    pub fn $name(task_id: i32, new_value: $value_type, connection: &PgConnection) {
+      update_attribute_body!(task_id, $field_name.eq(new_value), connection);
+    }
   }
 }
 
-pub fn update_title(task_id: i32, new_title: &str, connection: &PgConnection) {
-  use schema::tasks::dsl::*;
-
-  let num_updated = diesel::update(tasks.find(task_id))
-    .set(title.eq(new_title))
-    .execute(connection)
-    .expect("Error updating task");
-
-  if num_updated != 1 {
-    panic!("Expected to update exactly one task");
-  }
-}
-
-pub fn update_duration(task_id: i32, new_duration: TaskDuration, connection: &PgConnection) {
-  use schema::tasks::dsl::*;
-
-  let num_updated = diesel::update(tasks.find(task_id))
-    .set(duration.eq(new_duration))
-    .execute(connection)
-    .expect("Error updating task");
-
-  if num_updated != 1 {
-    panic!("Expected to update exactly one task");
-  }
-}
-
-pub fn update_priority(task_id: i32, new_priority: TaskPriority, connection: &PgConnection) {
-  use schema::tasks::dsl::*;
-
-  let num_updated = diesel::update(tasks.find(task_id))
-    .set(priority.eq(new_priority))
-    .execute(connection)
-    .expect("Error updating task");
-
-  if num_updated != 1 {
-    panic!("Expected to update exactly one task");
-  }
-}
+update_attribute_method!(update_requires_internet, bool, requires_internet);
+update_attribute_method!(update_status, TaskStatus, status);
+update_attribute_method!(update_title, &str, title);
+update_attribute_method!(update_duration, TaskDuration, duration);
+update_attribute_method!(update_priority, TaskPriority, priority);
