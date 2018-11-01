@@ -60,7 +60,7 @@ pub fn update_requires_internet(task_id: i32, new_value: bool, connection: &PgCo
   use schema::tasks::dsl::*;
 
   let num_updated = diesel::update(tasks.find(task_id))
-    .set(requires_internet.eq(not(new_value)))
+    .set(requires_internet.eq(new_value))
     .execute(connection)
     .expect("Error updating task");
 
