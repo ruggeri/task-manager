@@ -40,9 +40,7 @@ impl TaskAction {
       TaskCommand::UpdateTask(cmd) => reviewer
         .scroller
         .current_task()
-        .and_then(|task| {
-          TaskUpdateAction::prepare_from_cmd(cmd, &task, reviewer)
-        })
+        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, &task, reviewer))
         .map(|ta| TaskAction::TaskUpdate(ta)),
     }
   }
