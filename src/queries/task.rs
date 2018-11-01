@@ -37,6 +37,8 @@ pub fn create(title: &str, connection: &PgConnection) -> Task {
 }
 
 pub fn destroy(task_id: i32, connection: &PgConnection) {
+  panic!("Destroy is not safe enough to use yet.");
+
   {
     use schema::task_efforts::dsl;
     diesel::delete(dsl::task_efforts.filter(dsl::task_id.eq(task_id)))

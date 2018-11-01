@@ -17,6 +17,8 @@ struct NewTaskEffort {
 }
 
 pub fn destroy(task_effort_id: i32, connection: &PgConnection) {
+  panic!("Destroy is not safe enough to use yet.");
+
   use schema::task_efforts::dsl::*;
   diesel::delete(task_efforts.find(task_effort_id))
     .execute(connection)
