@@ -9,6 +9,16 @@ pub struct TaskValueUpdate<T: Eq> {
   pub new_value: T,
 }
 
+impl<T: Eq> TaskValueUpdate<T> {
+  pub fn new(task_id: i32, old_value: T, new_value: T) -> Option<TaskValueUpdate<T>> {
+    if old_value == new_value {
+      None
+    } else {
+      Some(TaskValueUpdate { task_id, old_value, new_value })
+    }
+  }
+}
+
 #[derive(Clone, Debug)]
 pub enum TaskUpdateAction {
   UpdateDuration(TaskValueUpdate<TaskDuration>),
@@ -31,69 +41,29 @@ impl TaskUpdateAction {
     match cmd {
       Cmd::EditTaskTitle => {
         let new_task_title = reviewer.window.read_line("Edit task title: ");
-        let tvu = TaskValueUpdate {
-          task_id: task.id,
-          old_value: task.title.clone(),
-          new_value: new_task_title,
-        };
-
-        if tvu.old_value == tvu.new_value {
-          None
-        } else {
-          Some(Action::UpdateTaskTitle(tvu))
-        }
+        TaskValueUpdate::new(task.id, task.title.clone(), new_task_title).map(|tvu| {
+          Action::UpdateTaskTitle(tvu)
+        })
       }
       Cmd::ToggleRequiresInternet => {
-        let tvu = TaskValueUpdate {
-          task_id: task.id,
-          old_value: task.requires_internet,
-          new_value: !task.requires_internet,
-        };
-
-        if tvu.old_value == tvu.new_value {
-          None
-        } else {
-          Some(Action::UpdateRequiresInternet(tvu))
-        }
+        TaskValueUpdate::new(task.id, task.requires_internet, !task.requires_internet).map(|tvu| {
+          Action::UpdateRequiresInternet(tvu)
+        })
       }
       Cmd::UpdateDuration(direction) => {
-        let tvu = TaskValueUpdate {
-          task_id: task.id,
-          old_value: task.duration,
-          new_value: task.duration.increment(direction),
-        };
-
-        if tvu.old_value == tvu.new_value {
-          None
-        } else {
-          Some(Action::UpdateDuration(tvu))
-        }
+        TaskValueUpdate::new(task.id, task.duration, task.duration.increment(direction)).map(|tvu| {
+          Action::UpdateDuration(tvu)
+        })
       }
       Cmd::UpdatePriority(direction) => {
-        let tvu = TaskValueUpdate {
-          task_id: task.id,
-          old_value: task.priority,
-          new_value: task.priority.increment(direction),
-        };
-
-        if tvu.old_value == tvu.new_value {
-          None
-        } else {
-          Some(Action::UpdatePriority(tvu))
-        }
+        TaskValueUpdate::new(task.id, task.priority, task.priority.increment(direction)).map(|tvu| {
+          Action::UpdatePriority(tvu)
+        })
       }
       Cmd::UpdateStatus(new_task_status) => {
-        let tvu = TaskValueUpdate {
-          task_id: task.id,
-          old_value: task.status,
-          new_value: new_task_status,
-        };
-
-        if tvu.old_value == tvu.new_value {
-          None
-        } else {
-          Some(Action::UpdateStatus(tvu))
-        }
+        TaskValueUpdate::new(task.id, task.status, new_task_status).map(|tvu| {
+          Action::UpdateStatus(tvu)
+        })
       }
     }
   }
