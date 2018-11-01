@@ -2,10 +2,9 @@
 // future release.
 #![allow(proc_macro_derive_resolution_fallback)]
 
-use super::queries;
 use chrono::{DateTime, Duration, Utc};
 use diesel::pg::PgConnection;
-use models::{Direction, TaskDuration, TaskEffort, TaskPriority, TaskStatus};
+use models::{TaskDuration, TaskEffort, TaskPriority, TaskStatus};
 use schema::tasks;
 
 #[derive(Clone, Debug, Identifiable, Queryable)]
@@ -20,32 +19,8 @@ pub struct Task {
 }
 
 impl Task {
-  pub fn all(connection: &PgConnection) -> Vec<Task> {
-    queries::all(connection)
-  }
-
-  pub fn create(title: String, connection: &PgConnection) -> Task {
-    queries::create(title, connection)
-  }
-
-  pub fn abandon(&mut self, connection: &PgConnection) {
-    self.update_status(TaskStatus::Abandoned, connection)
-  }
-
-  pub fn destroy(&mut self, connection: &PgConnection) {
-    queries::destroy(self, connection)
-  }
-
   pub fn last_effort_at(&self, connection: &PgConnection) -> Option<DateTime<Utc>> {
     TaskEffort::last_effort_at(self, connection)
-  }
-
-  pub fn mark_completed(&mut self, connection: &PgConnection) {
-    self.update_status(TaskStatus::Completed, connection)
-  }
-
-  pub fn record_effort(&self, connection: &PgConnection) -> TaskEffort {
-    TaskEffort::record_effort(self, connection)
   }
 
   pub fn age_at(&self, current_time: DateTime<Utc>, connection: &PgConnection) -> Duration {
@@ -55,49 +30,5 @@ impl Task {
     };
 
     current_time.signed_duration_since(last_effort_at)
-  }
-
-  pub fn toggle_internet(&mut self, connection: &PgConnection) {
-    queries::toggle_internet(self, connection)
-  }
-
-  pub fn update_status(&mut self, status: TaskStatus, connection: &PgConnection) {
-    queries::update_status(self, status, connection)
-  }
-
-  pub fn update_title(&mut self, new_title: &str, connection: &PgConnection) {
-    queries::update_title(self, new_title, connection)
-  }
-
-  pub fn update_duration(&mut self, dir: Direction, connection: &PgConnection) {
-    use self::Direction::*;
-    use self::TaskDuration::*;
-
-    let new_duration = match (dir, self.duration) {
-      (Decrease, Short) => return,
-      (Decrease, Medium) => Short,
-      (Decrease, Long) => Medium,
-      (Increase, Short) => Medium,
-      (Increase, Medium) => Long,
-      (Increase, Long) => return,
-    };
-
-    queries::update_duration(self, new_duration, connection)
-  }
-
-pub fn update_priority(&mut self, dir: Direction, connection: &PgConnection) {
-    use self::Direction::*;
-    use self::TaskPriority::*;
-
-    let new_priority = match (dir, self.priority) {
-      (Decrease, Low) => return,
-      (Decrease, Medium) => Low,
-      (Decrease, High) => Medium,
-      (Increase, Low) => Medium,
-      (Increase, Medium) => High,
-      (Increase, High) => return,
-    };
-
-    queries::update_priority(self, new_priority, connection)
   }
 }

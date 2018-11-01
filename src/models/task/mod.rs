@@ -1,4 +1,4 @@
-mod queries;
+pub mod queries;
 #[allow(module_inception)]
 mod task;
 

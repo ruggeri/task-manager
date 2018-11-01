@@ -1,6 +1,9 @@
 use chrono::{Duration, Utc};
 use diesel::pg::PgConnection;
-use models::Task;
+use models::{
+  Task,
+  task::queries
+};
 use super::scorer;
 use std::rc::Rc;
 
@@ -31,7 +34,7 @@ impl DataSource {
 
   pub fn refresh(&mut self) {
     let current_time = Utc::now();
-    let mut results: Vec<_> = Task::all(&self.connection)
+    let mut results: Vec<_> = queries::all(&self.connection)
       .into_iter()
       .map(|task| {
         let task_age = task.age_at(current_time, &self.connection);

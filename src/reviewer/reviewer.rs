@@ -1,4 +1,4 @@
-use super::commands::{CommandResult, Commands};
+use super::commands::{ActionResult, Command};
 use super::data_source::DataSource;
 use super::scroller::Scroller;
 use super::task_results_window::TaskResultsWindow;
@@ -49,17 +49,24 @@ impl Reviewer {
         Some(ch) => ch,
       };
 
-      use self::CommandResult::*;
-      match Commands::handle_key(self, ch) {
-        DidNothing => {}
-        DidUpdateScroller => {
+      let action_result = Command::from_key(ch).and_then(|cmd| {
+        cmd.to_action(self)
+      }).map(|mut action| {
+        action.execute(self)
+      });
+
+      use self::ActionResult::*;
+      match action_result {
+        None => {}
+        Some(DidNothing) => {}
+        Some(DidUpdateScroller) => {
           self.task_results_window.redraw();
         }
-        DidUpdateTaskData => {
+        Some(DidUpdateTaskData) => {
           self.data_source.refresh();
           self.task_results_window.redraw();
         }
-        RequestedShutDown => {
+        Some(RequestedShutDown) => {
           break;
         }
       }

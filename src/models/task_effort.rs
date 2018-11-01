@@ -10,7 +10,7 @@ use schema::task_efforts;
 
 type DateTime = ::chrono::DateTime<::chrono::Utc>;
 
-#[derive(Associations, Debug, Identifiable, Queryable)]
+#[derive(Associations, Clone, Debug, Identifiable, Queryable)]
 #[belongs_to(Task)]
 pub struct TaskEffort {
   pub id: i32,
@@ -40,12 +40,19 @@ impl TaskEffort {
     }
   }
 
-  pub fn record_effort(task: &Task, connection: &PgConnection) -> TaskEffort {
-    let new_te = NewTaskEffort { task_id: task.id };
+  pub fn record(task_id: i32, connection: &PgConnection) -> TaskEffort {
+    let new_te = NewTaskEffort { task_id };
 
     diesel::insert_into(::schema::task_efforts::table)
       .values(&new_te)
       .get_result(connection)
       .unwrap()
+  }
+
+  pub fn destroy(task_effort_id: i32, connection: &PgConnection) {
+    use schema::task_efforts::dsl::*;
+    diesel::delete(task_efforts.find(task_effort_id))
+      .execute(connection)
+      .expect("Error destroying task");
   }
 }
