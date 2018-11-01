@@ -9,6 +9,7 @@ impl Action for TaskAction {
     let connection = &reviewer.connection;
 
     match self {
+      // Create a task.
       CreateTask { task_title, task } => {
         if task.is_some() {
           panic!("Cannot redo a create action twice");
@@ -17,6 +18,8 @@ impl Action for TaskAction {
         *task = Some(task_queries::create(task_title, connection));
         ActionResult::DidUpdateTaskData
       }
+
+      // Record a task effort.
       RecordTaskEffort {
         task_id,
         task_effort,
@@ -28,6 +31,8 @@ impl Action for TaskAction {
         *task_effort = Some(te_queries::record(*task_id, connection));
         ActionResult::DidUpdateTaskData
       }
+
+      // Update a task attribute.
       TaskUpdate(update_action) => update_action.execute(connection),
     }
   }
@@ -38,6 +43,7 @@ impl Action for TaskAction {
     let connection = &reviewer.connection;
 
     match self {
+      // Undo task creation.
       CreateTask { task, .. } => {
         if task.is_none() {
           panic!("Cannot undo a never performed create action");
@@ -47,6 +53,8 @@ impl Action for TaskAction {
         task_queries::destroy(task_id, connection);
         ActionResult::DidUpdateTaskData
       }
+
+      // Undo task effort creation.
       RecordTaskEffort { task_effort, .. } => {
         if task_effort.is_none() {
           panic!("Cannot undo a never performed record effort action");
@@ -56,6 +64,8 @@ impl Action for TaskAction {
         te_queries::destroy(task_effort_id, connection);
         ActionResult::DidUpdateTaskData
       }
+
+      // Undo task attribute update.
       TaskUpdate(update_action) => update_action.unexecute(connection),
     }
   }

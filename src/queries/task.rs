@@ -56,6 +56,7 @@ pub fn destroy(task_id: i32, connection: &PgConnection) {
   }
 }
 
+// TODO: These various update methods require a lot of code...
 pub fn update_requires_internet(task_id: i32, new_value: bool, connection: &PgConnection) {
   use schema::tasks::dsl::*;
 

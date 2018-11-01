@@ -16,6 +16,7 @@ struct NewTaskEffort {
   pub task_id: i32,
 }
 
+// TODO: Restore destroy functionality when safe.
 pub fn destroy(task_effort_id: i32, connection: &PgConnection) {
   panic!("Destroy is not safe enough to use yet.");
 

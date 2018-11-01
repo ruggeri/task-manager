@@ -1,12 +1,16 @@
-# Urgent TODOs
+# TODOs
 
-* Undo!
-* Refactor directory structure.
+**Yes**
+* Finish ability to perform undo.
+* Deal with duplication of `TaskUpdateAction`.
+* Deal with duplication in `queries` module.
+* Fix `Scroller` to limit results again.
+
+**Maybe**
 * Add ability to "sleep" a task.
 * Add whether the task needs outside travel.
 
-## Maybe TODOs
-
+**No?**
 * Add tracking of last use of review mode. Prevent use in review mode
   except once per day.
 * Install for root.

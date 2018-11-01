@@ -20,14 +20,12 @@ pub enum TaskUpdateAction {
 
 // TODO: Insane level of duplication. Macro time?
 impl TaskUpdateAction {
-  pub fn from_cmd(cmd: TaskUpdateCommand, task: &Task, reviewer: &Reviewer) -> Option<TaskUpdateAction> {
+  pub fn prepare_from_cmd(cmd: TaskUpdateCommand, task: &Task, reviewer: &Reviewer) -> Option<TaskUpdateAction> {
     use self::TaskUpdateAction as Action;
     use self::TaskUpdateCommand as Cmd;
 
     match cmd {
       Cmd::EditTaskTitle => {
-        // TODO: I am not happy that we have to use the reviewer here...
-        // Prolly should be a "prepare" method for actions.
         let new_task_title = reviewer.window.read_line("Edit task title: ");
         let tvu = TaskValueUpdate {
           task_id: task.id,

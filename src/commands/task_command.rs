@@ -20,7 +20,7 @@ pub enum TaskUpdateCommand {
 
 impl TaskCommand {
   pub fn to_action(self, reviewer: &Reviewer) -> Option<Box<dyn Action>> {
-    TaskAction::from_cmd(self, reviewer).map(|ta| {
+    TaskAction::prepare_from_cmd(self, reviewer).map(|ta| {
       // Would be nicer if type ascription were not experimental.
       let ta: Box<dyn Action> = Box::new(ta);
       ta

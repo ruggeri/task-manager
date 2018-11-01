@@ -17,8 +17,9 @@ pub enum TaskAction {
 }
 
 impl TaskAction {
-  pub fn from_cmd(cmd: TaskCommand, reviewer: &Reviewer) -> Option<TaskAction> {
+  pub fn prepare_from_cmd(cmd: TaskCommand, reviewer: &Reviewer) -> Option<TaskAction> {
     match cmd {
+      // Create a task.
       TaskCommand::CreateTask => {
         let task_title = reviewer.window.read_line("Edit task title: ");
         Some(TaskAction::CreateTask {
@@ -26,6 +27,8 @@ impl TaskAction {
           task: None,
         })
       }
+
+      // Record a task effort.
       TaskCommand::RecordTaskEffort => {
         reviewer.scroller.current_task().and_then(|task| {
           Some(TaskAction::RecordTaskEffort {
@@ -34,9 +37,11 @@ impl TaskAction {
           })
         })
       }
+
+      // Update a task attribute.
       TaskCommand::UpdateTask(cmd) => {
         reviewer.scroller.current_task().and_then(|task| {
-          TaskUpdateAction::from_cmd(cmd, &task, reviewer)
+          TaskUpdateAction::prepare_from_cmd(cmd, &task, reviewer)
         }).map(|ta| {
           TaskAction::TaskUpdate(ta)
         })
