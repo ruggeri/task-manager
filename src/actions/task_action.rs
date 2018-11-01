@@ -29,23 +29,19 @@ impl TaskAction {
       }
 
       // Record a task effort.
-      TaskCommand::RecordTaskEffort => {
-        reviewer.scroller.current_task().and_then(|task| {
-          Some(TaskAction::RecordTaskEffort {
-            task_id: task.id,
-            task_effort: None,
-          })
+      TaskCommand::RecordTaskEffort => reviewer.scroller.current_task().and_then(|task| {
+        Some(TaskAction::RecordTaskEffort {
+          task_id: task.id,
+          task_effort: None,
         })
-      }
+      }),
 
       // Update a task attribute.
-      TaskCommand::UpdateTask(cmd) => {
-        reviewer.scroller.current_task().and_then(|task| {
-          TaskUpdateAction::prepare_from_cmd(cmd, &task, reviewer)
-        }).map(|ta| {
-          TaskAction::TaskUpdate(ta)
-        })
-      }
+      TaskCommand::UpdateTask(cmd) => reviewer
+        .scroller
+        .current_task()
+        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, &task, reviewer))
+        .map(|ta| TaskAction::TaskUpdate(ta)),
     }
   }
 }
