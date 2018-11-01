@@ -1,5 +1,5 @@
 use super::ActionResult;
-use reviewer::Reviewer;
+use components::Reviewer;
 
 pub trait Action {
   fn execute(&mut self, reviewer: &mut Reviewer) -> ActionResult;

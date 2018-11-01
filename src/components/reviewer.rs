@@ -1,9 +1,9 @@
-use super::commands::{ActionResult, Command};
-use super::data_source::DataSource;
-use super::scroller::Scroller;
-use super::task_results_window::TaskResultsWindow;
-use super::ui::Window;
-use connection;
+use actions::ActionResult;
+use commands::Command;
+use super::DataSource;
+use super::Scroller;
+use super::TaskResultsWindow;
+use util::{get_connection, ui::Window};
 use diesel::pg::PgConnection;
 use std::rc::Rc;
 
@@ -17,7 +17,7 @@ pub struct Reviewer {
 
 impl Reviewer {
   pub fn new(max_tasks: usize) -> Reviewer {
-    let connection = Rc::new(connection::get());
+    let connection = Rc::new(get_connection());
     let data_source = DataSource::new(&connection);
     let window = Rc::new(Window::new());
     let scroller = Rc::new(Scroller::new(vec![], max_tasks));

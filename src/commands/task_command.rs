@@ -1,7 +1,6 @@
 use models::{Direction, TaskStatus};
-use reviewer::Reviewer;
-use reviewer::commands::Action;
-use super::TaskAction;
+use components::Reviewer;
+use actions::{Action, TaskAction};
 
 #[derive(Clone, Copy, Debug)]
 pub enum TaskCommand {

@@ -56,7 +56,6 @@ pub fn destroy(task_id: i32, connection: &PgConnection) {
 }
 
 pub fn update_requires_internet(task_id: i32, new_value: bool, connection: &PgConnection) {
-  use diesel::dsl::*;
   use schema::tasks::dsl::*;
 
   let num_updated = diesel::update(tasks.find(task_id))

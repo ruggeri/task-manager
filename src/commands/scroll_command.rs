@@ -1,7 +1,6 @@
-use reviewer::Reviewer;
+use components::Reviewer;
 
-use super::{Action, ActionResult};
-use self::ActionResult::*;
+use actions::{Action, ActionResult};
 
 #[derive(Debug)]
 pub enum ScrollCommand {
@@ -31,7 +30,7 @@ impl Action for ScrollCommand {
       JumpToTop => reviewer.scroller.jump_to_top(),
     }
 
-    DidUpdateScroller
+    ActionResult::DidUpdateScroller
   }
 
   fn unexecute(&mut self, _reviewer: &mut Reviewer) -> ActionResult {

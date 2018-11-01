@@ -1,7 +1,6 @@
-use super::data_source::TaskResult;
-use super::scroller::Scroller;
-use super::ui;
-use super::ui::ColorPair;
+use super::data_source;
+use super::Scroller;
+use util::ui::{ColorPair, Window as UiWindow};
 use chrono::Duration;
 use pancurses;
 use std::rc::Rc;
@@ -26,12 +25,12 @@ fn format_task_age(age: Duration) -> String {
 }
 
 pub struct TaskResultsWindow {
-  window: Rc<ui::Window>,
+  window: Rc<UiWindow>,
   scroller: Rc<Scroller>,
 }
 
 impl TaskResultsWindow {
-  pub fn new(window: &Rc<ui::Window>, scroller: &Rc<Scroller>) -> TaskResultsWindow {
+  pub fn new(window: &Rc<UiWindow>, scroller: &Rc<Scroller>) -> TaskResultsWindow {
     TaskResultsWindow {
       window: Rc::clone(window),
       scroller: Rc::clone(scroller),
@@ -64,7 +63,7 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::A_BOLD);
   }
 
-  fn display_result(&self, idx: i32, result: &TaskResult) {
+  fn display_result(&self, idx: i32, result: &data_source::Result) {
     let pwindow = self.pwindow();
 
     // Choose appropriate color.

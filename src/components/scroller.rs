@@ -1,4 +1,4 @@
-use super::data_source::TaskResult;
+use super::data_source;
 use models::Task;
 use std::cell::{Cell, Ref, RefCell};
 
@@ -6,12 +6,12 @@ pub struct Scroller {
   pub current_result_idx: Cell<i32>,
   pub current_task_id: Cell<Option<i32>>,
   pub max_results_to_display: usize,
-  pub results: RefCell<Vec<TaskResult>>,
+  pub results: RefCell<Vec<data_source::Result>>,
 }
 
 impl Scroller {
   // TODO: not using max_results_to_display!
-  pub fn new(results: Vec<TaskResult>, max_results_to_display: usize) -> Scroller {
+  pub fn new(results: Vec<data_source::Result>, max_results_to_display: usize) -> Scroller {
     Scroller {
       current_result_idx: Cell::new(0),
       current_task_id: Cell::new(None),
@@ -45,7 +45,7 @@ impl Scroller {
   }
 
   // TODO: Bad idea to pass someone outside the class a Ref.
-  pub fn results(&self) -> Ref<Vec<TaskResult>> {
+  pub fn results(&self) -> Ref<Vec<data_source::Result>> {
     self.results.borrow()
   }
 
@@ -85,7 +85,7 @@ impl Scroller {
       .is_some()
   }
 
-  pub fn refresh(&self, results: Vec<TaskResult>) {
+  pub fn refresh(&self, results: Vec<data_source::Result>) {
     *self.results.borrow_mut() = results;
 
     // First try to match to prev task's id. Find that idx.

@@ -1,7 +1,7 @@
 use models::*;
-use reviewer::Reviewer;
-use super::update_actions::TaskUpdateAction;
-use super::commands::TaskCommand;
+use components::Reviewer;
+use super::TaskUpdateAction;
+use commands::TaskCommand;
 
 #[derive(Clone, Debug)]
 pub enum TaskAction {

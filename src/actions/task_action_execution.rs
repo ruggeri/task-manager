@@ -1,13 +1,9 @@
-use reviewer::Reviewer;
+use components::Reviewer;
 use models::{
   task::queries,
   task_effort::TaskEffort,
 };
-use reviewer::commands::{
-  Action,
-  ActionResult,
-  task::actions::TaskAction
-};
+use super::{Action, ActionResult, TaskAction};
 
 impl Action for TaskAction {
   fn execute(&mut self, reviewer: &mut Reviewer) -> ActionResult {

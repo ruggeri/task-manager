@@ -1,5 +1,5 @@
 use super::{Action, ActionResult};
-use reviewer::Reviewer;
+use components::Reviewer;
 
 pub struct ShutdownAction();
 

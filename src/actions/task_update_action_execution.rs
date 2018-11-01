@@ -1,9 +1,6 @@
 use diesel::pg::PgConnection;
 use models::task::queries;
-use reviewer::commands::{
-  ActionResult,
-  task::update_actions::TaskUpdateAction
-};
+use super::{ ActionResult, TaskUpdateAction};
 
 impl TaskUpdateAction {
   pub fn execute(&mut self, connection: &PgConnection) -> ActionResult {

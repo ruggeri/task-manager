@@ -5,7 +5,9 @@ extern crate diesel;
 extern crate diesel_derive_enum;
 extern crate pancurses;
 
-pub mod connection;
+pub mod actions;
+pub mod commands;
+pub mod components;
 pub mod models;
-pub mod reviewer;
 pub mod schema;
+pub mod util;

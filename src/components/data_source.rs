@@ -4,13 +4,13 @@ use models::{
   Task,
   task::queries
 };
-use super::scorer;
+use super::Scorer;
 use std::rc::Rc;
 
-type Callback = dyn Fn(&Vec<TaskResult>) -> ();
+type Callback = dyn Fn(&Vec<Result>) -> ();
 
 #[derive(Clone)]
-pub struct TaskResult {
+pub struct Result {
   pub task: Task,
   pub task_age: Duration,
 }
@@ -38,10 +38,10 @@ impl DataSource {
       .into_iter()
       .map(|task| {
         let task_age = task.age_at(current_time, &self.connection);
-        TaskResult { task, task_age }
+        Result { task, task_age }
       }).collect();
 
-    results.sort_by_key(|t| scorer::score(t));
+    results.sort_by_key(|t| Scorer::score_task_result(t));
     results.reverse();
 
     for callback in &self.callbacks {

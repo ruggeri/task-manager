@@ -1,6 +1,6 @@
 use models::*;
-use reviewer::Reviewer;
-use super::commands::TaskUpdateCommand;
+use components::Reviewer;
+use commands::TaskUpdateCommand;
 
 #[derive(Clone, Debug)]
 pub struct TaskValueUpdate<T: Eq> {
