@@ -1,8 +1,6 @@
-use super::DataSource;
-use super::Scroller;
-use super::TaskResultsWindow;
 use actions::ActionResult;
 use commands::Command;
+use components::{DataSource, Scroller, TaskResultsWindow, UndoBuffer};
 use diesel::pg::PgConnection;
 use std::rc::Rc;
 use util::{get_connection, ui::Window};
@@ -13,6 +11,7 @@ pub struct Reviewer {
   pub task_results_window: Rc<TaskResultsWindow>,
   pub scroller: Rc<Scroller>,
   pub data_source: DataSource,
+  pub undo_buffer: UndoBuffer,
 }
 
 impl Reviewer {
@@ -23,6 +22,7 @@ impl Reviewer {
       let window = Rc::new(Window::new());
       let scroller = Rc::new(Scroller::new(vec![], max_tasks));
       let task_results_window = Rc::new(TaskResultsWindow::new(&window, &scroller));
+      let undo_buffer = UndoBuffer::new();
 
       Reviewer {
         connection,
@@ -30,6 +30,7 @@ impl Reviewer {
         window,
         scroller,
         task_results_window,
+        undo_buffer,
       }
     };
 
