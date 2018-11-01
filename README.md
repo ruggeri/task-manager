@@ -5,6 +5,7 @@
 * Deal with duplication of `TaskUpdateAction`.
 * Deal with duplication in `queries` module.
 * Fix `Scroller` to limit results again.
+* Make deletion safe.
 
 **Maybe**
 * Add ability to "sleep" a task.

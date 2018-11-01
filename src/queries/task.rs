@@ -36,25 +36,24 @@ pub fn create(title: &str, connection: &PgConnection) -> Task {
     .expect("Error creating task")
 }
 
-pub fn destroy(task_id: i32, connection: &PgConnection) {
-  panic!("Destroy is not safe enough to use yet.");
-
-  {
-    use schema::task_efforts::dsl;
-    diesel::delete(dsl::task_efforts.filter(dsl::task_id.eq(task_id)))
-      .execute(connection)
-      .expect("Error destroying task");
-  }
-
-  use schema::tasks::dsl::*;
-  let num_deleted = diesel::delete(tasks.find(task_id))
-    .execute(connection)
-    .expect("Error destroying task");
-
-  if num_deleted != 1 {
-    panic!("Expected to destroy exactly one task");
-  }
-}
+// TODO: Restore destroy functionality when safe.
+// pub fn destroy(task_id: i32, connection: &PgConnection) {
+//   {
+//     use schema::task_efforts::dsl;
+//     diesel::delete(dsl::task_efforts.filter(dsl::task_id.eq(task_id)))
+//       .execute(connection)
+//       .expect("Error destroying task");
+//   }
+//
+//   use schema::tasks::dsl::*;
+//   let num_deleted = diesel::delete(tasks.find(task_id))
+//     .execute(connection)
+//     .expect("Error destroying task");
+//
+//   if num_deleted != 1 {
+//     panic!("Expected to destroy exactly one task");
+//   }
+// }
 
 // TODO: These various update methods require a lot of code...
 pub fn update_requires_internet(task_id: i32, new_value: bool, connection: &PgConnection) {

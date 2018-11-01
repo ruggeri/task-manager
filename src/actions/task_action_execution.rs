@@ -49,9 +49,10 @@ impl Action for TaskAction {
           panic!("Cannot undo a never performed create action");
         }
 
-        let task_id = task.take().unwrap().id;
-        task_queries::destroy(task_id, connection);
-        ActionResult::DidUpdateTaskData
+        panic!("Not yet safe to delete records.");
+        // let task_id = task.take().unwrap().id;
+        // task_queries::destroy(task_id, connection);
+        // ActionResult::DidUpdateTaskData
       }
 
       // Undo task effort creation.
@@ -60,9 +61,10 @@ impl Action for TaskAction {
           panic!("Cannot undo a never performed record effort action");
         }
 
-        let task_effort_id = task_effort.take().unwrap().id;
-        te_queries::destroy(task_effort_id, connection);
-        ActionResult::DidUpdateTaskData
+        panic!("Not yet safe to delete records.");
+        // let task_effort_id = task_effort.take().unwrap().id;
+        // te_queries::destroy(task_effort_id, connection);
+        // ActionResult::DidUpdateTaskData
       }
 
       // Undo task attribute update.

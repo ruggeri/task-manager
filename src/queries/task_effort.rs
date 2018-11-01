@@ -17,14 +17,12 @@ struct NewTaskEffort {
 }
 
 // TODO: Restore destroy functionality when safe.
-pub fn destroy(task_effort_id: i32, connection: &PgConnection) {
-  panic!("Destroy is not safe enough to use yet.");
-
-  use schema::task_efforts::dsl::*;
-  diesel::delete(task_efforts.find(task_effort_id))
-    .execute(connection)
-    .expect("Error destroying task");
-}
+// pub fn destroy(task_effort_id: i32, connection: &PgConnection) {
+//   use schema::task_efforts::dsl::*;
+//   diesel::delete(task_efforts.find(task_effort_id))
+//     .execute(connection)
+//     .expect("Error destroying task");
+// }
 
 pub fn last_effort_at(task: &Task, connection: &PgConnection) -> Option<DateTime> {
   use schema::task_efforts::dsl::*;
