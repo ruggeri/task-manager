@@ -1,9 +1,6 @@
 use super::{Action, ActionResult, TaskAction};
 use components::Reviewer;
-use queries::{
-  task as task_queries,
-  task_effort as te_queries,
-};
+use queries::{task as task_queries, task_effort as te_queries};
 
 impl Action for TaskAction {
   fn execute(&mut self, reviewer: &mut Reviewer) -> ActionResult {

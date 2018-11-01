@@ -18,8 +18,9 @@ pub enum TaskUpdateAction {
   UpdateTaskTitle(TaskValueUpdate<String>),
 }
 
+// TODO: Insane level of duplication. Macro time?
 impl TaskUpdateAction {
-  pub fn new(cmd: TaskUpdateCommand, task: Task, reviewer: &Reviewer) -> Option<TaskUpdateAction> {
+  pub fn from_cmd(cmd: TaskUpdateCommand, task: &Task, reviewer: &Reviewer) -> Option<TaskUpdateAction> {
     use self::TaskUpdateAction as Action;
     use self::TaskUpdateCommand as Cmd;
 

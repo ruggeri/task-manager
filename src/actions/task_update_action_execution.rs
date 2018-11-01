@@ -2,6 +2,7 @@ use super::{ActionResult, TaskUpdateAction};
 use diesel::pg::PgConnection;
 use queries::task as task_queries;
 
+// TODO: Insane level of duplication. Macro time?
 impl TaskUpdateAction {
   pub fn execute(&mut self, connection: &PgConnection) -> ActionResult {
     use self::TaskUpdateAction::*;

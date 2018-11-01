@@ -1,7 +1,7 @@
 use super::TaskUpdateAction;
 use commands::TaskCommand;
 use components::Reviewer;
-use models::*;
+use models::{Task, TaskEffort};
 
 #[derive(Clone, Debug)]
 pub enum TaskAction {
@@ -17,7 +17,7 @@ pub enum TaskAction {
 }
 
 impl TaskAction {
-  pub fn new(cmd: TaskCommand, reviewer: &Reviewer) -> Option<TaskAction> {
+  pub fn from_cmd(cmd: TaskCommand, reviewer: &Reviewer) -> Option<TaskAction> {
     match cmd {
       TaskCommand::CreateTask => {
         let task_title = reviewer.window.read_line("Edit task title: ");
@@ -27,21 +27,19 @@ impl TaskAction {
         })
       }
       TaskCommand::RecordTaskEffort => {
-        if let Some(task) = reviewer.scroller.current_task() {
+        reviewer.scroller.current_task().and_then(|task| {
           Some(TaskAction::RecordTaskEffort {
             task_id: task.id,
             task_effort: None,
           })
-        } else {
-          None
-        }
+        })
       }
       TaskCommand::UpdateTask(cmd) => {
-        if let Some(task) = reviewer.scroller.current_task() {
-          TaskUpdateAction::new(cmd, task, reviewer).map(|a| TaskAction::TaskUpdate(a))
-        } else {
-          None
-        }
+        reviewer.scroller.current_task().and_then(|task| {
+          TaskUpdateAction::from_cmd(cmd, &task, reviewer)
+        }).map(|ta| {
+          TaskAction::TaskUpdate(ta)
+        })
       }
     }
   }

@@ -1,8 +1,7 @@
+use actions::{Action, ActionResult};
 use components::Reviewer;
 
-use actions::{Action, ActionResult};
-
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum ScrollCommand {
   ScrollBackward,
   ScrollForward,

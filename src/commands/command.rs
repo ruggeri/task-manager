@@ -3,7 +3,7 @@ use actions::{Action, ShutdownAction};
 use components::Reviewer;
 use models::{Direction, TaskStatus};
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Command {
   Scroll(ScrollCommand),
   Shutdown,
