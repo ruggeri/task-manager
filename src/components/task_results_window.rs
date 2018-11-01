@@ -1,9 +1,9 @@
 use super::data_source;
 use super::Scroller;
-use util::ui::{ColorPair, Window as UiWindow};
 use chrono::Duration;
 use pancurses;
 use std::rc::Rc;
+use util::ui::{ColorPair, Window as UiWindow};
 
 fn format_task_age(age: Duration) -> String {
   let weeks = age.num_weeks();

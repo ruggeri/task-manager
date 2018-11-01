@@ -1,7 +1,7 @@
-use models::*;
-use components::Reviewer;
 use super::TaskUpdateAction;
 use commands::TaskCommand;
+use components::Reviewer;
+use models::*;
 
 #[derive(Clone, Debug)]
 pub enum TaskAction {
@@ -38,9 +38,7 @@ impl TaskAction {
       }
       TaskCommand::UpdateTask(cmd) => {
         if let Some(task) = reviewer.scroller.current_task() {
-          TaskUpdateAction::new(cmd, task, reviewer).map(|a| {
-            TaskAction::TaskUpdate(a)
-          })
+          TaskUpdateAction::new(cmd, task, reviewer).map(|a| TaskAction::TaskUpdate(a))
         } else {
           None
         }

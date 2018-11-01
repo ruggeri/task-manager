@@ -1,6 +1,6 @@
-use models::{Direction, TaskStatus};
-use components::Reviewer;
 use actions::{Action, TaskAction};
+use components::Reviewer;
+use models::{Direction, TaskStatus};
 
 #[derive(Clone, Copy, Debug)]
 pub enum TaskCommand {
@@ -22,7 +22,7 @@ impl TaskCommand {
   pub fn to_action(self, reviewer: &Reviewer) -> Option<Box<dyn Action>> {
     match TaskAction::new(self, reviewer) {
       None => None,
-      Some(ta) => Some(Box::new(ta))
+      Some(ta) => Some(Box::new(ta)),
     }
   }
 }

@@ -13,9 +13,10 @@ pub enum ScrollCommand {
 
 fn jump_to_task(reviewer: &mut Reviewer) {
   let task_id = reviewer.window.read_line("Task id to jump to: ");
-  task_id.parse().ok().map(|task_id:i32| {
-    reviewer.scroller.jump_to_task_id(task_id)
-  });
+  task_id
+    .parse()
+    .ok()
+    .map(|task_id: i32| reviewer.scroller.jump_to_task_id(task_id));
 }
 
 impl Action for ScrollCommand {

@@ -2,10 +2,10 @@
 // future release.
 #![allow(proc_macro_derive_resolution_fallback)]
 
-use models::Task;
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
+use models::Task;
 use models::{TaskDuration, TaskPriority, TaskStatus};
 use schema::tasks;
 

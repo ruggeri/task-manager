@@ -92,7 +92,7 @@ impl Scroller {
     let prev_task_id = self.current_task_id();
     if let Some(prev_task_id) = prev_task_id {
       if self.jump_to_task_id(prev_task_id) {
-        return
+        return;
       }
     }
 

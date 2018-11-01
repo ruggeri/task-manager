@@ -1,8 +1,8 @@
+use super::Scorer;
 use chrono::{Duration, Utc};
 use diesel::pg::PgConnection;
 use models::Task;
 use queries::task as task_queries;
-use super::Scorer;
 use std::rc::Rc;
 
 type Callback = dyn Fn(&Vec<Result>) -> ();

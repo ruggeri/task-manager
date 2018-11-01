@@ -1,5 +1,5 @@
-use models::{TaskDuration, TaskPriority};
 use super::data_source;
+use models::{TaskDuration, TaskPriority};
 
 pub struct Scorer();
 

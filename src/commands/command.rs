@@ -1,7 +1,7 @@
-use actions::{Action, ShutdownAction};
 use super::{ScrollCommand, TaskCommand, TaskUpdateCommand};
-use models::{Direction, TaskStatus};
+use actions::{Action, ShutdownAction};
 use components::Reviewer;
+use models::{Direction, TaskStatus};
 
 #[derive(Debug)]
 pub enum Command {
@@ -13,11 +13,7 @@ pub enum Command {
 impl Command {
   pub fn from_key(ch: char) -> Option<Command> {
     use self::{
-      Command::*,
-      Direction::*,
-      ScrollCommand::*,
-      TaskCommand::*,
-      TaskStatus::*,
+      Command::*, Direction::*, ScrollCommand::*, TaskCommand::*, TaskStatus::*,
       TaskUpdateCommand::*,
     };
 

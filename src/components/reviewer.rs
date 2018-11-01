@@ -1,11 +1,11 @@
-use actions::ActionResult;
-use commands::Command;
 use super::DataSource;
 use super::Scroller;
 use super::TaskResultsWindow;
-use util::{get_connection, ui::Window};
+use actions::ActionResult;
+use commands::Command;
 use diesel::pg::PgConnection;
 use std::rc::Rc;
+use util::{get_connection, ui::Window};
 
 pub struct Reviewer {
   pub connection: Rc<PgConnection>,
@@ -49,11 +49,9 @@ impl Reviewer {
         Some(ch) => ch,
       };
 
-      let action_result = Command::from_key(ch).and_then(|cmd| {
-        cmd.to_action(self)
-      }).map(|mut action| {
-        action.execute(self)
-      });
+      let action_result = Command::from_key(ch)
+        .and_then(|cmd| cmd.to_action(self))
+        .map(|mut action| action.execute(self));
 
       use self::ActionResult::*;
       match action_result {

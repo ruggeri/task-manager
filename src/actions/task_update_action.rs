@@ -1,6 +1,6 @@
-use models::*;
-use components::Reviewer;
 use commands::TaskUpdateCommand;
+use components::Reviewer;
+use models::*;
 
 #[derive(Clone, Debug)]
 pub struct TaskValueUpdate<T: Eq> {
@@ -20,8 +20,8 @@ pub enum TaskUpdateAction {
 
 impl TaskUpdateAction {
   pub fn new(cmd: TaskUpdateCommand, task: Task, reviewer: &Reviewer) -> Option<TaskUpdateAction> {
-    use self::TaskUpdateCommand as Cmd;
     use self::TaskUpdateAction as Action;
+    use self::TaskUpdateCommand as Cmd;
 
     match cmd {
       Cmd::EditTaskTitle => {
@@ -57,7 +57,7 @@ impl TaskUpdateAction {
         let tvu = TaskValueUpdate {
           task_id: task.id,
           old_value: task.duration,
-          new_value: task.duration.increment(direction)
+          new_value: task.duration.increment(direction),
         };
 
         if tvu.old_value == tvu.new_value {
@@ -70,7 +70,7 @@ impl TaskUpdateAction {
         let tvu = TaskValueUpdate {
           task_id: task.id,
           old_value: task.priority,
-          new_value: task.priority.increment(direction)
+          new_value: task.priority.increment(direction),
         };
 
         if tvu.old_value == tvu.new_value {

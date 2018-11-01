@@ -1,7 +1,7 @@
+use super::{Action, ActionResult, TaskAction};
 use components::Reviewer;
 use models::TaskEffort;
 use queries::task as task_queries;
-use super::{Action, ActionResult, TaskAction};
 
 impl Action for TaskAction {
   fn execute(&mut self, reviewer: &mut Reviewer) -> ActionResult {
@@ -10,7 +10,7 @@ impl Action for TaskAction {
     let connection = &reviewer.connection;
 
     match self {
-      CreateTask{ task_title, task } => {
+      CreateTask { task_title, task } => {
         if task.is_some() {
           panic!("Cannot redo a create action twice");
         }
@@ -18,7 +18,10 @@ impl Action for TaskAction {
         *task = Some(task_queries::create(task_title, connection));
         ActionResult::DidUpdateTaskData
       }
-      RecordTaskEffort{ task_id, task_effort } => {
+      RecordTaskEffort {
+        task_id,
+        task_effort,
+      } => {
         if task_effort.is_some() {
           panic!("Cannot redo a record effort action twice");
         }
@@ -26,7 +29,7 @@ impl Action for TaskAction {
         *task_effort = Some(TaskEffort::record(*task_id, connection));
         ActionResult::DidUpdateTaskData
       }
-      TaskUpdate(update_action) => update_action.execute(connection)
+      TaskUpdate(update_action) => update_action.execute(connection),
     }
   }
 
@@ -36,7 +39,7 @@ impl Action for TaskAction {
     let connection = &reviewer.connection;
 
     match self {
-      CreateTask{ task, .. } => {
+      CreateTask { task, .. } => {
         if task.is_none() {
           panic!("Cannot undo a never performed create action");
         }
@@ -45,7 +48,7 @@ impl Action for TaskAction {
         task_queries::destroy(task_id, connection);
         ActionResult::DidUpdateTaskData
       }
-      RecordTaskEffort{ task_effort, .. } => {
+      RecordTaskEffort { task_effort, .. } => {
         if task_effort.is_none() {
           panic!("Cannot undo a never performed record effort action");
         }
@@ -54,7 +57,7 @@ impl Action for TaskAction {
         TaskEffort::destroy(task_effort_id, connection);
         ActionResult::DidUpdateTaskData
       }
-      TaskUpdate(update_action) => update_action.unexecute(connection)
+      TaskUpdate(update_action) => update_action.unexecute(connection),
     }
   }
 

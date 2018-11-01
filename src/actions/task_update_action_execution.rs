@@ -1,6 +1,6 @@
+use super::{ActionResult, TaskUpdateAction};
 use diesel::pg::PgConnection;
 use queries::task as task_queries;
-use super::{ ActionResult, TaskUpdateAction};
 
 impl TaskUpdateAction {
   pub fn execute(&mut self, connection: &PgConnection) -> ActionResult {
