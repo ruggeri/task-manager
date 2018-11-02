@@ -20,6 +20,7 @@ pub fn last_effort_at(task: &Task, connection: &PgConnection) -> Option<DateTime
   use schema::task_efforts::dsl::*;
 
   let te = TaskEffort::belonging_to(task)
+    .filter(destroyed.eq(false))
     .order(created_at.desc())
     .first::<TaskEffort>(connection)
     .optional()
