@@ -36,30 +36,12 @@ pub fn create(title: &str, connection: &PgConnection) -> Task {
     .expect("Error creating task")
 }
 
-// TODO: Restore destroy functionality when safe.
-// pub fn destroy(task_id: i32, connection: &PgConnection) {
-//   {
-//     use schema::task_efforts::dsl;
-//     diesel::delete(dsl::task_efforts.filter(dsl::task_id.eq(task_id)))
-//       .execute(connection)
-//       .expect("Error destroying task");
-//   }
-//
-//   use schema::tasks::dsl::*;
-//   let num_deleted = diesel::delete(tasks.find(task_id))
-//     .execute(connection)
-//     .expect("Error destroying task");
-//
-//   if num_deleted != 1 {
-//     panic!("Expected to destroy exactly one task");
-//   }
-// }
-
 define_update_attribute_fns!(
   tasks,
   (update_requires_internet, bool, requires_internet),
   (update_status, TaskStatus, status),
   (update_title, &str, title),
   (update_duration, TaskDuration, duration),
-  (update_priority, TaskPriority, priority)
+  (update_priority, TaskPriority, priority),
+  (update_destroyed, bool, destroyed)
 );

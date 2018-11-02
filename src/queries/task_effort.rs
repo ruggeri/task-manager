@@ -16,14 +16,6 @@ struct NewTaskEffort {
   pub task_id: i32,
 }
 
-// TODO: Restore destroy functionality when safe.
-// pub fn destroy(task_effort_id: i32, connection: &PgConnection) {
-//   use schema::task_efforts::dsl::*;
-//   diesel::delete(task_efforts.find(task_effort_id))
-//     .execute(connection)
-//     .expect("Error destroying task");
-// }
-
 pub fn last_effort_at(task: &Task, connection: &PgConnection) -> Option<DateTime> {
   use schema::task_efforts::dsl::*;
 
@@ -47,3 +39,8 @@ pub fn record(task_id: i32, connection: &PgConnection) -> TaskEffort {
     .get_result(connection)
     .unwrap()
 }
+
+define_update_attribute_fns!(
+  task_efforts,
+  (update_destroyed, bool, destroyed)
+);
