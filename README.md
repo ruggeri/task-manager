@@ -1,7 +1,6 @@
 # TODOs
 
 **Yes**
-* Make deletion safe again.
 * Fix `Scroller` to limit results again.
 
 **Maybe**
