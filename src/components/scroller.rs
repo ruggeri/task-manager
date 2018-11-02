@@ -22,6 +22,10 @@ impl Scroller {
     }
   }
 
+  pub fn current_task_id(&self) -> Option<i32> {
+    self.current_task_id.get()
+  }
+
   pub fn current_result_idx(&self) -> i32 {
     self.current_result_idx.get()
   }
@@ -84,7 +88,7 @@ impl Scroller {
     *self.results.borrow_mut() = results;
 
     // First try to match to prev task's id. Find that idx.
-    let prev_task_id = self.current_task_id.get();
+    let prev_task_id = self.current_task_id();
     if let Some(prev_task_id) = prev_task_id {
       if self.jump_to_task_id(prev_task_id) {
         return;

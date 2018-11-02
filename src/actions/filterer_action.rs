@@ -5,7 +5,9 @@ use components::Reviewer;
 #[derive(Clone, Debug)]
 pub struct FilterValueUpdate<T: Eq> {
   pub old_value: T,
+  pub old_result_idx: i32,
   pub new_value: T,
+  pub new_result_idx: i32,
 }
 
 impl<T: Eq> FilterValueUpdate<T> {
@@ -13,7 +15,12 @@ impl<T: Eq> FilterValueUpdate<T> {
     if old_value == new_value {
       None
     } else {
-      Some(FilterValueUpdate { old_value, new_value })
+      Some(FilterValueUpdate {
+        old_value,
+        old_result_idx: 0,
+        new_value,
+        new_result_idx: 0
+      })
     }
   }
 }
@@ -60,7 +67,16 @@ impl Action for FiltererAction {
 
     match self {
       UpdateFilterByRequiresInternet(update) => {
-        reviewer.filterer.requires_internet_value.set(update.new_value)
+        update.old_result_idx = reviewer.scroller.current_result_idx();
+        reviewer.filterer.requires_internet_value.set(update.new_value);
+        // TODO: This isn't going to work really because the
+        // re-filtering hasn't actually happened yet. We shouldn't be
+        // trying to reset the current index until *after*.
+        //
+        // We should either abandon the concept of ActionResult, OR we
+        // need to be able to *chain* a new command after the execution
+        // of a prior one.
+        reviewer.scroller.set_current_result_idx(update.new_result_idx);
       }
     }
 
@@ -72,7 +88,9 @@ impl Action for FiltererAction {
 
     match self {
       UpdateFilterByRequiresInternet(update) => {
-        reviewer.filterer.requires_internet_value.set(update.old_value)
+        update.new_result_idx = reviewer.scroller.current_result_idx();
+        reviewer.filterer.requires_internet_value.set(update.old_value);
+        reviewer.scroller.set_current_result_idx(update.old_result_idx);
       }
     }
 
