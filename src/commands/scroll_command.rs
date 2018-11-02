@@ -9,7 +9,7 @@ pub enum ScrollCommand {
   Move(Direction),
 }
 
-fn jump_to_task(reviewer: &mut Reviewer) {
+fn jump_to_task(reviewer: &Reviewer) {
   let task_id = reviewer.window.read_line("Task id to jump to: ");
   task_id
     .parse()
@@ -18,7 +18,7 @@ fn jump_to_task(reviewer: &mut Reviewer) {
 }
 
 impl Action for ScrollCommand {
-  fn execute(&mut self, reviewer: &mut Reviewer) -> ActionResult {
+  fn execute(&mut self, reviewer: &Reviewer) -> ActionResult {
     use self::ScrollCommand::*;
 
     match self {
@@ -30,7 +30,7 @@ impl Action for ScrollCommand {
     ActionResult::DidUpdateScroller
   }
 
-  fn unexecute(&mut self, _reviewer: &mut Reviewer) -> ActionResult {
+  fn unexecute(&mut self, _reviewer: &Reviewer) -> ActionResult {
     panic!("Should not try to undo a scroll action")
   }
 
