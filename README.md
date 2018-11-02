@@ -1,14 +1,12 @@
 # TODOs
 
 **Yes**
-* Finish ability to perform undo.
-* Deal with duplication of `TaskUpdateAction`.
-* Deal with duplication in `queries` module.
+* Make deletion safe again.
 * Fix `Scroller` to limit results again.
-* Make deletion safe.
 
 **Maybe**
 * Add ability to "sleep" a task.
+* Deal with duplication of `TaskUpdateAction`.
 * Add whether the task needs outside travel.
 
 **No?**
