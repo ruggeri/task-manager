@@ -1,11 +1,11 @@
-use super::Scorer;
+use components::Scorer;
 use chrono::{Duration, Utc};
 use diesel::pg::PgConnection;
 use models::Task;
 use queries::task as task_queries;
 use std::rc::Rc;
 
-type Callback = dyn Fn(&Vec<Result>) -> ();
+type Callback = dyn Fn(Vec<Result>) -> ();
 
 #[derive(Clone)]
 pub struct Result {
@@ -15,14 +15,14 @@ pub struct Result {
 
 pub struct DataSource {
   connection: Rc<PgConnection>,
-  callbacks: Vec<Box<Callback>>,
+  callbacks: Vec<Box<Callback>>
 }
 
 impl DataSource {
   pub fn new(connection: &Rc<PgConnection>) -> DataSource {
     DataSource {
       connection: Rc::clone(connection),
-      callbacks: vec![],
+      callbacks: vec![]
     }
   }
 
@@ -43,7 +43,9 @@ impl DataSource {
     results.reverse();
 
     for callback in &self.callbacks {
-      callback(&results);
+      // TODO: I'm not happy with how I have to keep cloning Vecs
+      // everywhere...
+      callback(results.clone());
     }
   }
 }

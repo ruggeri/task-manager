@@ -1,10 +1,11 @@
-use super::{ScrollCommand, TaskCommand, TaskUpdateCommand, UndoBufferCommand};
 use actions::{Action, ShutdownAction};
+use commands::{FiltererCommand, ScrollCommand, TaskCommand, TaskUpdateCommand, UndoBufferCommand};
 use components::Reviewer;
 use models::{Direction, End, TaskStatus};
 
 #[derive(Clone, Copy, Debug)]
 pub enum Command {
+  Filter(FiltererCommand),
   Scroll(ScrollCommand),
   Shutdown,
   Task(TaskCommand),
@@ -14,11 +15,12 @@ pub enum Command {
 impl Command {
   pub fn from_key(ch: char) -> Option<Command> {
     use self::{
-      Command::*, Direction::*, End::*, ScrollCommand::*, TaskCommand::*, TaskStatus::*,
+      Command::*, Direction::*, End::*, FiltererCommand::*, ScrollCommand::*, TaskCommand::*, TaskStatus::*,
       TaskUpdateCommand::*,
     };
 
     let command = match ch {
+      'F' => Filter(FilterByRequiresInternet),
       '$' => Scroll(Jump(Bottom)),
       'g' => Scroll(Jump(Top)),
       '/' => Scroll(JumpToTask),
@@ -47,6 +49,7 @@ impl Command {
     use self::Command::*;
 
     match self {
+      Filter(fc) => fc.to_action(reviewer),
       Scroll(sc) => Some(Box::new(sc)),
       Shutdown => Some(Box::new(ShutdownAction())),
       Task(tc) => tc.to_action(reviewer),

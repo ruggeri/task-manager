@@ -1,6 +1,6 @@
 use actions::ActionResult;
 use commands::Command;
-use components::{DataSource, Scroller, TaskResultsWindow, UndoBuffer};
+use components::{AttributeFilter, DataSource, Scroller, TaskResultsWindow, UndoBuffer};
 use diesel::pg::PgConnection;
 use std::rc::Rc;
 use util::{get_connection, ui::Window};
@@ -8,45 +8,55 @@ use util::{get_connection, ui::Window};
 pub struct Reviewer {
   pub connection: Rc<PgConnection>,
   pub window: Rc<Window>,
-  pub task_results_window: Rc<TaskResultsWindow>,
+  pub task_results_window: TaskResultsWindow,
   pub scroller: Rc<Scroller>,
   pub data_source: DataSource,
   pub undo_buffer: UndoBuffer,
+  pub filterer: Rc<AttributeFilter>
 }
 
 impl Reviewer {
-  pub fn new(max_tasks: usize) -> Reviewer {
-    let mut reviewer = {
-      let connection = Rc::new(get_connection());
-      let data_source = DataSource::new(&connection);
-      let window = Rc::new(Window::new());
-      let scroller = Rc::new(Scroller::new(vec![], max_tasks));
-      let task_results_window = Rc::new(TaskResultsWindow::new(&window, &scroller));
-      let undo_buffer = UndoBuffer::new();
+  pub fn new(max_results_to_display: usize) -> Reviewer {
+    let connection = Rc::new(get_connection());
+    let mut data_source = DataSource::new(&connection);
+    let window = Rc::new(Window::new());
+    let scroller = Rc::new(Scroller::new(max_results_to_display));
+    // TODO: I prolly don't need to make either window or scroller Rc if
+    // I: (1) Pump scroller refreshes into window, rather than pull, (2)
+    // I pass &window to redraw.
+    let task_results_window = TaskResultsWindow::new(&window, &scroller);
+    let undo_buffer = UndoBuffer::new();
+    let mut filterer = AttributeFilter::new();
 
-      Reviewer {
-        connection,
-        data_source,
-        window,
-        scroller,
-        task_results_window,
-        undo_buffer,
-      }
-    };
-
-    // Install callback to pump data from DataSource to Scroller.
+    // Scroller pulls from Filterer.
     {
-      let scroller = Rc::clone(&reviewer.scroller);
-      reviewer.data_source.add_callback(Box::new(move |results| {
-        scroller.refresh(results.clone());
+      let scroller = Rc::clone(&scroller);
+      filterer.add_callback(Box::new(move |filtered_results| {
+        scroller.refresh(filtered_results);
       }));
-      reviewer.data_source.refresh();
+    }
+    let filterer = Rc::new(filterer);
+    // Filterer listens to DataSource.
+    {
+      let filterer = Rc::clone(&filterer);
+      data_source.add_callback(Box::new(move |results| {
+        filterer.refresh(results);
+      }));
     }
 
-    reviewer
+    Reviewer {
+      connection,
+      data_source,
+      window,
+      scroller,
+      task_results_window,
+      undo_buffer,
+      filterer
+    }
   }
 
   pub fn run(&mut self) {
+    self.data_source.refresh();
     self.task_results_window.redraw();
 
     loop {
@@ -71,6 +81,13 @@ impl Reviewer {
       match action_result {
         None => {}
         Some(DidNothing) => {}
+        Some(DidUpdateFilterer) => {
+          // TODO: This is lazy to do a pull from the data source. We
+          // don't need to requery; we can filter results already pulled
+          // down.
+          self.data_source.refresh();
+          self.task_results_window.redraw();
+        }
         Some(DidUpdateScroller) => {
           self.task_results_window.redraw();
         }

@@ -2,21 +2,23 @@ use super::data_source;
 use models::{Direction, End, Task};
 use std::cell::{Cell, Ref, RefCell};
 
+type ResultsVec = Vec<data_source::Result>;
+
 pub struct Scroller {
   pub current_result_idx: Cell<i32>,
   pub current_task_id: Cell<Option<i32>>,
   pub max_results_to_display: usize,
-  pub results: RefCell<Vec<data_source::Result>>,
+  pub results: RefCell<ResultsVec>,
 }
 
 impl Scroller {
   // TODO: not using max_results_to_display!
-  pub fn new(results: Vec<data_source::Result>, max_results_to_display: usize) -> Scroller {
+  pub fn new(max_results_to_display: usize) -> Scroller {
     Scroller {
       current_result_idx: Cell::new(0),
       current_task_id: Cell::new(None),
       max_results_to_display,
-      results: RefCell::new(results),
+      results: RefCell::new(vec![]),
     }
   }
 
@@ -78,7 +80,7 @@ impl Scroller {
       .is_some()
   }
 
-  pub fn refresh(&self, results: Vec<data_source::Result>) {
+  pub fn refresh(&self, results: ResultsVec) {
     *self.results.borrow_mut() = results;
 
     // First try to match to prev task's id. Find that idx.
