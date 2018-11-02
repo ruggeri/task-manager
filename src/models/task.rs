@@ -19,6 +19,7 @@ pub struct Task {
   pub requires_internet: bool,
   pub priority: TaskPriority,
   pub duration: TaskDuration,
+  pub destroyed: bool,
 }
 
 impl Task {

@@ -13,4 +13,5 @@ pub struct TaskEffort {
   pub id: i32,
   pub task_id: i32,
   pub created_at: DateTime,
+  pub destroyed: bool,
 }

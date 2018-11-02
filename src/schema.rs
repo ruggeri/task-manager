@@ -7,6 +7,7 @@ table! {
         id -> Int4,
         task_id -> Int4,
         created_at -> Timestamptz,
+        destroyed -> Bool,
     }
 }
 
@@ -25,6 +26,7 @@ table! {
         requires_internet -> Bool,
         priority -> TaskPriorityMapping,
         duration -> TaskDurationMapping,
+        destroyed -> Bool,
     }
 }
 
