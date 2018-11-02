@@ -1,12 +1,13 @@
-use super::{ActionResult, TaskUpdateAction};
-use diesel::pg::PgConnection;
+use actions::{ActionRequest::RequestDataSourceUpdate, TaskUpdateAction};
+use components::Reviewer;
 use queries::task as task_queries;
 
 // TODO: Insane level of duplication. Macro time?
 impl TaskUpdateAction {
-  pub fn execute(&mut self, connection: &PgConnection) -> ActionResult {
+  pub fn execute(&mut self, reviewer: &Reviewer) {
     use self::TaskUpdateAction::*;
 
+    let connection = &reviewer.connection;
     match self {
       UpdateDuration(tvu) => {
         task_queries::update_duration(tvu.task_id, tvu.new_value, connection);
@@ -25,12 +26,13 @@ impl TaskUpdateAction {
       }
     }
 
-    ActionResult::DidUpdateTaskData
+    reviewer.execute_action_request(RequestDataSourceUpdate);
   }
 
-  pub fn unexecute(&mut self, connection: &PgConnection) -> ActionResult {
+  pub fn unexecute(&mut self, reviewer: &Reviewer) {
     use self::TaskUpdateAction::*;
 
+    let connection = &reviewer.connection;
     match self {
       UpdateDuration(tvu) => {
         task_queries::update_duration(tvu.task_id, tvu.old_value, connection);
@@ -49,6 +51,6 @@ impl TaskUpdateAction {
       }
     }
 
-    ActionResult::DidUpdateTaskData
+    reviewer.execute_action_request(RequestDataSourceUpdate);
   }
 }

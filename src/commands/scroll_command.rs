@@ -1,4 +1,4 @@
-use actions::{Action, ActionResult};
+use actions::{Action, ActionRequest::RequestScrollerUpdate};
 use components::Reviewer;
 use models::{Direction, End};
 
@@ -18,7 +18,7 @@ fn jump_to_task(reviewer: &Reviewer) {
 }
 
 impl Action for ScrollCommand {
-  fn execute(&mut self, reviewer: &Reviewer) -> ActionResult {
+  fn execute(&mut self, reviewer: &Reviewer) {
     use self::ScrollCommand::*;
 
     match self {
@@ -27,10 +27,10 @@ impl Action for ScrollCommand {
       Move(direction) => reviewer.scroller.scroll(*direction),
     }
 
-    ActionResult::DidUpdateScroller
+    reviewer.execute_action_request(RequestScrollerUpdate);
   }
 
-  fn unexecute(&mut self, _reviewer: &Reviewer) -> ActionResult {
+  fn unexecute(&mut self, _reviewer: &Reviewer) {
     panic!("Should not try to undo a scroll action")
   }
 

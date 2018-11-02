@@ -1,4 +1,4 @@
-use actions::{Action, ActionResult};
+use actions::Action;
 use components::Reviewer;
 use std::cell::{Cell, RefCell};
 
@@ -16,7 +16,7 @@ impl UndoBuffer {
     }
   }
 
-  pub fn redo(&self, reviewer: &Reviewer) -> ActionResult {
+  pub fn redo(&self, reviewer: &Reviewer) {
     let redo_idx = match self.idx.get() {
       None => 0,
       Some(idx) => idx + 1,
@@ -24,7 +24,7 @@ impl UndoBuffer {
 
     let mut actions = self.actions.borrow_mut();
     if redo_idx >= actions.len() {
-      return ActionResult::DidNothing;
+      return;
     }
 
     let result = actions[redo_idx].execute(reviewer);
@@ -33,9 +33,9 @@ impl UndoBuffer {
     result
   }
 
-  pub fn undo(&self, reviewer: &Reviewer)  -> ActionResult {
+  pub fn undo(&self, reviewer: &Reviewer) {
     let idx = match self.idx.get() {
-      None => return ActionResult::DidNothing,
+      None => return,
       Some(idx) => idx,
     };
 

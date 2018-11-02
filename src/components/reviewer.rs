@@ -1,11 +1,13 @@
-use actions::ActionResult;
+use actions::ActionRequest;
 use commands::Command;
 use components::{AttributeFilter, DataSource, Scroller, TaskResultsWindow, UndoBuffer};
 use diesel::pg::PgConnection;
+use std::cell::Cell;
 use std::rc::Rc;
 use util::{get_connection, ui::Window};
 
 pub struct Reviewer {
+  pub shutdown_requested: Cell<bool>,
   pub connection: Rc<PgConnection>,
   pub window: Rc<Window>,
   pub task_results_window: TaskResultsWindow,
@@ -45,6 +47,7 @@ impl Reviewer {
     }
 
     Reviewer {
+      shutdown_requested: Cell::new(false),
       connection,
       data_source,
       window,
@@ -59,45 +62,42 @@ impl Reviewer {
     self.data_source.refresh();
     self.task_results_window.redraw();
 
-    loop {
+    while !self.shutdown_requested.get() {
       let ch = match self.window.getch() {
         None => continue,
         Some(ch) => ch,
       };
 
-      let action_result = Command::from_key(ch)
-        .and_then(|cmd| cmd.to_action(self))
-        .map(|mut action| {
-          let result = action.execute(self);
+      let action = Command::from_key(ch).and_then(|cmd| cmd.to_action(self));
+      if let Some(mut action) = action {
+        action.execute(self);
 
-          if action.can_be_unexecuted() {
-            self.undo_buffer.append_action(action);
-          }
+        if action.can_be_unexecuted() {
+          self.undo_buffer.append_action(action);
+        }
+      }
+    }
+  }
 
-          result
-        });
-
-      use self::ActionResult::*;
-      match action_result {
-        None => {}
-        Some(DidNothing) => {}
-        Some(DidUpdateFilterer) => {
-          // TODO: This is lazy to do a pull from the data source. We
-          // don't need to requery; we can filter results already pulled
-          // down.
-          self.data_source.refresh();
-          self.task_results_window.redraw();
-        }
-        Some(DidUpdateScroller) => {
-          self.task_results_window.redraw();
-        }
-        Some(DidUpdateTaskData) => {
-          self.data_source.refresh();
-          self.task_results_window.redraw();
-        }
-        Some(RequestedShutDown) => {
-          break;
-        }
+  pub fn execute_action_request(&self, action_request: ActionRequest) {
+    use self::ActionRequest::*;
+    match action_request {
+      RequestFiltererUpdate => {
+        // TODO: This is lazy to do a pull from the data source. We
+        // don't need to requery; we can filter results already pulled
+        // down.
+        self.data_source.refresh();
+        self.task_results_window.redraw();
+      }
+      RequestScrollerUpdate => {
+        self.task_results_window.redraw();
+      }
+      RequestDataSourceUpdate => {
+        self.data_source.refresh();
+        self.task_results_window.redraw();
+      }
+      RequestShutDown => {
+        self.shutdown_requested.set(true);
       }
     }
   }

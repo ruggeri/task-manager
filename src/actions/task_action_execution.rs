@@ -1,23 +1,21 @@
-use super::{Action, ActionResult, TaskAction};
+use super::{Action, ActionRequest::RequestDataSourceUpdate, TaskAction};
 use components::Reviewer;
 use queries::{task as task_queries, task_effort as te_queries};
 
 impl Action for TaskAction {
-  fn execute(&mut self, reviewer: &Reviewer) -> ActionResult {
+  fn execute(&mut self, reviewer: &Reviewer) {
     use self::TaskAction::*;
-
-    let connection = &reviewer.connection;
 
     match self {
       // Create a task.
       CreateTask { task_title, task } => {
         if let Some(task) = task {
-          task_queries::update_destroyed(task.id, false, connection);
+          task_queries::update_destroyed(task.id, false, &reviewer.connection);
         } else {
-          *task = Some(task_queries::create(task_title, connection));
+          *task = Some(task_queries::create(task_title, &reviewer.connection));
         }
 
-        ActionResult::DidUpdateTaskData
+        reviewer.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Record a task effort.
@@ -26,23 +24,21 @@ impl Action for TaskAction {
         task_effort,
       } => {
         if let Some(task_effort) = task_effort {
-          te_queries::update_destroyed(task_effort.id, false, connection);
+          te_queries::update_destroyed(task_effort.id, false, &reviewer.connection);
         } else {
-          *task_effort = Some(te_queries::record(*task_id, connection));
+          *task_effort = Some(te_queries::record(*task_id, &reviewer.connection));
         }
 
-        ActionResult::DidUpdateTaskData
+        reviewer.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Update a task attribute.
-      TaskUpdate(update_action) => update_action.execute(connection),
+      TaskUpdate(update_action) => update_action.execute(&reviewer),
     }
   }
 
-  fn unexecute(&mut self, reviewer: &Reviewer) -> ActionResult {
+  fn unexecute(&mut self, reviewer: &Reviewer) {
     use self::TaskAction::*;
-
-    let connection = &reviewer.connection;
 
     match self {
       // Undo task creation.
@@ -52,8 +48,8 @@ impl Action for TaskAction {
           Some(task) => task,
         };
 
-        task_queries::update_destroyed(task.id, true, connection);
-        ActionResult::DidUpdateTaskData
+        task_queries::update_destroyed(task.id, true, &reviewer.connection);
+        reviewer.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Undo task effort creation.
@@ -63,12 +59,12 @@ impl Action for TaskAction {
           Some(task_effort) => task_effort,
         };
 
-        te_queries::update_destroyed(task_effort.id, true, connection);
-        ActionResult::DidUpdateTaskData
+        te_queries::update_destroyed(task_effort.id, true, &reviewer.connection);
+        reviewer.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Undo task attribute update.
-      TaskUpdate(update_action) => update_action.unexecute(connection),
+      TaskUpdate(update_action) => update_action.unexecute(&reviewer),
     }
   }
 

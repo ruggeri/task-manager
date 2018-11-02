@@ -1,4 +1,7 @@
-use actions::{Action, ActionResult};
+use actions::{
+  Action,
+  ActionRequest::{RequestFiltererUpdate, RequestScrollerUpdate}
+};
 use commands::FiltererCommand;
 use components::Reviewer;
 
@@ -62,39 +65,32 @@ impl FiltererAction {
 }
 
 impl Action for FiltererAction {
-  fn execute(&mut self, reviewer: &Reviewer) -> ActionResult {
+  fn execute(&mut self, reviewer: &Reviewer) {
     use self::FiltererAction::*;
 
     match self {
       UpdateFilterByRequiresInternet(update) => {
         update.old_result_idx = reviewer.scroller.current_result_idx();
         reviewer.filterer.requires_internet_value.set(update.new_value);
-        // TODO: This isn't going to work really because the
-        // re-filtering hasn't actually happened yet. We shouldn't be
-        // trying to reset the current index until *after*.
-        //
-        // We should either abandon the concept of ActionResult, OR we
-        // need to be able to *chain* a new command after the execution
-        // of a prior one.
+        reviewer.execute_action_request(RequestFiltererUpdate);
         reviewer.scroller.set_current_result_idx(update.new_result_idx);
+        reviewer.execute_action_request(RequestScrollerUpdate);
       }
     }
-
-    ActionResult::DidUpdateFilterer
   }
 
-  fn unexecute(&mut self, reviewer: &Reviewer) -> ActionResult {
+  fn unexecute(&mut self, reviewer: &Reviewer) {
     use self::FiltererAction::*;
 
     match self {
       UpdateFilterByRequiresInternet(update) => {
         update.new_result_idx = reviewer.scroller.current_result_idx();
         reviewer.filterer.requires_internet_value.set(update.old_value);
+        reviewer.execute_action_request(RequestFiltererUpdate);
         reviewer.scroller.set_current_result_idx(update.old_result_idx);
+        reviewer.execute_action_request(RequestScrollerUpdate);
       }
     }
-
-    ActionResult::DidUpdateFilterer
   }
 
   fn can_be_unexecuted(&self) -> bool {

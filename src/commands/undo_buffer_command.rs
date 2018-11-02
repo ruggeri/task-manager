@@ -1,4 +1,4 @@
-use actions::{Action, ActionResult};
+use actions::Action;
 use components::Reviewer;
 
 #[derive(Clone, Copy, Debug)]
@@ -8,7 +8,7 @@ pub enum UndoBufferCommand {
 }
 
 impl Action for UndoBufferCommand {
-  fn execute(&mut self, reviewer: &Reviewer) -> ActionResult {
+  fn execute(&mut self, reviewer: &Reviewer) {
     use self::UndoBufferCommand::*;
 
     let undo_buffer = &reviewer.undo_buffer;
@@ -18,7 +18,7 @@ impl Action for UndoBufferCommand {
     }
   }
 
-  fn unexecute(&mut self, _reviewer: &Reviewer) -> ActionResult {
+  fn unexecute(&mut self, _reviewer: &Reviewer) {
     panic!("One does not simply 'undo' an UndoBufferCommand")
   }
 

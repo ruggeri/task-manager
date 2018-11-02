@@ -1,15 +1,15 @@
-use super::{Action, ActionResult};
+use super::{Action, ActionRequest::RequestShutDown};
 use components::Reviewer;
 
 pub struct ShutdownAction();
 
 impl Action for ShutdownAction {
-  fn execute(&mut self, _reviewer: &Reviewer) -> ActionResult {
-    ActionResult::RequestedShutDown
+  fn execute(&mut self, reviewer: &Reviewer) {
+    reviewer.execute_action_request(RequestShutDown);
   }
 
-  fn unexecute(&mut self, _reviewer: &Reviewer) -> ActionResult {
-    panic!("Should not try to undo a ShutdownAction")
+  fn unexecute(&mut self, _reviewer: &Reviewer) {
+    panic!("Should not try to undo a ShutdownAction");
   }
 
   fn can_be_unexecuted(&self) -> bool {

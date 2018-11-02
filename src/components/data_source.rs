@@ -30,7 +30,7 @@ impl DataSource {
     self.callbacks.push(callback);
   }
 
-  pub fn refresh(&mut self) {
+  pub fn refresh(&self) {
     let current_time = Utc::now();
     let mut results: Vec<_> = task_queries::all(&self.connection)
       .into_iter()
