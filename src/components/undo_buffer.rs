@@ -49,7 +49,9 @@ impl UndoBuffer {
     let mut actions = self.actions.borrow_mut();
 
     if let Some(idx) = self.idx.get() {
-      actions.truncate(idx);
+      // Notice I want to keep the first `idx + 1` actions because I
+      // want `idx` to remain a valid index.
+      actions.truncate(idx + 1);
     }
 
     actions.push(action);
