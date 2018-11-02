@@ -1,4 +1,4 @@
-use super::{ScrollCommand, TaskCommand, TaskUpdateCommand};
+use super::{ScrollCommand, TaskCommand, TaskUpdateCommand, UndoBufferCommand};
 use actions::{Action, ShutdownAction};
 use components::Reviewer;
 use models::{Direction, End, TaskStatus};
@@ -8,6 +8,7 @@ pub enum Command {
   Scroll(ScrollCommand),
   Shutdown,
   Task(TaskCommand),
+  Undo(UndoBufferCommand),
 }
 
 impl Command {
@@ -34,6 +35,8 @@ impl Command {
       'P' => Task(UpdateTask(UpdatePriority(Increase))),
       'a' => Task(UpdateTask(UpdateStatus(Abandoned))),
       'c' => Task(UpdateTask(UpdateStatus(Completed))),
+      'U' => Undo(UndoBufferCommand::Redo),
+      'u' => Undo(UndoBufferCommand::Undo),
       _ => return None,
     };
 
@@ -47,6 +50,7 @@ impl Command {
       Scroll(sc) => Some(Box::new(sc)),
       Shutdown => Some(Box::new(ShutdownAction())),
       Task(tc) => tc.to_action(reviewer),
+      Undo(ubc) => Some(Box::new(ubc)),
     }
   }
 }
