@@ -8,6 +8,7 @@ pub struct UndoBuffer {
 }
 
 impl UndoBuffer {
+  #![allow(new_without_default_derive)]
   pub fn new() -> UndoBuffer {
     UndoBuffer {
       actions: RefCell::new(vec![]),
