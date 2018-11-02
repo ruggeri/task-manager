@@ -11,11 +11,12 @@ impl Action for TaskAction {
     match self {
       // Create a task.
       CreateTask { task_title, task } => {
-        if task.is_some() {
-          panic!("Cannot redo a create action twice");
+        if let Some(task) = task {
+          task_queries::update_destroyed(task.id, false, connection);
+        } else {
+          *task = Some(task_queries::create(task_title, connection));
         }
 
-        *task = Some(task_queries::create(task_title, connection));
         ActionResult::DidUpdateTaskData
       }
 
@@ -24,11 +25,12 @@ impl Action for TaskAction {
         task_id,
         task_effort,
       } => {
-        if task_effort.is_some() {
-          panic!("Cannot redo a record effort action twice");
+        if let Some(task_effort) = task_effort {
+          te_queries::update_destroyed(task_effort.id, false, connection);
+        } else {
+          *task_effort = Some(te_queries::record(*task_id, connection));
         }
 
-        *task_effort = Some(te_queries::record(*task_id, connection));
         ActionResult::DidUpdateTaskData
       }
 
@@ -45,26 +47,24 @@ impl Action for TaskAction {
     match self {
       // Undo task creation.
       CreateTask { task, .. } => {
-        if task.is_none() {
-          panic!("Cannot undo a never performed create action");
-        }
+        let task = match task {
+          None => panic!("Cannot undo a never performed create action"),
+          Some(task) => task,
+        };
 
-        panic!("Not yet safe to delete records.");
-        // let task_id = task.take().unwrap().id;
-        // task_queries::destroy(task_id, connection);
-        // ActionResult::DidUpdateTaskData
+        task_queries::update_destroyed(task.id, true, connection);
+        ActionResult::DidUpdateTaskData
       }
 
       // Undo task effort creation.
       RecordTaskEffort { task_effort, .. } => {
-        if task_effort.is_none() {
-          panic!("Cannot undo a never performed record effort action");
-        }
+        let task_effort = match task_effort {
+          None => panic!("Cannot undo a never performed record effort action"),
+          Some(task_effort) => task_effort,
+        };
 
-        panic!("Not yet safe to delete records.");
-        // let task_effort_id = task_effort.take().unwrap().id;
-        // te_queries::destroy(task_effort_id, connection);
-        // ActionResult::DidUpdateTaskData
+        te_queries::update_destroyed(task_effort.id, true, connection);
+        ActionResult::DidUpdateTaskData
       }
 
       // Undo task attribute update.
