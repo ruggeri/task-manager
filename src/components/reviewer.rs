@@ -57,7 +57,15 @@ impl Reviewer {
 
       let action_result = Command::from_key(ch)
         .and_then(|cmd| cmd.to_action(self))
-        .map(|mut action| action.execute(self));
+        .map(|mut action| {
+          let result = action.execute(self);
+
+          if action.can_be_unexecuted() {
+            self.undo_buffer.append_action(action);
+          }
+
+          result
+        });
 
       use self::ActionResult::*;
       match action_result {
