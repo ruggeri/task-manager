@@ -35,10 +35,15 @@ pub enum FiltererAction {
 #[allow(option_option)]
 fn get_requires_internet_value(reviewer: &Reviewer) -> Option<Option<bool>> {
   let str_value = reviewer.window.read_line("Requires internet value: ");
-  match &str_value as &str {
-    "yes" => Some(Some(true)),
-    "no" => Some(Some(false)),
-    "any" => Some(None),
+
+  // Gross. Cannot compare a String with a &str. So need to call
+  // `s.as_ref()`. But then also Option<String> will give `map` a
+  // String, and we want it to be giving the `&String` reference. Ugh.
+  match str_value.as_ref().map(|s| s.as_ref()) {
+    Some("yes") => Some(Some(true)),
+    Some("no") => Some(Some(false)),
+    Some("any") => Some(None),
+    // Includes Ctrl-C
     _ => None
   }
 }

@@ -10,8 +10,11 @@ pub enum ScrollCommand {
 }
 
 fn jump_to_task(reviewer: &Reviewer) {
-  let task_id = reviewer.window.read_line("Task id to jump to: ");
-  task_id
+  let task_id_str = match reviewer.window.read_line("Task id to jump to: ") {
+    None => return,
+    Some(task_id_str) => task_id_str
+  };
+  task_id_str
     .parse()
     .ok()
     .map(|task_id: i32| reviewer.scroller.jump_to_task_id(task_id));

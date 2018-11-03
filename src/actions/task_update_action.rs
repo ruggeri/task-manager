@@ -40,7 +40,12 @@ impl TaskUpdateAction {
 
     match cmd {
       Cmd::EditTaskTitle => {
-        let new_task_title = reviewer.window.read_line("Edit task title: ");
+        let new_task_title = match reviewer.window.read_line("Edit task title: ") {
+          // If they hit Ctrl-C don't make the task afterall.
+          None => return None,
+          Some(new_task_title) => new_task_title
+        };
+
         TaskValueUpdate::new(task.id, task.title.clone(), new_task_title).map(|tvu| {
           Action::UpdateTaskTitle(tvu)
         })

@@ -4,6 +4,7 @@ extern crate diesel;
 #[macro_use]
 extern crate diesel_derive_enum;
 extern crate pancurses;
+extern crate rustyline;
 
 pub mod actions;
 pub mod commands;

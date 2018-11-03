@@ -21,7 +21,12 @@ impl TaskAction {
     match cmd {
       // Create a task.
       TaskCommand::CreateTask => {
-        let task_title = reviewer.window.read_line("Edit task title: ");
+        let task_title = match reviewer.window.read_line("Edit task title: ") {
+          // If they hit Ctrl-C don't make the task afterall.
+          None => return None,
+          Some(task_title) => task_title
+        };
+
         Some(TaskAction::CreateTask {
           task_title,
           task: None,

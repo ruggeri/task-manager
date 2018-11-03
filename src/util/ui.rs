@@ -1,4 +1,6 @@
 use pancurses;
+use rustyline::{Editor, error::ReadlineError};
+use std::io::{stdout, Write};
 
 #[repr(C)]
 pub enum ColorPair {
@@ -34,35 +36,31 @@ impl Window {
     }
   }
 
-  pub fn read_line(&self, prompt: &str) -> String {
-    self.window.printw(prompt);
-    let mut line = String::new();
-
+  pub fn read_line(&self, prompt: &str) -> Option<String> {
+    pancurses::echo();
     loop {
-      use pancurses::Input::*;
-
-      match self.window.getch().unwrap() {
-        Character('\n') => break,
-        Character('\x7f') => {
-          if line.is_empty() {
-            continue;
+      let mut editor = Editor::<()>::new();
+      match editor.readline(prompt) {
+        Ok(line) => {
+          pancurses::noecho();
+          return Some(line);
+        },
+        // Corresponds to Ctrl-C
+        Err(ReadlineError::Interrupted) => {
+          pancurses::noecho();
+          // Super hacky. Otherwise "Ctrl-C" moves the cursor straight
+          // one line down. So here I move back a line and delete it.
+          {
+            let mut out = stdout();
+            out.write(b"\x1b[F\x1b[K").unwrap();
+            out.flush().unwrap();
           }
 
-          line.pop();
-
-          let (y, x) = self.window.get_cur_yx();
-          self.window.mv(y, x - 1);
-          self.window.delch();
-        }
-        Character(c) => {
-          self.window.addch(c);
-          line.push(c);
-        }
-        _ => continue,
+          return None
+        },
+        Err(_) => continue,
       }
     }
-
-    line
   }
 }
 
