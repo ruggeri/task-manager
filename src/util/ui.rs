@@ -52,7 +52,7 @@ impl Window {
           // one line down. So here I move back a line and delete it.
           {
             let mut out = stdout();
-            out.write(b"\x1b[F\x1b[K").unwrap();
+            out.write_all(b"\x1b[F\x1b[K").unwrap();
             out.flush().unwrap();
           }
 
