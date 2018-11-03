@@ -22,6 +22,7 @@ impl Window {
     pancurses::init_pair(ColorPair::Default as i16, -1, -1);
     pancurses::init_pair(ColorPair::Highlight as i16, -1, pancurses::COLOR_BLUE);
     pancurses::noecho();
+    window.keypad(true);
 
     Window { window }
   }
