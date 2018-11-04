@@ -3,11 +3,12 @@
 #![allow(proc_macro_derive_resolution_fallback)]
 
 table! {
-    task_efforts (id) {
+    task_events (id) {
         id -> Int4,
         task_id -> Int4,
         created_at -> Timestamptz,
         destroyed -> Bool,
+        event_type -> Task_event_type,
     }
 }
 
@@ -30,6 +31,9 @@ table! {
     }
 }
 
-joinable!(task_efforts -> tasks (task_id));
+joinable!(task_events -> tasks (task_id));
 
-allow_tables_to_appear_in_same_query!(task_efforts, tasks,);
+allow_tables_to_appear_in_same_query!(
+    task_events,
+    tasks,
+);
