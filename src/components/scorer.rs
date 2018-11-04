@@ -28,12 +28,11 @@ impl Scorer {
     assert_is_sorted_backward(task_events);
 
     // Filter to just TaskEffortRecorded events.
-    let task_events = task_events
+    let latest_task_effort = task_events
       .iter()
-      .filter(|te| te.event_type == TaskEventType::TaskEffortRecorded)
-      .collect::<Vec<_>>();
+      .find(|te| te.event_type == TaskEventType::TaskEffortRecorded);
 
-    match task_events.last() {
+    match latest_task_effort {
       None => task.created_at,
       Some(te) => te.created_at,
     }
