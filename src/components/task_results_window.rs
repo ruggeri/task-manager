@@ -66,9 +66,15 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     pwindow.attron(pancurses::A_BOLD);
     pwindow.printw(&format!(
-      "  {} | {:title_width$} | {:5} | {:4} | {:8} | {:6} | {:6} \n",
-      "id", "title", "prior", "durr", "age", "stat", "net",
+      "  {id} | {title:title_width$} | {priority:5} | {durration:5} | {age:8} | {status:6} | {requires_internet:6} \n",
+      id = "id",
+      title = "title",
       title_width = ::std::cmp::max(5, max_title_len + 2),
+      priority = "prior",
+      durration = "durr",
+      age = "age",
+      status = "stat",
+      requires_internet = "net",
     ));
     pwindow.attroff(pancurses::A_BOLD);
   }
@@ -84,14 +90,14 @@ impl TaskResultsWindow {
     let priority = {
       use models::TaskPriority::*;
       match result.task.priority {
-        Low => "Lo", Medium => "Me", High => "Hi",
+        Low => "Low", Medium => "Med", High => "High",
       }
     };
 
     let duration = {
       use models::TaskDuration::*;
       match result.task.duration {
-        Short => "Sh", Medium => "Me", Long => "Lo",
+        Short => "Short", Medium => "Med", Long => "Long",
       }
     };
 
@@ -112,7 +118,7 @@ impl TaskResultsWindow {
 
     // Display the task line.
     let s = format!(
-      "{id:4} | {title:title_width$} | {priority:5} | {duration:4} | {age:8} | {status:6} | {requires_internet:6}\n",
+      "{id:4} | {title:title_width$} | {priority:5} | {duration:5} | {age:8} | {status:6} | {requires_internet:6}\n",
       id = result.task.id,
       title = result.task.title,
       title_width = ::std::cmp::max(5, max_title_len + 2),
