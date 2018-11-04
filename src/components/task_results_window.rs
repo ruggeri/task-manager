@@ -12,13 +12,13 @@ fn format_task_age(age: Duration) -> String {
   let mins = age.num_minutes() - 60 * age.num_hours();
 
   if weeks > 0 {
-    format!("{} weeks {} days", weeks, days)
+    format!("{}w {}d", weeks, days)
   } else if days > 0 {
-    format!("{} days {} hours", days, hours)
+    format!("{}d {}h", days, hours)
   } else if hours > 0 {
-    format!("{} hours {} mins", hours, mins)
+    format!("{}h {}m", hours, mins)
   } else if mins > 0 {
-    format!("{} mins", mins)
+    format!("{}m", mins)
   } else {
     String::from("now")
   }
@@ -43,27 +43,37 @@ impl TaskResultsWindow {
 
   pub fn redraw(&self) {
     self.pwindow().clear();
-    self.display_header();
+
+    let max_title_len = self
+      .scroller
+      .results()
+      .iter()
+      .map(|r| r.task.title.len())
+      .max()
+      .unwrap_or(0);
+
+    self.display_header(max_title_len);
 
     // TODO: This is a bad idea. I want to have interior mutability, but
     // here we can see it's sneaking out.
     for (idx, ref result) in self.scroller.results().iter().enumerate() {
-      self.display_result(idx as i32, result);
+      self.display_result(idx as i32, result, max_title_len);
     }
   }
 
-  fn display_header(&self) {
+  fn display_header(&self, max_title_len: usize) {
     let pwindow = self.pwindow();
     pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     pwindow.attron(pancurses::A_BOLD);
     pwindow.printw(&format!(
-      "  {} | {:50} | {:20} | {:10} | {:12} | {:8} | {:9} \n",
-      "id", "title", "last_effort_at", "status", "internet", "priority", "duration"
+      "  {} | {:title_width$} | {:5} | {:4} | {:8} | {:6} | {:6} \n",
+      "id", "title", "prior", "durr", "age", "stat", "net",
+      title_width = ::std::cmp::max(5, max_title_len + 2),
     ));
     pwindow.attroff(pancurses::A_BOLD);
   }
 
-  fn display_result(&self, idx: i32, result: &data_source::Result) {
+  fn display_result(&self, idx: i32, result: &data_source::Result, max_title_len: usize) {
     let pwindow = self.pwindow();
 
     // Choose appropriate color.
@@ -71,22 +81,46 @@ impl TaskResultsWindow {
       pwindow.attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
 
+    let priority = {
+      use models::TaskPriority::*;
+      match result.task.priority {
+        Low => "Lo", Medium => "Me", High => "Hi",
+      }
+    };
+
+    let duration = {
+      use models::TaskDuration::*;
+      match result.task.duration {
+        Short => "Sh", Medium => "Me", Long => "Lo",
+      }
+    };
+
+    let status = {
+      use models::TaskStatus::*;
+      match result.task.status {
+        Abandoned => "Aband",
+        AvailableToPerform => "Avail",
+        Completed => "Compl",
+      }
+    };
+
     let requires_internet = if result.task.requires_internet {
-      "Yes Internet"
+      "+net"
     } else {
-      "No Internet"
+      "-net"
     };
 
     // Display the task line.
     let s = format!(
-      "{id:4} | {title:50} | {age:20} | {status:10} | {requires_internet:12} | {priority:8} | {duration:9} \n",
+      "{id:4} | {title:title_width$} | {priority:5} | {duration:4} | {age:8} | {status:6} | {requires_internet:6}\n",
       id = result.task.id,
       title = result.task.title,
+      title_width = ::std::cmp::max(5, max_title_len + 2),
+      priority = priority,
+      duration = duration,
       age = format_task_age(result.last_effort_duration_since),
-      status = format!("{}", result.task.status),
+      status = status,
       requires_internet = requires_internet,
-      priority = format!("{}", result.task.priority),
-      duration = format!("{}", result.task.duration),
     );
 
     // Print the line!
