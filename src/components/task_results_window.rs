@@ -82,7 +82,7 @@ impl TaskResultsWindow {
       "{id:4} | {title:50} | {age:20} | {status:10} | {requires_internet:12} | {priority:8} | {duration:9} \n",
       id = result.task.id,
       title = result.task.title,
-      age = format_task_age(result.task_age),
+      age = format_task_age(result.last_effort_duration_since),
       status = format!("{}", result.task.status),
       requires_internet = requires_internet,
       priority = format!("{}", result.task.priority),

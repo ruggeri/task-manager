@@ -2,10 +2,7 @@
 // future release.
 #![allow(proc_macro_derive_resolution_fallback)]
 
-use chrono::Duration;
-use diesel::pg::PgConnection;
 use models::{TaskDuration, TaskPriority, TaskStatus};
-use queries::task_event as te_queries;
 use schema::tasks;
 
 type DateTime = ::chrono::DateTime<::chrono::Utc>;
@@ -20,19 +17,4 @@ pub struct Task {
   pub priority: TaskPriority,
   pub duration: TaskDuration,
   pub destroyed: bool,
-}
-
-impl Task {
-  pub fn last_effort_at(&self, connection: &PgConnection) -> Option<DateTime> {
-    te_queries::last_effort_at(self, connection)
-  }
-
-  pub fn age_at(&self, current_time: DateTime, connection: &PgConnection) -> Duration {
-    let last_effort_at = match self.last_effort_at(connection) {
-      None => self.created_at,
-      Some(t) => t,
-    };
-
-    current_time.signed_duration_since(last_effort_at)
-  }
 }

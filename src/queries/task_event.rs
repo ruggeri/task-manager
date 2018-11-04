@@ -8,8 +8,6 @@ use diesel::prelude::*;
 use models::{Task, TaskEvent, TaskEventType};
 use schema::task_events;
 
-type DateTime = ::chrono::DateTime<::chrono::Utc>;
-
 #[derive(Insertable)]
 #[table_name = "task_events"]
 struct NewTaskEvent {
@@ -17,23 +15,16 @@ struct NewTaskEvent {
   pub event_type: TaskEventType,
 }
 
-pub fn last_effort_at(task: &Task, connection: &PgConnection) -> Option<DateTime> {
+pub fn task_events(task: &Task, connection: &PgConnection) -> Vec<TaskEvent> {
   use schema::task_events::dsl::*;
 
-  let te = TaskEvent::belonging_to(task)
+  TaskEvent::belonging_to(task)
     .filter(
       destroyed.eq(false)
-      .and(event_type.eq(TaskEventType::TaskEffortRecorded))
     )
     .order(created_at.desc())
-    .first::<TaskEvent>(connection)
-    .optional()
-    .unwrap();
-
-  match te {
-    None => None,
-    Some(te) => Some(te.created_at),
-  }
+    .load::<TaskEvent>(connection)
+    .unwrap()
 }
 
 pub fn record_task_effort(task_id: i32, connection: &PgConnection) -> TaskEvent {

@@ -1,19 +1,55 @@
-use super::data_source;
-use models::{TaskDuration, TaskPriority};
+use chrono::{DateTime, Duration, Utc};
+use models::{Task, TaskDuration, TaskEvent, TaskEventType, TaskPriority};
 
 pub struct Scorer();
 
-impl Scorer {
-  pub fn score_task_result(result: &data_source::Result) -> i64 {
-    let mut score = result.task_age.num_milliseconds();
+fn assert_is_sorted_backward(task_events: &[TaskEvent]) {
+  for idx in 1..task_events.len() {
+    if task_events[idx - 1].created_at < task_events[idx].created_at {
+      panic!("Expected tasks to be sorted.")
+    }
+  }
+}
 
-    score *= match result.task.priority {
+impl Scorer {
+  pub fn delay_amount(task_events: &[TaskEvent]) -> i64 {
+    assert_is_sorted_backward(task_events);
+
+    let num_delay_events = task_events
+      .iter()
+      .take_while(|te| te.event_type != TaskEventType::TaskEffortRecorded)
+      .filter(|te| te.event_type == TaskEventType::DelayRequested)
+      .count();
+
+    Duration::days(num_delay_events as i64).num_seconds()
+  }
+
+  pub fn last_effort_time(task: &Task, task_events: &[TaskEvent]) -> DateTime<Utc> {
+    assert_is_sorted_backward(task_events);
+
+    // Filter to just TaskEffortRecorded events.
+    let task_events = task_events
+      .iter()
+      .filter(|te| te.event_type == TaskEventType::TaskEffortRecorded)
+      .collect::<Vec<_>>();
+
+    match task_events.last() {
+      None => task.created_at,
+      Some(te) => te.created_at,
+    }
+  }
+
+  pub fn score_task(task: &Task, task_events: &[TaskEvent], last_effort_duration_since: Duration) -> i64 {
+    let mut score = last_effort_duration_since.num_seconds();
+    score -= Scorer::delay_amount(task_events);
+
+    score *= match task.priority {
       TaskPriority::Low => 1,
       TaskPriority::Medium => 2,
       TaskPriority::High => 4,
     };
 
-    score *= match result.task.duration {
+    score *= match task.duration {
       TaskDuration::Short => 4,
       TaskDuration::Medium => 2,
       TaskDuration::Long => 1,
