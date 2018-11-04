@@ -30,9 +30,23 @@ impl Window {
   }
 
   pub fn getch(&self) -> Option<char> {
-    match self.window.getch().unwrap() {
-      pancurses::Input::Character(ch) => Some(ch),
-      _ => None,
+    let result = self.window.getch();
+
+    match result {
+      None => {
+        // wgetch had some problem. I believe one such problem happens
+        // when the window size changes.
+        //
+        // Could try to handle SIGWINCH. Should redraw the display. But
+        // right now my program has fixed with output regardless of
+        // display size.
+
+        None
+      },
+      // A character
+      Some(pancurses::Input::Character(ch)) => Some(ch),
+      // Not a character
+      Some(_) => None,
     }
   }
 
