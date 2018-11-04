@@ -1,6 +1,6 @@
 use super::{Action, ActionRequest::RequestDataSourceUpdate, TaskAction};
 use components::Reviewer;
-use queries::{task as task_queries, task_effort as te_queries};
+use queries::{task as task_queries, task_event as te_queries};
 
 impl Action for TaskAction {
   fn execute(&mut self, reviewer: &Reviewer) {
@@ -21,12 +21,12 @@ impl Action for TaskAction {
       // Record a task effort.
       RecordTaskEffort {
         task_id,
-        task_effort,
+        task_event,
       } => {
-        if let Some(task_effort) = task_effort {
-          te_queries::update_destroyed(task_effort.id, false, &reviewer.connection);
+        if let Some(task_event) = task_event {
+          te_queries::update_destroyed(task_event.id, false, &reviewer.connection);
         } else {
-          *task_effort = Some(te_queries::record(*task_id, &reviewer.connection));
+          *task_event = Some(te_queries::record_task_effort(*task_id, &reviewer.connection));
         }
 
         reviewer.execute_action_request(RequestDataSourceUpdate);
@@ -53,13 +53,13 @@ impl Action for TaskAction {
       }
 
       // Undo task effort creation.
-      RecordTaskEffort { task_effort, .. } => {
-        let task_effort = match task_effort {
+      RecordTaskEffort { task_event, .. } => {
+        let task_event = match task_event {
           None => panic!("Cannot undo a never performed record effort action"),
-          Some(task_effort) => task_effort,
+          Some(task_event) => task_event,
         };
 
-        te_queries::update_destroyed(task_effort.id, true, &reviewer.connection);
+        te_queries::update_destroyed(task_event.id, true, &reviewer.connection);
         reviewer.execute_action_request(RequestDataSourceUpdate);
       }
 

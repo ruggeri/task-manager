@@ -5,24 +5,28 @@
 use diesel;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
-use models::{Task, TaskEffort};
-use schema::task_efforts;
+use models::{Task, TaskEvent, TaskEventType};
+use schema::task_events;
 
 type DateTime = ::chrono::DateTime<::chrono::Utc>;
 
 #[derive(Insertable)]
-#[table_name = "task_efforts"]
-struct NewTaskEffort {
+#[table_name = "task_events"]
+struct NewTaskEvent {
   pub task_id: i32,
+  pub event_type: TaskEventType,
 }
 
 pub fn last_effort_at(task: &Task, connection: &PgConnection) -> Option<DateTime> {
-  use schema::task_efforts::dsl::*;
+  use schema::task_events::dsl::*;
 
-  let te = TaskEffort::belonging_to(task)
-    .filter(destroyed.eq(false))
+  let te = TaskEvent::belonging_to(task)
+    .filter(
+      destroyed.eq(false)
+      .and(event_type.eq(TaskEventType::TaskEffortRecorded))
+    )
     .order(created_at.desc())
-    .first::<TaskEffort>(connection)
+    .first::<TaskEvent>(connection)
     .optional()
     .unwrap();
 
@@ -32,16 +36,19 @@ pub fn last_effort_at(task: &Task, connection: &PgConnection) -> Option<DateTime
   }
 }
 
-pub fn record(task_id: i32, connection: &PgConnection) -> TaskEffort {
-  let new_te = NewTaskEffort { task_id };
+pub fn record_task_effort(task_id: i32, connection: &PgConnection) -> TaskEvent {
+  let new_te = NewTaskEvent {
+    task_id,
+    event_type: TaskEventType::TaskEffortRecorded,
+  };
 
-  diesel::insert_into(::schema::task_efforts::table)
+  diesel::insert_into(::schema::task_events::table)
     .values(&new_te)
     .get_result(connection)
     .unwrap()
 }
 
 define_update_attribute_fns!(
-  task_efforts,
+  task_events,
   (update_destroyed, bool, destroyed)
 );

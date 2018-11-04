@@ -24,4 +24,4 @@ macro_rules! define_update_attribute_fns {
 }
 
 pub mod task;
-pub mod task_effort;
+pub mod task_event;

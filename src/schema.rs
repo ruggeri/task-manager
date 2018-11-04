@@ -3,12 +3,15 @@
 #![allow(proc_macro_derive_resolution_fallback)]
 
 table! {
+    use diesel::sql_types::*;
+    use models::task_event_type::TaskEventTypeMapping;
+
     task_events (id) {
         id -> Int4,
         task_id -> Int4,
         created_at -> Timestamptz,
         destroyed -> Bool,
-        event_type -> Task_event_type,
+        event_type -> TaskEventTypeMapping,
     }
 }
 

@@ -5,7 +5,7 @@
 use chrono::Duration;
 use diesel::pg::PgConnection;
 use models::{TaskDuration, TaskPriority, TaskStatus};
-use queries::task_effort as te_queries;
+use queries::task_event as te_queries;
 use schema::tasks;
 
 type DateTime = ::chrono::DateTime<::chrono::Utc>;

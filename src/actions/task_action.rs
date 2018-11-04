@@ -1,7 +1,7 @@
 use super::TaskUpdateAction;
 use commands::TaskCommand;
 use components::Reviewer;
-use models::{Task, TaskEffort};
+use models::{Task, TaskEvent};
 
 #[derive(Clone, Debug)]
 pub enum TaskAction {
@@ -11,7 +11,7 @@ pub enum TaskAction {
   },
   RecordTaskEffort {
     task_id: i32,
-    task_effort: Option<TaskEffort>,
+    task_event: Option<TaskEvent>,
   },
   TaskUpdate(TaskUpdateAction),
 }
@@ -37,7 +37,7 @@ impl TaskAction {
       TaskCommand::RecordTaskEffort => reviewer.scroller.current_task().and_then(|task| {
         Some(TaskAction::RecordTaskEffort {
           task_id: task.id,
-          task_effort: None,
+          task_event: None,
         })
       }),
 
