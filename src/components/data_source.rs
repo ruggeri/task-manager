@@ -32,7 +32,7 @@ impl DataSource {
 
   pub fn refresh(&self) {
     let current_time = Utc::now();
-    let mut results: Vec<_> = task_queries::all(&self.connection)
+    let mut results: Vec<_> = task_queries::all_available_to_perform(&self.connection)
       .into_iter()
       .map(|task| {
         let task_age = task.age_at(current_time, &self.connection);
