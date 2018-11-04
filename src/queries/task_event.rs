@@ -48,6 +48,18 @@ pub fn record_task_effort(task_id: i32, connection: &PgConnection) -> TaskEvent 
     .unwrap()
 }
 
+pub fn request_delay(task_id: i32, connection: &PgConnection) -> TaskEvent {
+  let new_te = NewTaskEvent {
+    task_id,
+    event_type: TaskEventType::DelayRequested,
+  };
+
+  diesel::insert_into(::schema::task_events::table)
+    .values(&new_te)
+    .get_result(connection)
+    .unwrap()
+}
+
 define_update_attribute_fns!(
   task_events,
   (update_destroyed, bool, destroyed)

@@ -6,6 +6,7 @@ use models::{Direction, TaskStatus};
 pub enum TaskCommand {
   CreateTask,
   RecordTaskEffort,
+  RequestTaskDelay,
   UpdateTask(TaskUpdateCommand),
 }
 

@@ -13,6 +13,10 @@ pub enum TaskAction {
     task_id: i32,
     task_event: Option<TaskEvent>,
   },
+  RequestTaskDelay {
+    task_id: i32,
+    task_event: Option<TaskEvent>,
+  },
   TaskUpdate(TaskUpdateAction),
 }
 
@@ -36,6 +40,14 @@ impl TaskAction {
       // Record a task effort.
       TaskCommand::RecordTaskEffort => reviewer.scroller.current_task().and_then(|task| {
         Some(TaskAction::RecordTaskEffort {
+          task_id: task.id,
+          task_event: None,
+        })
+      }),
+
+      // Request a task delay.
+      TaskCommand::RequestTaskDelay => reviewer.scroller.current_task().and_then(|task| {
+        Some(TaskAction::RequestTaskDelay {
           task_id: task.id,
           task_event: None,
         })

@@ -32,6 +32,20 @@ impl Action for TaskAction {
         reviewer.execute_action_request(RequestDataSourceUpdate);
       }
 
+      // Request a task delay.
+      RequestTaskDelay {
+        task_id,
+        task_event,
+      } => {
+        if let Some(task_event) = task_event {
+          te_queries::update_destroyed(task_event.id, false, &reviewer.connection);
+        } else {
+          *task_event = Some(te_queries::request_delay(*task_id, &reviewer.connection));
+        }
+
+        reviewer.execute_action_request(RequestDataSourceUpdate);
+      }
+
       // Update a task attribute.
       TaskUpdate(update_action) => update_action.execute(&reviewer),
     }
@@ -56,6 +70,17 @@ impl Action for TaskAction {
       RecordTaskEffort { task_event, .. } => {
         let task_event = match task_event {
           None => panic!("Cannot undo a never performed record effort action"),
+          Some(task_event) => task_event,
+        };
+
+        te_queries::update_destroyed(task_event.id, true, &reviewer.connection);
+        reviewer.execute_action_request(RequestDataSourceUpdate);
+      }
+
+      // Undo delay request.
+      RequestTaskDelay { task_event, .. } => {
+        let task_event = match task_event {
+          None => panic!("Cannot undo a never performed request delay action"),
           Some(task_event) => task_event,
         };
 
