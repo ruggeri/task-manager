@@ -1,13 +1,13 @@
 # TODOs
 
 **Yes**
+* Record completion as a task event.
 * Fix `Scroller` to limit results again.
 * Have recurring tasks.
 * Have ability to view tasks completed today.
 * Try to build in some "reflection" aspect.
 
 **Maybe**
-* Add ability to "sleep" a task.
 * Deal with duplication of `TaskUpdateAction`.
 * Add whether the task needs outside travel.
 
