@@ -23,9 +23,9 @@
 * `Task`, `TaskEffort`, and `TaskStatus` are pretty self-explanatory.
 * Diesel's DSL is pretty nice.
 
-**`Reviewer`**
+**`Application`**
 
-* The `Reviewer` class is sort of the top level object.
+* The `Application` class is sort of the top level object.
   * It basically holds the other objects.
   * It runs the run loop.
   * It uses `TaskResultsWindow` to redraw the interface.
@@ -37,20 +37,20 @@
 * Commands has an enum of commands the user can press keys for.
 * A big switch determines what action to perform for each command.
 * Many commands will CRUD actions. The `Task` API is used directly.
-* The `Reviewer`'s `PgConnection` object is used by the commands.
+* The `Application`'s `PgConnection` object is used by the commands.
 * CRUD actions typically need to know the currently selected `Task` (to
   update or destroy). Thus the `Scroller` is also used by the commands.
-* Basically: the commands need everything the reviewer has. Each command
-  may use different parts of the entire reviewer's components.
-  * It is as if commands are methods of the `Reviewer`, in a sense.
+* Basically: the commands need everything the application has. Each command
+  may use different parts of the entire application's components.
+  * It is as if commands are methods of the `Application`, in a sense.
   * But cleaner.
 * After execution, a command returns a `CommandResult`. These tell the
-  `Reviewer` what kind of command was performed.
-  * E.g., there is a `CommandResult` that tells the `Reviewer` to exit
+  `Application` what kind of command was performed.
+  * E.g., there is a `CommandResult` that tells the `Application` to exit
     the run loop.
   * There is another which says: "I updated a record, please pull down
     all data gain."
-  * The `CommandResult` is handled in the `Reviewer#run` method
+  * The `CommandResult` is handled in the `Application#run` method
 
 **`UI::Window`**
 
@@ -67,9 +67,9 @@
 
 **`DataSource`**
 
-* This is upstream of everything (lol, except the `Reviewer`'s
+* This is upstream of everything (lol, except the `Application`'s
   `PgConnection`).
-* The `Reviewer` calls the `#refresh` method to fetch more data. Refresh
+* The `Application` calls the `#refresh` method to fetch more data. Refresh
   does an N+1 query to fetch both `Task`s and their "age" since last
   worked.
 * It pairs this info up as a `TaskRecord` object.
@@ -125,7 +125,7 @@ then A needs to present the union of B and C's interfaces. It quickly
 gets to the point where we just have a god object.
 
 I wanted to give everyone references to everyone else, and have everyone
-live in a `Reviewer` class which was kind of like the global state.
+live in a `Application` class which was kind of like the global state.
 
 However, I had a problem where no one understood the lifetimes of each
 other. I figured that if A contained B and C, then B and C could have
@@ -166,7 +166,7 @@ methods that require mutability.
 ## For next time
 
 Maybe I have way too many references stored in my components: maybe I
-should just pass the `Reviewer` in to every method. I wanted to avoid
+should just pass the `Application` in to every method. I wanted to avoid
 this, by saving the "connections" between components in reference
 fields. But maybe that is too much trouble; perhaps the entire context
 should be constantly "pumped down."
