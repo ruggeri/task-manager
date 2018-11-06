@@ -1,5 +1,5 @@
 use actions::{Action, ActionRequest::RequestScrollerUpdate};
-use components::Reviewer;
+use application::Application;
 use models::{Direction, End};
 
 #[derive(Clone, Copy, Debug)]
@@ -9,31 +9,31 @@ pub enum ScrollCommand {
   Move(Direction),
 }
 
-fn jump_to_task(reviewer: &Reviewer) {
-  let task_id_str = match reviewer.window.read_line("Task id to jump to: ") {
+fn jump_to_task(application: &Application) {
+  let task_id_str = match application.window.read_line("Task id to jump to: ") {
     None => return,
     Some(task_id_str) => task_id_str
   };
   task_id_str
     .parse()
     .ok()
-    .map(|task_id: i32| reviewer.scroller.jump_to_task_id(task_id));
+    .map(|task_id: i32| application.scroller.jump_to_task_id(task_id));
 }
 
 impl Action for ScrollCommand {
-  fn execute(&mut self, reviewer: &Reviewer) {
+  fn execute(&mut self, application: &Application) {
     use self::ScrollCommand::*;
 
     match self {
-      Jump(end) => reviewer.scroller.jump(*end),
-      JumpToTask => jump_to_task(reviewer),
-      Move(direction) => reviewer.scroller.scroll(*direction),
+      Jump(end) => application.scroller.jump(*end),
+      JumpToTask => jump_to_task(application),
+      Move(direction) => application.scroller.scroll(*direction),
     }
 
-    reviewer.execute_action_request(RequestScrollerUpdate);
+    application.execute_action_request(RequestScrollerUpdate);
   }
 
-  fn unexecute(&mut self, _reviewer: &Reviewer) {
+  fn unexecute(&mut self, _application: &Application) {
     panic!("Should not try to undo a scroll action")
   }
 

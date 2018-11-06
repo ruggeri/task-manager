@@ -1,5 +1,5 @@
 use actions::Action;
-use components::Reviewer;
+use application::Application;
 use std::cell::{Cell, RefCell};
 
 pub struct UndoBuffer {
@@ -16,7 +16,7 @@ impl UndoBuffer {
     }
   }
 
-  pub fn redo(&self, reviewer: &Reviewer) {
+  pub fn redo(&self, application: &Application) {
     let redo_idx = match self.idx.get() {
       None => 0,
       Some(idx) => idx + 1,
@@ -27,20 +27,20 @@ impl UndoBuffer {
       return;
     }
 
-    let result = actions[redo_idx].execute(reviewer);
+    let result = actions[redo_idx].execute(application);
     self.idx.set(Some(redo_idx));
 
     result
   }
 
-  pub fn undo(&self, reviewer: &Reviewer) {
+  pub fn undo(&self, application: &Application) {
     let idx = match self.idx.get() {
       None => return,
       Some(idx) => idx,
     };
 
     let mut actions = self.actions.borrow_mut();
-    let result = actions[idx].unexecute(reviewer);
+    let result = actions[idx].unexecute(application);
     self.idx.set(if idx > 0 { Some(idx - 1) } else { None });
 
     result

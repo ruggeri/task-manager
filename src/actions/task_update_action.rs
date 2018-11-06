@@ -1,5 +1,5 @@
 use commands::TaskUpdateCommand;
-use components::Reviewer;
+use application::Application;
 use models::*;
 
 #[derive(Clone, Debug)]
@@ -33,14 +33,14 @@ impl TaskUpdateAction {
   pub fn prepare_from_cmd(
     cmd: TaskUpdateCommand,
     task: &Task,
-    reviewer: &Reviewer,
+    application: &Application,
   ) -> Option<TaskUpdateAction> {
     use self::TaskUpdateAction as Action;
     use self::TaskUpdateCommand as Cmd;
 
     match cmd {
       Cmd::EditTaskTitle => {
-        let new_task_title = match reviewer.window.read_line("Edit task title: ") {
+        let new_task_title = match application.window.read_line("Edit task title: ") {
           // If they hit Ctrl-C don't make the task afterall.
           None => return None,
           Some(new_task_title) => new_task_title

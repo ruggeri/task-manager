@@ -1,13 +1,13 @@
 use actions::{ActionRequest::RequestDataSourceUpdate, TaskUpdateAction};
-use components::Reviewer;
+use application::Application;
 use queries::task as task_queries;
 
 // TODO: Insane level of duplication. Macro time?
 impl TaskUpdateAction {
-  pub fn execute(&mut self, reviewer: &Reviewer) {
+  pub fn execute(&mut self, application: &Application) {
     use self::TaskUpdateAction::*;
 
-    let connection = &reviewer.connection;
+    let connection = &application.connection;
     match self {
       UpdateDuration(tvu) => {
         task_queries::update_duration(tvu.task_id, tvu.new_value, connection);
@@ -26,13 +26,13 @@ impl TaskUpdateAction {
       }
     }
 
-    reviewer.execute_action_request(RequestDataSourceUpdate);
+    application.execute_action_request(RequestDataSourceUpdate);
   }
 
-  pub fn unexecute(&mut self, reviewer: &Reviewer) {
+  pub fn unexecute(&mut self, application: &Application) {
     use self::TaskUpdateAction::*;
 
-    let connection = &reviewer.connection;
+    let connection = &application.connection;
     match self {
       UpdateDuration(tvu) => {
         task_queries::update_duration(tvu.task_id, tvu.old_value, connection);
@@ -51,6 +51,6 @@ impl TaskUpdateAction {
       }
     }
 
-    reviewer.execute_action_request(RequestDataSourceUpdate);
+    application.execute_action_request(RequestDataSourceUpdate);
   }
 }

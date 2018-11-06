@@ -1,5 +1,5 @@
 use actions::Action;
-use components::Reviewer;
+use application::Application;
 
 #[derive(Clone, Copy, Debug)]
 pub enum UndoBufferCommand {
@@ -8,17 +8,17 @@ pub enum UndoBufferCommand {
 }
 
 impl Action for UndoBufferCommand {
-  fn execute(&mut self, reviewer: &Reviewer) {
+  fn execute(&mut self, application: &Application) {
     use self::UndoBufferCommand::*;
 
-    let undo_buffer = &reviewer.undo_buffer;
+    let undo_buffer = &application.undo_buffer;
     match self {
-      Redo => undo_buffer.redo(reviewer),
-      Undo => undo_buffer.undo(reviewer),
+      Redo => undo_buffer.redo(application),
+      Undo => undo_buffer.undo(application),
     }
   }
 
-  fn unexecute(&mut self, _reviewer: &Reviewer) {
+  fn unexecute(&mut self, _application: &Application) {
     panic!("One does not simply 'undo' an UndoBufferCommand")
   }
 

@@ -1,21 +1,21 @@
 use super::{Action, ActionRequest::RequestDataSourceUpdate, TaskAction};
-use components::Reviewer;
+use application::Application;
 use queries::{task as task_queries, task_event as te_queries};
 
 impl Action for TaskAction {
-  fn execute(&mut self, reviewer: &Reviewer) {
+  fn execute(&mut self, application: &Application) {
     use self::TaskAction::*;
 
     match self {
       // Create a task.
       CreateTask { task_title, task } => {
         if let Some(task) = task {
-          task_queries::update_destroyed(task.id, false, &reviewer.connection);
+          task_queries::update_destroyed(task.id, false, &application.connection);
         } else {
-          *task = Some(task_queries::create(task_title, &reviewer.connection));
+          *task = Some(task_queries::create(task_title, &application.connection));
         }
 
-        reviewer.execute_action_request(RequestDataSourceUpdate);
+        application.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Record a task effort.
@@ -24,12 +24,12 @@ impl Action for TaskAction {
         task_event,
       } => {
         if let Some(task_event) = task_event {
-          te_queries::update_destroyed(task_event.id, false, &reviewer.connection);
+          te_queries::update_destroyed(task_event.id, false, &application.connection);
         } else {
-          *task_event = Some(te_queries::record_task_effort(*task_id, &reviewer.connection));
+          *task_event = Some(te_queries::record_task_effort(*task_id, &application.connection));
         }
 
-        reviewer.execute_action_request(RequestDataSourceUpdate);
+        application.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Request a task delay.
@@ -38,20 +38,20 @@ impl Action for TaskAction {
         task_event,
       } => {
         if let Some(task_event) = task_event {
-          te_queries::update_destroyed(task_event.id, false, &reviewer.connection);
+          te_queries::update_destroyed(task_event.id, false, &application.connection);
         } else {
-          *task_event = Some(te_queries::request_delay(*task_id, &reviewer.connection));
+          *task_event = Some(te_queries::request_delay(*task_id, &application.connection));
         }
 
-        reviewer.execute_action_request(RequestDataSourceUpdate);
+        application.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Update a task attribute.
-      TaskUpdate(update_action) => update_action.execute(&reviewer),
+      TaskUpdate(update_action) => update_action.execute(&application),
     }
   }
 
-  fn unexecute(&mut self, reviewer: &Reviewer) {
+  fn unexecute(&mut self, application: &Application) {
     use self::TaskAction::*;
 
     match self {
@@ -62,8 +62,8 @@ impl Action for TaskAction {
           Some(task) => task,
         };
 
-        task_queries::update_destroyed(task.id, true, &reviewer.connection);
-        reviewer.execute_action_request(RequestDataSourceUpdate);
+        task_queries::update_destroyed(task.id, true, &application.connection);
+        application.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Undo task effort creation.
@@ -73,8 +73,8 @@ impl Action for TaskAction {
           Some(task_event) => task_event,
         };
 
-        te_queries::update_destroyed(task_event.id, true, &reviewer.connection);
-        reviewer.execute_action_request(RequestDataSourceUpdate);
+        te_queries::update_destroyed(task_event.id, true, &application.connection);
+        application.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Undo delay request.
@@ -84,12 +84,12 @@ impl Action for TaskAction {
           Some(task_event) => task_event,
         };
 
-        te_queries::update_destroyed(task_event.id, true, &reviewer.connection);
-        reviewer.execute_action_request(RequestDataSourceUpdate);
+        te_queries::update_destroyed(task_event.id, true, &application.connection);
+        application.execute_action_request(RequestDataSourceUpdate);
       }
 
       // Undo task attribute update.
-      TaskUpdate(update_action) => update_action.unexecute(&reviewer),
+      TaskUpdate(update_action) => update_action.unexecute(&application),
     }
   }
 

@@ -1,6 +1,6 @@
 use super::TaskUpdateAction;
 use commands::TaskCommand;
-use components::Reviewer;
+use application::Application;
 use models::{Task, TaskEvent};
 
 #[derive(Clone, Debug)]
@@ -21,11 +21,11 @@ pub enum TaskAction {
 }
 
 impl TaskAction {
-  pub fn prepare_from_cmd(cmd: TaskCommand, reviewer: &Reviewer) -> Option<TaskAction> {
+  pub fn prepare_from_cmd(cmd: TaskCommand, application: &Application) -> Option<TaskAction> {
     match cmd {
       // Create a task.
       TaskCommand::CreateTask => {
-        let task_title = match reviewer.window.read_line("Edit task title: ") {
+        let task_title = match application.window.read_line("Edit task title: ") {
           // If they hit Ctrl-C don't make the task afterall.
           None => return None,
           Some(task_title) => task_title
@@ -38,7 +38,7 @@ impl TaskAction {
       }
 
       // Record a task effort.
-      TaskCommand::RecordTaskEffort => reviewer.scroller.current_task().and_then(|task| {
+      TaskCommand::RecordTaskEffort => application.scroller.current_task().and_then(|task| {
         Some(TaskAction::RecordTaskEffort {
           task_id: task.id,
           task_event: None,
@@ -46,7 +46,7 @@ impl TaskAction {
       }),
 
       // Request a task delay.
-      TaskCommand::RequestTaskDelay => reviewer.scroller.current_task().and_then(|task| {
+      TaskCommand::RequestTaskDelay => application.scroller.current_task().and_then(|task| {
         Some(TaskAction::RequestTaskDelay {
           task_id: task.id,
           task_event: None,
@@ -54,10 +54,10 @@ impl TaskAction {
       }),
 
       // Update a task attribute.
-      TaskCommand::UpdateTask(cmd) => reviewer
+      TaskCommand::UpdateTask(cmd) => application
         .scroller
         .current_task()
-        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, &task, reviewer))
+        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, &task, application))
         .map(|ta| TaskAction::TaskUpdate(ta)),
     }
   }

@@ -1,6 +1,6 @@
 use actions::{Action, ShutdownAction};
 use commands::{FiltererCommand, ScrollCommand, TaskCommand, TaskUpdateCommand, UndoBufferCommand};
-use components::Reviewer;
+use application::Application;
 use models::{Direction, End, TaskStatus};
 
 #[derive(Clone, Copy, Debug)]
@@ -46,14 +46,14 @@ impl Command {
     Some(command)
   }
 
-  pub fn to_action(self, reviewer: &mut Reviewer) -> Option<Box<dyn Action>> {
+  pub fn to_action(self, application: &mut Application) -> Option<Box<dyn Action>> {
     use self::Command::*;
 
     match self {
-      Filter(fc) => fc.to_action(reviewer),
+      Filter(fc) => fc.to_action(application),
       Scroll(sc) => Some(Box::new(sc)),
       Shutdown => Some(Box::new(ShutdownAction())),
-      Task(tc) => tc.to_action(reviewer),
+      Task(tc) => tc.to_action(application),
       Undo(ubc) => Some(Box::new(ubc)),
     }
   }
