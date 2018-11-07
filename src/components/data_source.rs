@@ -62,8 +62,10 @@ impl DataSource {
     results.sort_by_key(|result| result.score);
     results.reverse();
 
-    let mut state = self.state.borrow_mut();
-    state.results = Some(Rc::new(results));
+    {
+      let mut state = self.state.borrow_mut();
+      state.results = Some(Rc::new(results));
+    }
     self.push();
   }
 

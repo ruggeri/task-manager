@@ -105,8 +105,10 @@ impl Scroller {
     let old_task_id = self.current_task_id();
     let old_result_idx = self.current_result_idx();
 
-    let mut state = self.state.borrow_mut();
-    state.results = new_results;
+    {
+      let mut state = self.state.borrow_mut();
+      state.results = new_results;
+    }
 
     // Try to jump to previous selected task.
     if let Some(old_task_id) = old_task_id {
