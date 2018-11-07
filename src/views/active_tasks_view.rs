@@ -76,7 +76,11 @@ impl ActiveTasksView {
     let data_source = Rc::new(data_source);
 
     // Setup UndoBuffer
-    let undo_buffer = Rc::new(UndoBuffer::new());
+    let undo_buffer = Rc::new(UndoBuffer::new(ActiveTasksViewState {
+      data_source_state: data_source.state(),
+      filterer_state: filterer.state(),
+      scroller_state: scroller.state(),
+    }));
 
     let view = ActiveTasksView {
       connection,
@@ -108,31 +112,36 @@ impl ActiveTasksView {
     let action = ActiveTasksViewCommand::from_key(ch)
       .and_then(|cmd| cmd.to_action(self));
 
-    if let Some(mut action) = action {
-      action.execute();
-
-      use self::ActiveTasksViewAction::*;
-      match action {
-        Filterer { fa } => {
-          self.data_source.push();
-          self.scroller.push();
-          self.undo_buffer.append_item(self.state(), Box::new(fa));
-        }
-        Scroll { .. } => {
-          self.scroller.push();
-        }
-        Task { ta } => {
-          self.data_source.pull(&self.connection);
-          self.undo_buffer.append_item(self.state(), Box::new(ta));
-        },
-        UndoBuffer { .. } => {
-          // On any undo buffer action, after restoring the states, tell
-          // the data source to do a nice clean refresh.
-          self.data_source.pull(&self.connection)
-        }
-      }
+    if let Some(action) = action {
+      self.handle_action(action)
     } else {
+      // Redraw screen regardless.
       self.task_results_window.redraw(&self.scroller);
+    }
+  }
+
+  pub fn handle_action(&self, mut action: ActiveTasksViewAction) {
+    self.undo_buffer.set_current_state(self.state());
+    action.execute();
+
+    use self::ActiveTasksViewAction::*;
+    match action {
+      Filterer { fa } => {
+        self.data_source.push();
+        self.undo_buffer.append_item(self.state(), Box::new(fa));
+      }
+      Scroll { .. } => {
+        self.scroller.push();
+      }
+      Task { ta } => {
+        self.data_source.pull(&self.connection);
+        self.undo_buffer.append_item(self.state(), Box::new(ta));
+      },
+      UndoBuffer { .. } => {
+        // On any undo buffer action, after restoring the states, tell
+        // the data source to do a nice clean refresh.
+        self.data_source.pull(&self.connection)
+      }
     }
   }
 

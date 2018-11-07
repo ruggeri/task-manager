@@ -5,10 +5,11 @@ type Callback<State> = Fn(&State) -> ();
 
 pub struct UndoItem<State> {
   action: Box<dyn ReversableAction>,
-  state: State,
+  state_after_action: State,
 }
 
 pub struct UndoBuffer<State> {
+  initial_state: RefCell<State>,
   items: RefCell<Vec<UndoItem<State>>>,
   idx: Cell<Option<usize>>,
   callback: RefCell<Option<Box<Callback<State>>>>,
@@ -17,8 +18,9 @@ pub struct UndoBuffer<State> {
 // TODO: Just need to pass in a method to perform the state update...
 impl<State> UndoBuffer<State> {
   #![allow(new_without_default_derive)]
-  pub fn new() -> UndoBuffer<State> {
+  pub fn new(initial_state: State) -> UndoBuffer<State> {
     UndoBuffer {
+      initial_state: RefCell::new(initial_state),
       items: RefCell::new(vec![]),
       idx: Cell::new(None),
       callback: RefCell::new(None),
@@ -44,15 +46,9 @@ impl<State> UndoBuffer<State> {
       let action = &mut items[redo_idx].action;
       action.execute();
     }
-    self.idx.set(Some(redo_idx));
 
-    {
-      let items = self.items.borrow();
-      let state = &items[redo_idx].state;
-      let callback_option = self.callback.borrow();
-      let callback = callback_option.as_ref().expect("UndoBuffer expects callback");
-      callback(state);
-    }
+    self.idx.set(Some(redo_idx));
+    self.execute_callback_on_current_state();
   }
 
   pub fn undo(&self) {
@@ -66,21 +62,38 @@ impl<State> UndoBuffer<State> {
       let action = &mut items[undo_idx].action;
       action.unexecute();
     }
-    self.idx.set(if undo_idx > 0 { Some(undo_idx - 1) } else { None });
 
-    {
-      let items = self.items.borrow();
-      let state = &items[undo_idx].state;
-      let callback_option = self.callback.borrow();
-      let callback = callback_option.as_ref().expect("UndoBuffer expects callback");
-      callback(state);
-    }
+    self.idx.set(if undo_idx > 0 { Some(undo_idx - 1) } else { None });
+    self.execute_callback_on_current_state();
   }
 
-  pub fn append_item(&self, state: State, action: Box<dyn ReversableAction>) {
+  pub fn execute_callback_on_current_state(&self) {
+    let initial_state = self.initial_state.borrow();
+    let items = self.items.borrow();
+    let current_state = match self.idx.get() {
+      None => &initial_state,
+      Some(idx) => &items[idx].state_after_action
+    };
+
+    let callback_option = self.callback.borrow();
+    let callback = callback_option.as_ref().expect("UndoBuffer expects callback");
+    callback(current_state);
+  }
+
+  pub fn set_current_state(&self, state: State) {
+    match self.idx.get() {
+      None => { self.initial_state.replace(state); },
+      Some(idx) => {
+        let mut items = self.items.borrow_mut();
+        items[idx].state_after_action = state;
+      }
+    };
+  }
+
+  pub fn append_item(&self, state_after_action: State, action: Box<dyn ReversableAction>) {
     let item = UndoItem {
       action,
-      state,
+      state_after_action,
     };
 
     let mut items = self.items.borrow_mut();
