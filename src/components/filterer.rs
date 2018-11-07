@@ -18,16 +18,25 @@ impl Default for RequiresInternetFiltererValue {
   }
 }
 
+#[derive(Clone, Copy, Default)]
+pub struct FiltererState {
+  requires_internet_value: RequiresInternetFiltererValue
+}
+
 #[derive(Default)]
-pub struct AttributeFilter {
-  pub requires_internet_value: Cell<RequiresInternetFiltererValue>,
+pub struct Filterer {
+  pub state: Cell<FiltererState>,
   callbacks: Vec<Box<Callback>>,
 }
 
-impl AttributeFilter {
-  pub fn new() -> AttributeFilter {
-    AttributeFilter {
-      requires_internet_value: Cell::new(RequiresInternetFiltererValue::Any),
+impl Filterer {
+  pub fn new() -> Filterer {
+    let state = FiltererState {
+      requires_internet_value: RequiresInternetFiltererValue::Any
+    };
+
+    Filterer {
+      state: Cell::new(state),
       callbacks: vec![]
     }
   }
@@ -39,7 +48,7 @@ impl AttributeFilter {
   pub fn filter_result(&self, result: &data_source::Result) -> bool {
     use self::RequiresInternetFiltererValue::*;
 
-    match self.requires_internet_value.get() {
+    match self.requires_internet_value() {
       Any => true,
       No => !result.task.requires_internet,
       Yes => result.task.requires_internet,
@@ -55,5 +64,19 @@ impl AttributeFilter {
     for callback in &self.callbacks {
       callback(&filtered_results);
     }
+  }
+
+  pub fn requires_internet_value(&self) -> RequiresInternetFiltererValue {
+    self.state.get().requires_internet_value
+  }
+
+  pub fn set_requires_internet_value(&self, new_value: RequiresInternetFiltererValue) {
+    let mut state = self.state.get();
+    state.requires_internet_value = new_value;
+    self.state.set(state);
+  }
+
+  pub fn state(&self) -> FiltererState {
+    self.state.get().clone()
   }
 }

@@ -1,24 +1,31 @@
 use super::data_source;
 use models::{Direction, End, Task};
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::rc::Rc;
 
 type Callback = dyn Fn(&Scroller) -> ();
 type ResultsVec = Rc<Vec<data_source::Result>>;
 
+#[derive(Clone)]
+pub struct ScrollerState {
+  pub current_result_idx: i32,
+  pub results: ResultsVec,
+}
+
 pub struct Scroller {
-  pub current_result_idx: Cell<i32>,
-  pub current_task_id: Cell<Option<i32>>,
-  pub results: RefCell<ResultsVec>,
+  pub state: RefCell<ScrollerState>,
   pub callbacks: Vec<Box<Callback>>
 }
 
 impl Scroller {
   pub fn new() -> Scroller {
+    let state = ScrollerState {
+      current_result_idx: 0,
+      results: Rc::new(vec![]),
+    };
+
     Scroller {
-      current_result_idx: Cell::new(0),
-      current_task_id: Cell::new(None),
-      results: RefCell::new(Rc::new(vec![])),
+      state: RefCell::new(state),
       callbacks: vec![],
     }
   }
@@ -28,11 +35,17 @@ impl Scroller {
   }
 
   pub fn current_task_id(&self) -> Option<i32> {
-    self.current_task_id.get()
+    let results = self.results();
+    if results.is_empty() {
+      None
+    } else {
+      Some(results[self.current_result_idx() as usize].task.id)
+    }
   }
 
   pub fn current_result_idx(&self) -> i32 {
-    self.current_result_idx.get()
+    let state = self.state.borrow();
+    state.current_result_idx
   }
 
   pub fn set_current_result_idx(&self, mut new_result_idx: i32) {
@@ -44,15 +57,12 @@ impl Scroller {
       new_result_idx = num_results - 1;
     }
 
-    self.current_result_idx.set(new_result_idx);
-
-    // Reset the current_task_id too.
-    let new_task_id = self.current_task().map(|t| t.id);
-    self.current_task_id.set(new_task_id);
+    let mut state = self.state.borrow_mut();
+    state.current_result_idx = new_result_idx;
   }
 
   pub fn results(&self) -> Rc<Vec<data_source::Result>> {
-    Rc::clone(&self.results.borrow())
+    Rc::clone(&self.state.borrow().results)
   }
 
   pub fn num_results(&self) -> i32 {
@@ -89,21 +99,27 @@ impl Scroller {
   }
 
   pub fn refresh(&self, results: &ResultsVec) {
-    *self.results.borrow_mut() = Rc::clone(results);
+    let new_results = Rc::clone(results);
 
     // First try to match to prev task's id. Find that idx.
-    let prev_task_id = self.current_task_id();
-    if let Some(prev_task_id) = prev_task_id {
-      if self.jump_to_task_id(prev_task_id) {
+    let old_task_id = self.current_task_id();
+    let old_result_idx = self.current_result_idx();
+
+    let mut state = self.state.borrow_mut();
+    state.results = new_results;
+
+    // Try to jump to previous selected task.
+    if let Some(old_task_id) = old_task_id {
+      if self.jump_to_task_id(old_task_id) {
         return;
       }
     }
 
     // Couldn't find moved task. Maintain current position. We'll
     // deal with falling off the end in the setter.
-    let old_result_idx = self.current_result_idx();
     self.set_current_result_idx(old_result_idx);
 
+    // Push changes on down the line.
     self.push();
   }
 
@@ -111,5 +127,9 @@ impl Scroller {
     for callback in &self.callbacks {
       callback(&self);
     }
+  }
+
+  pub fn state(&self) -> ScrollerState {
+    self.state.borrow().clone()
   }
 }

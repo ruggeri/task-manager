@@ -1,7 +1,7 @@
 use actions::{ForwardAction, ReversableAction};
 use commands::FiltererCommand;
 use components::{
-  AttributeFilter,
+  Filterer,
   filterer::RequiresInternetFiltererValue
 };
 use std::rc::Rc;
@@ -11,7 +11,7 @@ use util::ui::Window;
 pub enum FiltererAction {
   UpdateRequiresInternet {
     new_value: RequiresInternetFiltererValue,
-    filterer: Rc<AttributeFilter>,
+    filterer: Rc<Filterer>,
   },
 }
 
@@ -21,7 +21,7 @@ impl ForwardAction for FiltererAction {
 
     match self {
       UpdateRequiresInternet { new_value, filterer, .. } => {
-        filterer.requires_internet_value.set(*new_value);
+        filterer.set_requires_internet_value(*new_value);
       }
     }
   }
@@ -55,8 +55,8 @@ fn read_requires_internet_value(window: &Window) -> Option<RequiresInternetFilte
   }
 }
 
-fn new_requires_internet_filterer_action(window: &Window, filterer: &Rc<AttributeFilter>) -> Option<FiltererAction> {
-  let old_value = filterer.requires_internet_value.get();
+fn new_requires_internet_filterer_action(window: &Window, filterer: &Rc<Filterer>) -> Option<FiltererAction> {
+  let old_value = filterer.requires_internet_value();
   let new_value = match read_requires_internet_value(window) {
     None => return None,
     Some(new_value) => new_value
@@ -78,7 +78,7 @@ impl FiltererAction {
   pub fn prepare_from_cmd(
     cmd: FiltererCommand,
     window: &Window,
-    filterer: &Rc<AttributeFilter>,
+    filterer: &Rc<Filterer>,
   ) -> Option<FiltererAction> {
     use self::FiltererCommand::*;
 

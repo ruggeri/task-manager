@@ -19,16 +19,25 @@ pub struct Result {
   pub score: i64,
 }
 
+#[derive(Clone)]
+pub struct DataSourceState {
+  results: Option<ResultsVec>
+}
+
 pub struct DataSource {
+  state: RefCell<DataSourceState>,
   callbacks: Vec<Box<Callback>>,
-  results: RefCell<Option<ResultsVec>>,
 }
 
 impl DataSource {
   pub fn new() -> DataSource {
+    let state = DataSourceState {
+      results: None
+    };
+
     DataSource {
+      state: RefCell::new(state),
       callbacks: vec![],
-      results: RefCell::new(None),
     }
   }
 
@@ -53,20 +62,24 @@ impl DataSource {
     results.sort_by_key(|result| result.score);
     results.reverse();
 
-    *self.results.borrow_mut() = Some(Rc::new(results));
+    let mut state = self.state.borrow_mut();
+    state.results = Some(Rc::new(results));
     self.push();
   }
 
   pub fn push(&self) {
-    let results = match self.results.borrow().clone() {
+    let state = self.state.borrow();
+    let results = match state.results.clone() {
       None => panic!("Why are we pushing with no results?"),
       Some(results) => results
     };
 
     for callback in &self.callbacks {
-      // TODO: I'm not happy with how I have to keep cloning Vecs
-      // everywhere...
       callback(&results);
     }
+  }
+
+  pub fn state(&self) -> DataSourceState {
+    self.state.borrow().clone()
   }
 }

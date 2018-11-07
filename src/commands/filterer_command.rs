@@ -1,5 +1,5 @@
 use actions::FiltererAction;
-use components::AttributeFilter;
+use components::Filterer;
 use std::rc::Rc;
 use util::ui::Window;
 
@@ -9,7 +9,7 @@ pub enum FiltererCommand {
 }
 
 impl FiltererCommand {
-  pub fn to_action(self, window: &Window, filterer: &Rc<AttributeFilter>) -> Option<FiltererAction> {
+  pub fn to_action(self, window: &Window, filterer: &Rc<Filterer>) -> Option<FiltererAction> {
     use self::FiltererCommand::*;
     match self {
       FilterByRequiresInternet => {

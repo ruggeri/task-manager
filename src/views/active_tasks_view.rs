@@ -1,6 +1,15 @@
 use actions::{ActiveTasksViewAction, ForwardAction};
 use commands::ActiveTasksViewCommand;
-use components::{AttributeFilter, DataSource, Scroller, TaskResultsWindow, UndoBuffer};
+use components::{
+  DataSource,
+  DataSourceState,
+  Filterer,
+  FiltererState,
+  Scroller,
+  ScrollerState,
+  TaskResultsWindow,
+  UndoBuffer
+};
 use diesel::pg::PgConnection;
 use std::rc::Rc;
 use util::{get_connection, ui::Window};
@@ -10,9 +19,16 @@ pub struct ActiveTasksView {
   pub root_window: Rc<Window>,
   pub task_results_window: Rc<TaskResultsWindow>,
   pub scroller: Rc<Scroller>,
-  pub filterer: Rc<AttributeFilter>,
+  pub filterer: Rc<Filterer>,
   pub data_source: Rc<DataSource>,
   pub undo_buffer: Rc<UndoBuffer>,
+}
+
+#[derive(Clone)]
+pub struct ActiveTasksViewState {
+  pub scroller_state: ScrollerState,
+  pub filterer_state: FiltererState,
+  pub data_source_state: DataSourceState,
 }
 
 impl ActiveTasksView {
@@ -38,7 +54,7 @@ impl ActiveTasksView {
     let scroller = Rc::new(scroller);
 
     // Setup Filterer.
-    let mut filterer = AttributeFilter::new();
+    let mut filterer = Filterer::new();
     // Scroller pulls from Filterer.
     {
       let scroller = Rc::clone(&scroller);
@@ -104,6 +120,14 @@ impl ActiveTasksView {
       // if action.can_be_unexecuted() {
       //   self.undo_buffer.append_action(action);
       // }
+    }
+  }
+
+  pub fn state(&self) -> ActiveTasksViewState {
+    ActiveTasksViewState {
+      scroller_state: self.scroller.state().clone(),
+      filterer_state: self.filterer.state().clone(),
+      data_source_state: self.data_source.state().clone(),
     }
   }
 }
