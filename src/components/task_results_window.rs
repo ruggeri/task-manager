@@ -49,7 +49,7 @@ impl TaskResultsWindow {
       .max()
       .unwrap_or(0);
 
-    self.display_header(scroller, max_title_len);
+    self.display_header(max_title_len);
 
     // TODO: This is a bad idea. I want to have interior mutability, but
     // here we can see it's sneaking out.
@@ -58,7 +58,7 @@ impl TaskResultsWindow {
     }
   }
 
-  fn display_header(&self, scroller: &Scroller, max_title_len: usize) {
+  fn display_header(&self, max_title_len: usize) {
     let pwindow = self.pwindow();
     pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     pwindow.attron(pancurses::A_BOLD);

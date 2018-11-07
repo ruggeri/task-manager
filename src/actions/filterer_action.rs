@@ -39,7 +39,6 @@ impl ReversableAction for FiltererAction {
   }
 }
 
-#[allow(option_option)]
 fn read_requires_internet_value(window: &Window) -> Option<RequiresInternetFiltererValue> {
   let str_value = window.read_line("Requires internet value: ");
 

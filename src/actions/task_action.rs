@@ -26,7 +26,7 @@ pub enum TaskAction {
 }
 
 impl TaskAction {
-  pub fn prepare_from_cmd<F>(cmd: TaskCommand, window: &Window, connection: &Rc<PgConnection>, currentTaskFn: F) -> Option<TaskAction>
+  pub fn prepare_from_cmd<F>(cmd: TaskCommand, window: &Window, connection: &Rc<PgConnection>, current_task_fn: F) -> Option<TaskAction>
   where F: Fn() -> Option<Task> {
     match cmd {
       // Create a task.
@@ -45,7 +45,7 @@ impl TaskAction {
       }
 
       // Record a task effort.
-      TaskCommand::RecordTaskEffort => currentTaskFn().and_then(|task| {
+      TaskCommand::RecordTaskEffort => current_task_fn().and_then(|task| {
         Some(TaskAction::RecordTaskEffort {
           task_id: task.id,
           task_event: None,
@@ -54,7 +54,7 @@ impl TaskAction {
       }),
 
       // Request a task delay.
-      TaskCommand::RequestTaskDelay => currentTaskFn().and_then(|task| {
+      TaskCommand::RequestTaskDelay => current_task_fn().and_then(|task| {
         Some(TaskAction::RequestTaskDelay {
           task_id: task.id,
           task_event: None,
@@ -63,7 +63,7 @@ impl TaskAction {
       }),
 
       // Update a task attribute.
-      TaskCommand::UpdateTask(cmd) => currentTaskFn()
+      TaskCommand::UpdateTask(cmd) => current_task_fn()
         .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, task, window, connection))
         .map(|ta| TaskAction::TaskUpdate(ta)),
     }

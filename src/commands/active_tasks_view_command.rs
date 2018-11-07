@@ -1,7 +1,7 @@
 use actions::ActiveTasksViewAction;
 use commands::{FiltererCommand, ScrollCommand, TaskCommand, TaskUpdateCommand, UndoBufferCommand};
-use views::ActiveTasksView;
 use models::{Direction, End, TaskStatus};
+use views::ActiveTasksView;
 
 #[derive(Clone, Copy, Debug)]
 pub enum ActiveTasksViewCommand {
@@ -44,7 +44,7 @@ impl ActiveTasksViewCommand {
     Some(command)
   }
 
-  pub fn to_action(self, view: &mut ActiveTasksView) -> Option<ActiveTasksViewAction> {
+  pub fn to_action(self, view: &ActiveTasksView) -> Option<ActiveTasksViewAction> {
     ActiveTasksViewAction::prepare_from_command(self, view)
   }
 }

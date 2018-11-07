@@ -1,3 +1,4 @@
+use actions::ForwardAction;
 use commands::ActiveTasksViewCommand;
 use components::{AttributeFilter, DataSource, Scroller, TaskResultsWindow, UndoBuffer};
 use diesel::pg::PgConnection;
@@ -16,6 +17,9 @@ pub struct ActiveTasksView {
 
 impl ActiveTasksView {
   pub fn new(root_window: &Rc<Window>) -> ActiveTasksView {
+    // We need our own copy of the root window.
+    let root_window = Rc::clone(root_window);
+
     // Setup connection
     let connection = Rc::new(get_connection());
 
@@ -23,7 +27,7 @@ impl ActiveTasksView {
     let task_results_window = Rc::new(TaskResultsWindow::new(&root_window));
 
     // Setup Scroller.
-    let mut scroller = Rc::new(Scroller::new());
+    let mut scroller = Scroller::new();
     // TaskResultsWindow listens to Scroller.
     {
       let task_results_window = Rc::clone(&task_results_window);
@@ -31,9 +35,10 @@ impl ActiveTasksView {
         task_results_window.redraw(scroller);
       }));
     }
+    let scroller = Rc::new(scroller);
 
     // Setup Filterer.
-    let mut filterer = Rc::new(AttributeFilter::new());
+    let mut filterer = AttributeFilter::new();
     // Scroller pulls from Filterer.
     {
       let scroller = Rc::clone(&scroller);
@@ -41,9 +46,10 @@ impl ActiveTasksView {
         scroller.refresh(filtered_results);
       }));
     }
+    let filterer = Rc::new(filterer);
 
     // Setup DataSource
-    let mut data_source = Rc::new(DataSource::new());
+    let mut data_source = DataSource::new();
     // Filterer listens to DataSource.
     {
       let filterer = Rc::clone(&filterer);
@@ -51,6 +57,7 @@ impl ActiveTasksView {
         filterer.refresh(results);
       }));
     }
+    let data_source = Rc::new(data_source);
 
     // Setup UndoBuffer
     let undo_buffer = Rc::new(UndoBuffer::new());
@@ -70,34 +77,17 @@ impl ActiveTasksView {
     view
   }
 
-  pub fn handle_key(&mut self, ch: char) {
-    let action = ActiveTasksViewCommand::from_key(ch).and_then(|cmd| cmd.to_action(self));
+  pub fn handle_key(&self, ch: char) {
+    let action = ActiveTasksViewCommand::from_key(ch)
+      .and_then(|cmd| cmd.to_action(self));
+
     if let Some(mut action) = action {
-      action.execute(self);
+      action.execute();
 
-      if action.can_be_unexecuted() {
-        self.undo_buffer.append_action(action);
-      }
-    }
-  }
-
-  pub fn execute_action_request(&self, action_request: ActionRequest) {
-    use self::ActionRequest::*;
-    match action_request {
-      RequestFiltererUpdate => {
-        // TODO: This is lazy to do a pull from the data source. We
-        // don't need to requery; we can filter results already pulled
-        // down.
-        self.data_source.refresh();
-        self.task_results_window.redraw();
-      }
-      RequestScrollerUpdate => {
-        self.task_results_window.redraw();
-      }
-      RequestDataSourceUpdate => {
-        self.data_source.refresh();
-        self.task_results_window.redraw();
-      }
+      // TODO: will have to put undoing back in soon.
+      // if action.can_be_unexecuted() {
+      //   self.undo_buffer.append_action(action);
+      // }
     }
   }
 }

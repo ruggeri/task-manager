@@ -11,7 +11,7 @@ pub struct Application {
 }
 
 impl Application {
-  pub fn new(max_results_to_display: usize) -> Application {
+  pub fn new() -> Application {
     let window = Rc::new(Window::new());
     Application {
       view: ActiveTasksView::new(&window),
