@@ -1,4 +1,4 @@
-use actions::ForwardAction;
+use actions::{ActiveTasksViewAction, ForwardAction};
 use commands::ActiveTasksViewCommand;
 use components::{AttributeFilter, DataSource, Scroller, TaskResultsWindow, UndoBuffer};
 use diesel::pg::PgConnection;
@@ -72,7 +72,7 @@ impl ActiveTasksView {
       undo_buffer,
     };
 
-    view.data_source.refresh(&view.connection);
+    view.data_source.pull(&view.connection);
 
     view
   }
@@ -83,6 +83,22 @@ impl ActiveTasksView {
 
     if let Some(mut action) = action {
       action.execute();
+
+      use self::ActiveTasksViewAction::*;
+      match action {
+        Filterer { .. } => {
+          self.data_source.push();
+        }
+        Scroll { .. } => {
+          self.scroller.push();
+        }
+        Task { .. } => {
+          self.data_source.pull(&self.connection);
+        },
+        UndoBuffer { .. } => {
+          // TODO: This is what we have to deal with.
+        }
+      }
 
       // TODO: will have to put undoing back in soon.
       // if action.can_be_unexecuted() {

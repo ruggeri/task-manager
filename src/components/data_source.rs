@@ -3,6 +3,7 @@ use chrono::{Duration, Utc};
 use diesel::pg::PgConnection;
 use models::{Task, TaskEvent};
 use queries::{task as task_queries, task_event as te_queries};
+use std::cell::RefCell;
 
 type Callback = dyn Fn(Vec<Result>) -> ();
 type DateTime = ::chrono::DateTime<::chrono::Utc>;
@@ -17,13 +18,15 @@ pub struct Result {
 }
 
 pub struct DataSource {
-  callbacks: Vec<Box<Callback>>
+  callbacks: Vec<Box<Callback>>,
+  results: RefCell<Option<Vec<Result>>>,
 }
 
 impl DataSource {
   pub fn new() -> DataSource {
     DataSource {
-      callbacks: vec![]
+      callbacks: vec![],
+      results: RefCell::new(None),
     }
   }
 
@@ -31,7 +34,7 @@ impl DataSource {
     self.callbacks.push(callback);
   }
 
-  pub fn refresh(&self, connection: &PgConnection) {
+  pub fn pull(&self, connection: &PgConnection) {
     let current_time = Utc::now();
 
     let mut results: Vec<_> = task_queries::all_available_to_perform(&connection)
@@ -47,6 +50,16 @@ impl DataSource {
 
     results.sort_by_key(|result| result.score);
     results.reverse();
+
+    *self.results.borrow_mut() = Some(results);
+    self.push();
+  }
+
+  pub fn push(&self) {
+    let results = match self.results.borrow().clone() {
+      None => panic!("Why are we pushing with no results?"),
+      Some(results) => results
+    };
 
     for callback in &self.callbacks {
       // TODO: I'm not happy with how I have to keep cloning Vecs

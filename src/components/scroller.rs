@@ -104,7 +104,10 @@ impl Scroller {
     let old_result_idx = self.current_result_idx();
     self.set_current_result_idx(old_result_idx);
 
-    // Call callbacks
+    self.push();
+  }
+
+  pub fn push(&self) {
     for callback in &self.callbacks {
       callback(&self);
     }
