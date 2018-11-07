@@ -115,6 +115,7 @@ impl ActiveTasksView {
       match action {
         Filterer { fa } => {
           self.data_source.push();
+          self.scroller.push();
           self.undo_buffer.append_item(self.state(), Box::new(fa));
         }
         Scroll { .. } => {
@@ -130,6 +131,8 @@ impl ActiveTasksView {
           self.data_source.pull(&self.connection)
         }
       }
+    } else {
+      self.task_results_window.redraw(&self.scroller);
     }
   }
 

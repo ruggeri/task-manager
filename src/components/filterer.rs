@@ -77,7 +77,7 @@ impl Filterer {
   }
 
   pub fn state(&self) -> FiltererState {
-    self.state.get().clone()
+    self.state.get()
   }
 
   pub fn restore_state(&self, state: FiltererState) {

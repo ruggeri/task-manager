@@ -113,6 +113,8 @@ impl Scroller {
     // Try to jump to previous selected task.
     if let Some(old_task_id) = old_task_id {
       if self.jump_to_task_id(old_task_id) {
+        // TODO: HACK. This is repeating the end of the function.
+        self.push();
         return;
       }
     }
