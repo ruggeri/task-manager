@@ -1,8 +1,9 @@
 use components::data_source;
 use std::cell::Cell;
+use std::rc::Rc;
 
-type ResultsVec = Vec<data_source::Result>;
-type Callback = dyn Fn(ResultsVec) -> ();
+type ResultsVec = Rc<Vec<data_source::Result>>;
+type Callback = dyn Fn(&ResultsVec) -> ();
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RequiresInternetFiltererValue {
@@ -45,13 +46,14 @@ impl AttributeFilter {
     }
   }
 
-  pub fn refresh(&self, results: ResultsVec) {
-    for callback in &self.callbacks {
-      let filtered_results = results.iter().filter(|result| {
-        self.filter_result(result)
-      }).cloned().collect();
+  pub fn refresh(&self, results: &ResultsVec) {
+    let filtered_results: Vec<data_source::Result> = results.iter().filter(|result| {
+      self.filter_result(result)
+    }).cloned().collect();
 
-      callback(filtered_results);
+    let filtered_results = Rc::new(filtered_results);
+    for callback in &self.callbacks {
+      callback(&filtered_results);
     }
   }
 }

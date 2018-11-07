@@ -86,7 +86,7 @@ impl ActiveTasksView {
 
       use self::ActiveTasksViewAction::*;
       match action {
-        Filterer { .. } => {
+        Filterer { fa } => {
           self.data_source.push();
         }
         Scroll { .. } => {
@@ -95,7 +95,7 @@ impl ActiveTasksView {
         Task { .. } => {
           self.data_source.pull(&self.connection);
         },
-        UndoBuffer { .. } => {
+        UndoBuffer { uba } => {
           // TODO: This is what we have to deal with.
         }
       }

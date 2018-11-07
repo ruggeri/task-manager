@@ -4,8 +4,10 @@ use diesel::pg::PgConnection;
 use models::{Task, TaskEvent};
 use queries::{task as task_queries, task_event as te_queries};
 use std::cell::RefCell;
+use std::rc::Rc;
 
-type Callback = dyn Fn(Vec<Result>) -> ();
+type ResultsVec = Rc<Vec<Result>>;
+type Callback = dyn Fn(&ResultsVec) -> ();
 type DateTime = ::chrono::DateTime<::chrono::Utc>;
 
 #[derive(Clone)]
@@ -19,7 +21,7 @@ pub struct Result {
 
 pub struct DataSource {
   callbacks: Vec<Box<Callback>>,
-  results: RefCell<Option<Vec<Result>>>,
+  results: RefCell<Option<ResultsVec>>,
 }
 
 impl DataSource {
@@ -51,7 +53,7 @@ impl DataSource {
     results.sort_by_key(|result| result.score);
     results.reverse();
 
-    *self.results.borrow_mut() = Some(results);
+    *self.results.borrow_mut() = Some(Rc::new(results));
     self.push();
   }
 
@@ -64,7 +66,7 @@ impl DataSource {
     for callback in &self.callbacks {
       // TODO: I'm not happy with how I have to keep cloning Vecs
       // everywhere...
-      callback(results.clone());
+      callback(&results);
     }
   }
 }

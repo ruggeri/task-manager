@@ -1,9 +1,10 @@
 use super::data_source;
 use models::{Direction, End, Task};
-use std::cell::{Cell, Ref, RefCell};
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
 
 type Callback = dyn Fn(&Scroller) -> ();
-type ResultsVec = Vec<data_source::Result>;
+type ResultsVec = Rc<Vec<data_source::Result>>;
 
 pub struct Scroller {
   pub current_result_idx: Cell<i32>,
@@ -17,7 +18,7 @@ impl Scroller {
     Scroller {
       current_result_idx: Cell::new(0),
       current_task_id: Cell::new(None),
-      results: RefCell::new(vec![]),
+      results: RefCell::new(Rc::new(vec![])),
       callbacks: vec![],
     }
   }
@@ -50,9 +51,8 @@ impl Scroller {
     self.current_task_id.set(new_task_id);
   }
 
-  // TODO: Bad idea to pass someone outside the class a Ref.
-  pub fn results(&self) -> Ref<Vec<data_source::Result>> {
-    self.results.borrow()
+  pub fn results(&self) -> Rc<Vec<data_source::Result>> {
+    Rc::clone(&self.results.borrow())
   }
 
   pub fn num_results(&self) -> i32 {
@@ -88,8 +88,8 @@ impl Scroller {
       .is_some()
   }
 
-  pub fn refresh(&self, results: ResultsVec) {
-    *self.results.borrow_mut() = results;
+  pub fn refresh(&self, results: &ResultsVec) {
+    *self.results.borrow_mut() = Rc::clone(results);
 
     // First try to match to prev task's id. Find that idx.
     let prev_task_id = self.current_task_id();
