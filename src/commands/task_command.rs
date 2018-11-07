@@ -1,6 +1,6 @@
 use actions::TaskAction;
 use diesel::pg::PgConnection;
-use models::{Direction, TaskStatus};
+use models::{Direction, Task, TaskStatus};
 use std::rc::Rc;
 use util::ui::Window;
 
@@ -22,7 +22,8 @@ pub enum TaskUpdateCommand {
 }
 
 impl TaskCommand {
-  pub fn to_action<F>(self, window: &Window, connection: &Rc<PgConnection>, currentTaskFn: F) -> Option<TaskAction> {
+  pub fn to_action<F>(self, window: &Window, connection: &Rc<PgConnection>, currentTaskFn: F) -> Option<TaskAction>
+    where F: Fn() -> Option<Task> {
     TaskAction::prepare_from_cmd(self, window, connection, currentTaskFn)
   }
 }

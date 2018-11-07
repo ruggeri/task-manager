@@ -3,7 +3,6 @@ use chrono::{Duration, Utc};
 use diesel::pg::PgConnection;
 use models::{Task, TaskEvent};
 use queries::{task as task_queries, task_event as te_queries};
-use std::rc::Rc;
 
 type Callback = dyn Fn(Vec<Result>) -> ();
 type DateTime = ::chrono::DateTime<::chrono::Utc>;
@@ -18,14 +17,12 @@ pub struct Result {
 }
 
 pub struct DataSource {
-  connection: Rc<PgConnection>,
   callbacks: Vec<Box<Callback>>
 }
 
 impl DataSource {
-  pub fn new(connection: &Rc<PgConnection>) -> DataSource {
+  pub fn new() -> DataSource {
     DataSource {
-      connection: Rc::clone(connection),
       callbacks: vec![]
     }
   }
@@ -34,13 +31,13 @@ impl DataSource {
     self.callbacks.push(callback);
   }
 
-  pub fn refresh(&self) {
+  pub fn refresh(&self, connection: &PgConnection) {
     let current_time = Utc::now();
 
-    let mut results: Vec<_> = task_queries::all_available_to_perform(&self.connection)
+    let mut results: Vec<_> = task_queries::all_available_to_perform(&connection)
       .into_iter()
       .map(|task| {
-        let task_events = te_queries::task_events(&task, &self.connection);
+        let task_events = te_queries::task_events(&task, &connection);
         let last_effort_time = Scorer::last_effort_time(&task, &task_events);
         let last_effort_duration_since = current_time.signed_duration_since(last_effort_time);
         let score = Scorer::score_task(&task, &task_events, last_effort_duration_since);

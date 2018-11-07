@@ -2,24 +2,28 @@ use super::data_source;
 use models::{Direction, End, Task};
 use std::cell::{Cell, Ref, RefCell};
 
+type Callback = dyn Fn(&Scroller) -> ();
 type ResultsVec = Vec<data_source::Result>;
 
 pub struct Scroller {
   pub current_result_idx: Cell<i32>,
   pub current_task_id: Cell<Option<i32>>,
-  pub max_results_to_display: usize,
   pub results: RefCell<ResultsVec>,
+  pub callbacks: Vec<Box<Callback>>
 }
 
 impl Scroller {
-  // TODO: not using max_results_to_display!
-  pub fn new(max_results_to_display: usize) -> Scroller {
+  pub fn new() -> Scroller {
     Scroller {
       current_result_idx: Cell::new(0),
       current_task_id: Cell::new(None),
-      max_results_to_display,
       results: RefCell::new(vec![]),
+      callbacks: vec![],
     }
+  }
+
+  pub fn add_callback(&mut self, callback: Box<Callback>) {
+    self.callbacks.push(callback);
   }
 
   pub fn current_task_id(&self) -> Option<i32> {
@@ -99,5 +103,10 @@ impl Scroller {
     // deal with falling off the end in the setter.
     let old_result_idx = self.current_result_idx();
     self.set_current_result_idx(old_result_idx);
+
+    // Call callbacks
+    for callback in &self.callbacks {
+      callback(&self);
+    }
   }
 }

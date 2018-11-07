@@ -69,7 +69,7 @@ fn new_requires_internet_filterer_action(window: &Window, filterer: &Rc<Attribut
 
   let fa = FiltererAction::UpdateRequiresInternet {
     new_value,
-    filterer,
+    filterer: Rc::clone(filterer),
   };
 
   Some(fa)

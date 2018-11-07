@@ -26,14 +26,12 @@ fn format_task_age(age: Duration) -> String {
 
 pub struct TaskResultsWindow {
   window: Rc<UiWindow>,
-  scroller: Rc<Scroller>,
 }
 
 impl TaskResultsWindow {
-  pub fn new(window: &Rc<UiWindow>, scroller: &Rc<Scroller>) -> TaskResultsWindow {
+  pub fn new(window: &Rc<UiWindow>) -> TaskResultsWindow {
     TaskResultsWindow {
       window: Rc::clone(window),
-      scroller: Rc::clone(scroller),
     }
   }
 
@@ -41,27 +39,26 @@ impl TaskResultsWindow {
     &self.window.window
   }
 
-  pub fn redraw(&self) {
+  pub fn redraw(&self, scroller: &Scroller) {
     self.pwindow().clear();
 
-    let max_title_len = self
-      .scroller
+    let max_title_len = scroller
       .results()
       .iter()
       .map(|r| r.task.title.len())
       .max()
       .unwrap_or(0);
 
-    self.display_header(max_title_len);
+    self.display_header(scroller, max_title_len);
 
     // TODO: This is a bad idea. I want to have interior mutability, but
     // here we can see it's sneaking out.
-    for (idx, ref result) in self.scroller.results().iter().enumerate() {
-      self.display_result(idx as i32, result, max_title_len);
+    for (idx, ref result) in scroller.results().iter().enumerate() {
+      self.display_result(scroller, idx as i32, result, max_title_len);
     }
   }
 
-  fn display_header(&self, max_title_len: usize) {
+  fn display_header(&self, scroller: &Scroller, max_title_len: usize) {
     let pwindow = self.pwindow();
     pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     pwindow.attron(pancurses::A_BOLD);
@@ -79,11 +76,11 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::A_BOLD);
   }
 
-  fn display_result(&self, idx: i32, result: &data_source::Result, max_title_len: usize) {
+  fn display_result(&self, scroller: &Scroller, idx: i32, result: &data_source::Result, max_title_len: usize) {
     let pwindow = self.pwindow();
 
     // Choose appropriate color.
-    if idx == self.scroller.current_result_idx() {
+    if idx == scroller.current_result_idx() {
       pwindow.attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
 
@@ -132,7 +129,7 @@ impl TaskResultsWindow {
     // Print the line!
     pwindow.printw(&s);
 
-    if idx == self.scroller.current_result_idx() {
+    if idx == scroller.current_result_idx() {
       pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
   }

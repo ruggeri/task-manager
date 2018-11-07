@@ -1,9 +1,9 @@
 pub mod data_source;
-mod filterer;
-mod scorer;
-mod scroller;
-mod task_results_window;
-mod undo_buffer;
+pub mod filterer;
+pub mod scorer;
+pub mod scroller;
+pub mod task_results_window;
+pub mod undo_buffer;
 
 pub use self::data_source::DataSource;
 pub use self::filterer::AttributeFilter;

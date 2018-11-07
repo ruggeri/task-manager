@@ -1,9 +1,8 @@
-use actions::Action;
-use application::Application;
+use actions::ReversableAction;
 use std::cell::{Cell, RefCell};
 
 pub struct UndoBuffer {
-  actions: RefCell<Vec<Box<dyn Action>>>,
+  actions: RefCell<Vec<Box<dyn ReversableAction>>>,
   idx: Cell<Option<usize>>,
 }
 
@@ -16,7 +15,7 @@ impl UndoBuffer {
     }
   }
 
-  pub fn redo(&self, application: &Application) {
+  pub fn redo(&self) {
     let redo_idx = match self.idx.get() {
       None => 0,
       Some(idx) => idx + 1,
@@ -27,26 +26,26 @@ impl UndoBuffer {
       return;
     }
 
-    let result = actions[redo_idx].execute(application);
+    let result = actions[redo_idx].execute();
     self.idx.set(Some(redo_idx));
 
     result
   }
 
-  pub fn undo(&self, application: &Application) {
+  pub fn undo(&self) {
     let idx = match self.idx.get() {
       None => return,
       Some(idx) => idx,
     };
 
     let mut actions = self.actions.borrow_mut();
-    let result = actions[idx].unexecute(application);
+    let result = actions[idx].unexecute();
     self.idx.set(if idx > 0 { Some(idx - 1) } else { None });
 
     result
   }
 
-  pub fn append_action(&self, action: Box<dyn Action>) {
+  pub fn append_action(&self, action: Box<dyn ReversableAction>) {
     let mut actions = self.actions.borrow_mut();
 
     if let Some(idx) = self.idx.get() {

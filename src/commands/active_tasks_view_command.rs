@@ -12,7 +12,7 @@ pub enum ActiveTasksViewCommand {
 }
 
 impl ActiveTasksViewCommand {
-  pub fn from_key(ch: char) -> Option<ActiveTasksView> {
+  pub fn from_key(ch: char) -> Option<ActiveTasksViewCommand> {
     use self::{
       ActiveTasksViewCommand::*, Direction::*, End::*, FiltererCommand::*, ScrollCommand::*, TaskCommand::*, TaskStatus::*,
       TaskUpdateCommand::*,
@@ -36,15 +36,15 @@ impl ActiveTasksViewCommand {
       'P' => Task(UpdateTask(UpdatePriority(Increase))),
       'a' => Task(UpdateTask(UpdateStatus(Abandoned))),
       'c' => Task(UpdateTask(UpdateStatus(Completed))),
-      'U' => ActiveTasksViewCommand::Undo(UndoBufferCommand::Redo),
-      'u' => ActiveTasksViewCommand::Undo(UndoBufferCommand::Undo),
+      'U' => ActiveTasksViewCommand::UndoBuffer(UndoBufferCommand::Redo),
+      'u' => ActiveTasksViewCommand::UndoBuffer(UndoBufferCommand::Undo),
       _ => return None,
     };
 
     Some(command)
   }
 
-  pub fn to_action(self, view: &mut ActiveTasksView) -> ActiveTasksViewAction {
+  pub fn to_action(self, view: &mut ActiveTasksView) -> Option<ActiveTasksViewAction> {
     ActiveTasksViewAction::prepare_from_command(self, view)
   }
 }

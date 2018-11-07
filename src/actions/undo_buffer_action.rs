@@ -14,8 +14,8 @@ impl ForwardAction for UndoBufferAction {
     use self::UndoBufferCommand::*;
 
     match self.cmd {
-      Redo { undo_buffer } => undo_buffer.redo(),
-      Undo { undo_buffer } => undo_buffer.undo(),
+      Redo => self.undo_buffer.redo(),
+      Undo => self.undo_buffer.undo(),
     }
   }
 }

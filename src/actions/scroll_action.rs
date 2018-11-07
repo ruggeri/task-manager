@@ -3,6 +3,7 @@ use components::Scroller;
 use models::{Direction, End};
 use std::rc::Rc;
 
+#[derive(Clone)]
 pub enum ScrollAction {
   Jump {
     end: End,
@@ -22,15 +23,15 @@ impl ForwardAction for ScrollAction {
   fn execute(&mut self) {
     use self::ScrollAction::*;
 
-    match self {
+    match *self {
       Jump { end, scroller } => {
-        scroller.jump(*end)
+        scroller.jump(end)
       }
       JumpToTask { task_id, scroller} => {
-        scroller.jump_to_task_id(task_id)
+        scroller.jump_to_task_id(task_id);
       }
       Scroll { direction, scroller } => {
-        scroller.scroll(*direction)
+        scroller.scroll(direction)
       }
     }
   }
