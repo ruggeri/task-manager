@@ -12,7 +12,7 @@ pub struct Application {
 
 impl Application {
   pub fn new() -> Application {
-    let window = Rc::new(Window::new());
+    let window = Rc::new(Window::initscr());
     Application {
       view: ActiveTasksView::new(&window),
       shutdown_requested: Cell::new(false),
@@ -34,5 +34,11 @@ impl Application {
       // TODO: eventually must handle multiple views.
       self.view.handle_key(ch);
     }
+  }
+}
+
+impl Default for Application {
+  fn default() -> Application {
+    Application::new()
   }
 }

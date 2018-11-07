@@ -17,7 +17,6 @@ pub struct UndoBuffer<State> {
 
 // TODO: Just need to pass in a method to perform the state update...
 impl<State> UndoBuffer<State> {
-  #![allow(new_without_default_derive)]
   pub fn new(initial_state: State) -> UndoBuffer<State> {
     UndoBuffer {
       initial_state: RefCell::new(initial_state),

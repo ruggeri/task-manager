@@ -3,7 +3,7 @@ use commands::{FiltererCommand, ScrollCommand, TaskCommand, TaskUpdateCommand, U
 use models::{Direction, End, TaskStatus};
 use views::ActiveTasksView;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum ActiveTasksViewCommand {
   Filterer(FiltererCommand),
   Scroll(ScrollCommand),

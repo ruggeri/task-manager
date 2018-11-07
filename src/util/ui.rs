@@ -13,8 +13,7 @@ pub struct Window {
 }
 
 impl Window {
-  #![allow(new_without_default)]
-  pub fn new() -> Window {
+  pub fn initscr() -> Window {
     // Important! You must initscr before you can do any of the start
     // color stuff. Otherwise you get a wonderful segfault...
     let window = pancurses::initscr();

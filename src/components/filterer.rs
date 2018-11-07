@@ -1,9 +1,15 @@
 use components::data_source;
-use std::cell::Cell;
+use std::cell::RefCell;
 use std::rc::Rc;
 
 type ResultsVec = Rc<Vec<data_source::Result>>;
-type Callback = dyn Fn(&ResultsVec) -> ();
+type Callback = dyn Fn(&ResultsVec, FiltererEvent) -> ();
+
+#[derive(Clone, Copy)]
+pub enum FiltererEvent {
+  FiltererCriteriaUpdated,
+  FiltererGotUpdatedResults,
+}
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RequiresInternetFiltererValue {
@@ -18,26 +24,28 @@ impl Default for RequiresInternetFiltererValue {
   }
 }
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct FiltererState {
-  requires_internet_value: RequiresInternetFiltererValue
+  requires_internet_value: RequiresInternetFiltererValue,
+  results: ResultsVec,
 }
 
 #[derive(Default)]
 pub struct Filterer {
-  pub state: Cell<FiltererState>,
+  pub state: RefCell<FiltererState>,
   callbacks: Vec<Box<Callback>>,
 }
 
 impl Filterer {
   pub fn new() -> Filterer {
     let state = FiltererState {
-      requires_internet_value: RequiresInternetFiltererValue::Any
+      requires_internet_value: RequiresInternetFiltererValue::Any,
+      results: Rc::new(vec![]),
     };
 
     Filterer {
-      state: Cell::new(state),
-      callbacks: vec![]
+      state: RefCell::new(state),
+      callbacks: vec![],
     }
   }
 
@@ -55,32 +63,43 @@ impl Filterer {
     }
   }
 
+  pub fn push(&self, event: FiltererEvent) {
+    let state = self.state.borrow();
+    for callback in &self.callbacks {
+      callback(&state.results, event);
+    }
+  }
+
   pub fn refresh(&self, results: &ResultsVec) {
     let filtered_results: Vec<data_source::Result> = results.iter().filter(|result| {
       self.filter_result(result)
     }).cloned().collect();
 
-    let filtered_results = Rc::new(filtered_results);
-    for callback in &self.callbacks {
-      callback(&filtered_results);
+    {
+      let filtered_results = Rc::new(filtered_results);
+      self.state.borrow_mut().results = filtered_results;
     }
+    self.push(FiltererEvent::FiltererGotUpdatedResults);
   }
 
   pub fn requires_internet_value(&self) -> RequiresInternetFiltererValue {
-    self.state.get().requires_internet_value
+    self.state.borrow().requires_internet_value
   }
 
   pub fn set_requires_internet_value(&self, new_value: RequiresInternetFiltererValue) {
-    let mut state = self.state.get();
-    state.requires_internet_value = new_value;
-    self.state.set(state);
+    {
+      let mut state = self.state.borrow_mut();
+      state.requires_internet_value = new_value;
+    }
+
+    self.push(FiltererEvent::FiltererCriteriaUpdated);
   }
 
   pub fn state(&self) -> FiltererState {
-    self.state.get()
+    self.state.borrow().clone()
   }
 
   pub fn restore_state(&self, state: FiltererState) {
-    self.state.set(state)
+    *self.state.borrow_mut() = state
   }
 }

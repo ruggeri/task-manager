@@ -89,3 +89,9 @@ impl DataSource {
     *self.state.borrow_mut() = state;
   }
 }
+
+impl Default for DataSource {
+  fn default() -> DataSource {
+    DataSource::new()
+  }
+}

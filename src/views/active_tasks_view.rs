@@ -58,8 +58,16 @@ impl ActiveTasksView {
     // Scroller pulls from Filterer.
     {
       let scroller = Rc::clone(&scroller);
-      filterer.add_callback(Box::new(move |filtered_results| {
-        scroller.refresh(filtered_results);
+      filterer.add_callback(Box::new(move |filtered_results, event| {
+        use components::FiltererEvent::*;
+        use components::ScrollerRefreshType::*;
+
+        let refresh_type = match event {
+          FiltererCriteriaUpdated => MajorRefresh,
+          FiltererGotUpdatedResults => MinorRefresh,
+        };
+
+        scroller.refresh(filtered_results, refresh_type);
       }));
     }
     let filterer = Rc::new(filterer);
@@ -121,17 +129,17 @@ impl ActiveTasksView {
   }
 
   pub fn handle_action(&self, mut action: ActiveTasksViewAction) {
-    self.undo_buffer.set_current_state(self.state());
     action.execute();
 
     use self::ActiveTasksViewAction::*;
     match action {
       Filterer { fa } => {
-        self.data_source.push();
+        self.data_source.pull(&self.connection);
         self.undo_buffer.append_item(self.state(), Box::new(fa));
       }
       Scroll { .. } => {
         self.scroller.push();
+        self.undo_buffer.set_current_state(self.state());
       }
       Task { ta } => {
         self.data_source.pull(&self.connection);
@@ -140,7 +148,8 @@ impl ActiveTasksView {
       UndoBuffer { .. } => {
         // On any undo buffer action, after restoring the states, tell
         // the data source to do a nice clean refresh.
-        self.data_source.pull(&self.connection)
+        self.data_source.pull(&self.connection);
+        self.undo_buffer.set_current_state(self.state());
       }
     }
   }

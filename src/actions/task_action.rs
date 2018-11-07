@@ -64,8 +64,8 @@ impl TaskAction {
 
       // Update a task attribute.
       TaskCommand::UpdateTask(cmd) => current_task_fn()
-        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, task, window, connection))
-        .map(|ta| TaskAction::TaskUpdate(ta)),
+        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, &task, window, connection))
+        .map(TaskAction::TaskUpdate),
     }
   }
 }

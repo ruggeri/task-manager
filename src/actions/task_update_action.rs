@@ -49,7 +49,7 @@ pub enum TaskUpdateAction {
 impl TaskUpdateAction {
   pub fn prepare_from_cmd(
     cmd: TaskUpdateCommand,
-    task: Task,
+    task: &Task,
     window: &Window,
     connection: &Rc<PgConnection>,
   ) -> Option<TaskUpdateAction> {
