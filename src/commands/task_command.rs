@@ -1,6 +1,8 @@
-use actions::{Action, TaskAction};
-use application::Application;
+use actions::TaskAction;
+use diesel::pg::PgConnection;
 use models::{Direction, TaskStatus};
+use std::rc::Rc;
+use util::ui::Window;
 
 #[derive(Clone, Copy, Debug)]
 pub enum TaskCommand {
@@ -20,11 +22,7 @@ pub enum TaskUpdateCommand {
 }
 
 impl TaskCommand {
-  pub fn to_action(self, application: &Application) -> Option<Box<dyn Action>> {
-    TaskAction::prepare_from_cmd(self, application).map(|ta| {
-      // Would be nicer if type ascription were not experimental.
-      let ta: Box<dyn Action> = Box::new(ta);
-      ta
-    })
+  pub fn to_action<F>(self, window: &Window, connection: &Rc<PgConnection>, currentTaskFn: F) -> Option<TaskAction> {
+    TaskAction::prepare_from_cmd(self, window, connection, currentTaskFn)
   }
 }

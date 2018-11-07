@@ -1,6 +1,8 @@
 use commands::TaskUpdateCommand;
-use application::Application;
+use diesel::pg::PgConnection;
 use models::*;
+use std::rc::Rc;
+use util::ui::Window;
 
 #[derive(Clone, Debug)]
 pub struct TaskValueUpdate<T: Eq> {
@@ -19,55 +21,86 @@ impl<T: Eq> TaskValueUpdate<T> {
   }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum TaskUpdateAction {
-  UpdateDuration(TaskValueUpdate<TaskDuration>),
-  UpdatePriority(TaskValueUpdate<TaskPriority>),
-  UpdateRequiresInternet(TaskValueUpdate<bool>),
-  UpdateStatus(TaskValueUpdate<TaskStatus>),
-  UpdateTaskTitle(TaskValueUpdate<String>),
+  UpdateDuration {
+    update: TaskValueUpdate<TaskDuration>,
+    connection: Rc<PgConnection>,
+  },
+  UpdatePriority {
+    update: TaskValueUpdate<TaskPriority>,
+    connection: Rc<PgConnection>,
+  },
+  UpdateRequiresInternet {
+    update: TaskValueUpdate<bool>,
+    connection: Rc<PgConnection>,
+  },
+  UpdateStatus {
+    update: TaskValueUpdate<TaskStatus>,
+    connection: Rc<PgConnection>,
+  },
+  UpdateTaskTitle {
+    update: TaskValueUpdate<String>,
+    connection: Rc<PgConnection>,
+  },
 }
 
 // TODO: Insane level of duplication. Macro time?
 impl TaskUpdateAction {
   pub fn prepare_from_cmd(
     cmd: TaskUpdateCommand,
-    task: &Task,
-    application: &Application,
+    task: Task,
+    window: &Window,
+    connection: &Rc<PgConnection>,
   ) -> Option<TaskUpdateAction> {
     use self::TaskUpdateAction as Action;
     use self::TaskUpdateCommand as Cmd;
 
     match cmd {
       Cmd::EditTaskTitle => {
-        let new_task_title = match application.window.read_line("Edit task title: ") {
+        let new_task_title = match window.read_line("Edit task title: ") {
           // If they hit Ctrl-C don't make the task afterall.
           None => return None,
           Some(new_task_title) => new_task_title
         };
 
-        TaskValueUpdate::new(task.id, task.title.clone(), new_task_title).map(|tvu| {
-          Action::UpdateTaskTitle(tvu)
+        TaskValueUpdate::new(task.id, task.title.clone(), new_task_title).map(|update| {
+          Action::UpdateTaskTitle {
+            update,
+            connection: Rc::clone(connection),
+          }
         })
       }
       Cmd::ToggleRequiresInternet => {
-        TaskValueUpdate::new(task.id, task.requires_internet, !task.requires_internet).map(|tvu| {
-          Action::UpdateRequiresInternet(tvu)
+        TaskValueUpdate::new(task.id, task.requires_internet, !task.requires_internet).map(|update| {
+          Action::UpdateRequiresInternet {
+            update,
+            connection: Rc::clone(connection),
+          }
         })
       }
       Cmd::UpdateDuration(direction) => {
-        TaskValueUpdate::new(task.id, task.duration, task.duration.increment(direction)).map(|tvu| {
-          Action::UpdateDuration(tvu)
+        TaskValueUpdate::new(task.id, task.duration, task.duration.increment(direction)).map(|update| {
+          Action::UpdateDuration {
+            update,
+            connection: Rc::clone(connection)
+          }
         })
       }
       Cmd::UpdatePriority(direction) => {
-        TaskValueUpdate::new(task.id, task.priority, task.priority.increment(direction)).map(|tvu| {
-          Action::UpdatePriority(tvu)
+        TaskValueUpdate::new(task.id, task.priority, task.priority.increment(direction)).map(|update| {
+          Action::UpdatePriority {
+            update,
+            connection: Rc::clone(connection),
+          }
         })
       }
       Cmd::UpdateStatus(new_task_status) => {
-        TaskValueUpdate::new(task.id, task.status, new_task_status).map(|tvu| {
-          Action::UpdateStatus(tvu)
+        TaskValueUpdate::new(task.id, task.status, new_task_status).map(|update| {
+          Action::UpdateStatus {
+            update,
+            connection: Rc::clone(connection),
+          }
         })
       }
     }

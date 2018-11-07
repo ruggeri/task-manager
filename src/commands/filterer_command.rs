@@ -1,5 +1,7 @@
-use actions::{Action, FiltererAction};
-use application::Application;
+use actions::FiltererAction;
+use components::AttributeFilter;
+use std::rc::Rc;
+use util::ui::Window;
 
 #[derive(Clone, Copy, Debug)]
 pub enum FiltererCommand {
@@ -7,11 +9,12 @@ pub enum FiltererCommand {
 }
 
 impl FiltererCommand {
-  pub fn to_action(self, application: &Application) -> Option<Box<dyn Action>> {
-    FiltererAction::prepare_from_cmd(self, application).map(|fa| {
-      // Would be nicer if type ascription were not experimental.
-      let fa: Box<dyn Action> = Box::new(fa);
-      fa
-    })
+  pub fn to_action(self, window: &Window, filterer: &Rc<AttributeFilter>) -> Option<FiltererAction> {
+    use self::FiltererCommand::*;
+    match self {
+      FilterByRequiresInternet => {
+        FiltererAction::prepare_from_cmd(self, window, filterer)
+      }
+    }
   }
 }

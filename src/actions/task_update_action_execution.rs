@@ -1,56 +1,47 @@
-use actions::{ActionRequest::RequestDataSourceUpdate, TaskUpdateAction};
-use application::Application;
+use actions::TaskUpdateAction;
 use queries::task as task_queries;
 
 // TODO: Insane level of duplication. Macro time?
 impl TaskUpdateAction {
-  pub fn execute(&mut self, application: &Application) {
+  pub fn execute(&mut self) {
     use self::TaskUpdateAction::*;
-
-    let connection = &application.connection;
     match self {
-      UpdateDuration(tvu) => {
-        task_queries::update_duration(tvu.task_id, tvu.new_value, connection);
+      UpdateDuration { update, connection } => {
+        task_queries::update_duration(update.task_id, update.new_value, connection);
       }
-      UpdatePriority(tvu) => {
-        task_queries::update_priority(tvu.task_id, tvu.new_value, connection);
+      UpdatePriority { update, connection } => {
+        task_queries::update_priority(update.task_id, update.new_value, connection);
       }
-      UpdateRequiresInternet(tvu) => {
-        task_queries::update_requires_internet(tvu.task_id, tvu.new_value, connection);
+      UpdateRequiresInternet { update, connection } => {
+        task_queries::update_requires_internet(update.task_id, update.new_value, connection);
       }
-      UpdateStatus(tvu) => {
-        task_queries::update_status(tvu.task_id, tvu.new_value, connection);
+      UpdateStatus { update, connection } => {
+        task_queries::update_status(update.task_id, update.new_value, connection);
       }
-      UpdateTaskTitle(tvu) => {
-        task_queries::update_title(tvu.task_id, &tvu.new_value, connection);
+      UpdateTaskTitle { update, connection } => {
+        task_queries::update_title(update.task_id, &update.new_value, connection);
       }
     }
-
-    application.execute_action_request(RequestDataSourceUpdate);
   }
 
-  pub fn unexecute(&mut self, application: &Application) {
+  pub fn unexecute(&mut self) {
     use self::TaskUpdateAction::*;
-
-    let connection = &application.connection;
     match self {
-      UpdateDuration(tvu) => {
-        task_queries::update_duration(tvu.task_id, tvu.old_value, connection);
+      UpdateDuration { update, connection } => {
+        task_queries::update_duration(update.task_id, update.old_value, connection);
       }
-      UpdatePriority(tvu) => {
-        task_queries::update_priority(tvu.task_id, tvu.old_value, connection);
+      UpdatePriority { update, connection } => {
+        task_queries::update_priority(update.task_id, update.old_value, connection);
       }
-      UpdateRequiresInternet(tvu) => {
-        task_queries::update_requires_internet(tvu.task_id, tvu.old_value, connection);
+      UpdateRequiresInternet { update, connection } => {
+        task_queries::update_requires_internet(update.task_id, update.old_value, connection);
       }
-      UpdateStatus(tvu) => {
-        task_queries::update_status(tvu.task_id, tvu.old_value, connection);
+      UpdateStatus { update, connection } => {
+        task_queries::update_status(update.task_id, update.old_value, connection);
       }
-      UpdateTaskTitle(tvu) => {
-        task_queries::update_title(tvu.task_id, &tvu.old_value, connection);
+      UpdateTaskTitle { update, connection } => {
+        task_queries::update_title(update.task_id, &update.old_value, connection);
       }
     }
-
-    application.execute_action_request(RequestDataSourceUpdate);
   }
 }

@@ -1,43 +1,45 @@
-use actions::{Action, ActionRequest::RequestScrollerUpdate};
-use application::Application;
+use actions::ScrollAction;
+use components::Scroller;
 use models::{Direction, End};
+use std::rc::Rc;
+use util::ui::Window;
 
 #[derive(Clone, Copy, Debug)]
 pub enum ScrollCommand {
   Jump(End),
   JumpToTask,
-  Move(Direction),
+  Scroll(Direction),
 }
 
-fn jump_to_task(application: &Application) {
-  let task_id_str = match application.window.read_line("Task id to jump to: ") {
+impl ScrollCommand {
+  pub fn to_action(self, window: &Window, scroller: &Rc<Scroller>) -> Option<ScrollAction> {
+    match self {
+      ScrollCommand::Jump(end) => {
+        Some(ScrollAction::Jump {
+          end,
+          scroller: Rc::clone(scroller),
+        })
+      }
+      ScrollCommand::JumpToTask => {
+        read_task_to_jump_to(window).and_then(|task_id| {
+          ScrollAction::JumpToTask { task_id, scroller: Rc::clone(scroller) }
+        })
+      }
+      ScrollCommand::Scroll(direction) => {
+        Some(ScrollAction::Scroll {
+          direction,
+          scroller: Rc::clone(scroller),
+        })
+      }
+    }
+  }
+}
+
+fn read_task_to_jump_to(window: &Window) -> Option<i32> {
+  let task_id_str = match window.read_line("Task id to jump to: ") {
     None => return,
     Some(task_id_str) => task_id_str
   };
-  task_id_str
-    .parse()
-    .ok()
-    .map(|task_id: i32| application.scroller.jump_to_task_id(task_id));
-}
 
-impl Action for ScrollCommand {
-  fn execute(&mut self, application: &Application) {
-    use self::ScrollCommand::*;
-
-    match self {
-      Jump(end) => application.scroller.jump(*end),
-      JumpToTask => jump_to_task(application),
-      Move(direction) => application.scroller.scroll(*direction),
-    }
-
-    application.execute_action_request(RequestScrollerUpdate);
-  }
-
-  fn unexecute(&mut self, _application: &Application) {
-    panic!("Should not try to undo a scroll action")
-  }
-
-  fn can_be_unexecuted(&self) -> bool {
-    false
-  }
+  task_id_str.parse().ok()
 }
