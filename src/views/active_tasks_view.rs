@@ -21,18 +21,18 @@ pub struct ActiveTasksView {
   pub scroller: Rc<Scroller>,
   pub filterer: Rc<Filterer>,
   pub data_source: Rc<DataSource>,
-  pub undo_buffer: Rc<UndoBuffer>,
+  pub undo_buffer: Rc<UndoBuffer<ActiveTasksViewState>>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ActiveTasksViewState {
-  pub scroller_state: ScrollerState,
-  pub filterer_state: FiltererState,
   pub data_source_state: DataSourceState,
+  pub filterer_state: FiltererState,
+  pub scroller_state: ScrollerState,
 }
 
 impl ActiveTasksView {
-  pub fn new(root_window: &Rc<Window>) -> ActiveTasksView {
+  pub fn new(root_window: &Rc<Window>) -> Rc<ActiveTasksView> {
     // We need our own copy of the root window.
     let root_window = Rc::clone(root_window);
 
@@ -87,6 +87,17 @@ impl ActiveTasksView {
       data_source,
       undo_buffer,
     };
+    let view = Rc::new(view);
+
+    {
+      let weak_view = Rc::downgrade(&view);
+      view.undo_buffer.set_callback(Box::new(move |state| {
+        let view = weak_view
+          .upgrade()
+          .expect("How did undo buffer callback outlive view?");
+        view.restore_state(state.clone());
+      }));
+    }
 
     view.data_source.pull(&view.connection);
 
@@ -104,30 +115,35 @@ impl ActiveTasksView {
       match action {
         Filterer { fa } => {
           self.data_source.push();
+          self.undo_buffer.append_item(self.state(), Box::new(fa));
         }
         Scroll { .. } => {
           self.scroller.push();
         }
-        Task { .. } => {
+        Task { ta } => {
           self.data_source.pull(&self.connection);
+          self.undo_buffer.append_item(self.state(), Box::new(ta));
         },
-        UndoBuffer { uba } => {
-          // TODO: This is what we have to deal with.
+        UndoBuffer { .. } => {
+          // On any undo buffer action, after restoring the states, tell
+          // the data source to do a nice clean refresh.
+          self.data_source.pull(&self.connection)
         }
       }
-
-      // TODO: will have to put undoing back in soon.
-      // if action.can_be_unexecuted() {
-      //   self.undo_buffer.append_action(action);
-      // }
     }
   }
 
   pub fn state(&self) -> ActiveTasksViewState {
     ActiveTasksViewState {
-      scroller_state: self.scroller.state().clone(),
-      filterer_state: self.filterer.state().clone(),
       data_source_state: self.data_source.state().clone(),
+      filterer_state: self.filterer.state(),
+      scroller_state: self.scroller.state().clone(),
     }
+  }
+
+  pub fn restore_state(&self, state: ActiveTasksViewState) {
+    self.data_source.restore_state(state.data_source_state);
+    self.filterer.restore_state(state.filterer_state);
+    self.scroller.restore_state(state.scroller_state);
   }
 }

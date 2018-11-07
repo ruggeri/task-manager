@@ -10,7 +10,7 @@ type ResultsVec = Rc<Vec<Result>>;
 type Callback = dyn Fn(&ResultsVec) -> ();
 type DateTime = ::chrono::DateTime<::chrono::Utc>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Result {
   pub task: Task,
   pub task_events: Vec<TaskEvent>,
@@ -19,7 +19,7 @@ pub struct Result {
   pub score: i64,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DataSourceState {
   results: Option<ResultsVec>
 }
@@ -81,5 +81,9 @@ impl DataSource {
 
   pub fn state(&self) -> DataSourceState {
     self.state.borrow().clone()
+  }
+
+  pub fn restore_state(&self, state: DataSourceState) {
+    *self.state.borrow_mut() = state;
   }
 }

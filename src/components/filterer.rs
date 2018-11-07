@@ -18,7 +18,7 @@ impl Default for RequiresInternetFiltererValue {
   }
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct FiltererState {
   requires_internet_value: RequiresInternetFiltererValue
 }
@@ -78,5 +78,9 @@ impl Filterer {
 
   pub fn state(&self) -> FiltererState {
     self.state.get().clone()
+  }
+
+  pub fn restore_state(&self, state: FiltererState) {
+    self.state.set(state)
   }
 }

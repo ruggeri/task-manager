@@ -9,7 +9,7 @@ pub enum UndoBufferCommand {
 }
 
 impl UndoBufferCommand {
-  pub fn to_action(self, undo_buffer: &Rc<UndoBuffer>) -> UndoBufferAction {
+  pub fn to_action<State>(self, undo_buffer: &Rc<UndoBuffer<State>>) -> UndoBufferAction<State> {
     UndoBufferAction {
       cmd: self,
       undo_buffer: Rc::clone(undo_buffer),

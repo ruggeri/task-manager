@@ -6,7 +6,7 @@ use views::ActiveTasksView;
 pub struct Application {
   pub shutdown_requested: Cell<bool>,
   // TODO: Will someday become multiple views.
-  pub view: ActiveTasksView,
+  pub view: Rc<ActiveTasksView>,
   pub window: Rc<Window>,
 }
 

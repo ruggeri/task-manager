@@ -6,7 +6,7 @@ use std::rc::Rc;
 type Callback = dyn Fn(&Scroller) -> ();
 type ResultsVec = Rc<Vec<data_source::Result>>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ScrollerState {
   pub current_result_idx: i32,
   pub results: ResultsVec,
@@ -131,5 +131,9 @@ impl Scroller {
 
   pub fn state(&self) -> ScrollerState {
     self.state.borrow().clone()
+  }
+
+  pub fn restore_state(&self, state: ScrollerState) {
+    *self.state.borrow_mut() = state;
   }
 }

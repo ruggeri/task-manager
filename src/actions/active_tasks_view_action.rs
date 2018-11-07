@@ -1,6 +1,6 @@
 use actions::{FiltererAction, ForwardAction, ScrollAction, TaskAction, UndoBufferAction};
 use commands::ActiveTasksViewCommand;
-use views::ActiveTasksView;
+use views::{ActiveTasksView, ActiveTasksViewState};
 use std::rc::Rc;
 
 #[derive(Clone)]
@@ -15,7 +15,7 @@ pub enum ActiveTasksViewAction {
     ta: TaskAction,
   },
   UndoBuffer {
-    uba: UndoBufferAction,
+    uba: UndoBufferAction<ActiveTasksViewState>,
   },
 }
 
