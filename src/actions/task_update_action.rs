@@ -4,55 +4,41 @@ use models::*;
 use std::rc::Rc;
 use util::ui::Window;
 
-#[derive(Clone, Debug)]
-pub struct TaskValueUpdate<T: Eq> {
-  pub old_value: T,
-  pub new_value: T,
+macro_rules! define_task_update_action {
+  ( $( ($value:ident, $type:ty) ),* ) => {
+    #[derive(Clone)]
+    pub enum TaskUpdateAction { $(
+      $value {
+        task_id: i32,
+        old_value: $type,
+        new_value: $type,
+        connection: Rc<PgConnection>,
+      },
+    )* }
+  }
 }
 
-impl<T: Eq> TaskValueUpdate<T> {
-  pub fn new(old_value: T, new_value: T) -> Option<TaskValueUpdate<T>> {
-    if old_value == new_value {
-      None
-    } else {
-      Some(TaskValueUpdate {
-        old_value,
-        new_value,
+define_task_update_action!(
+  (UpdateDuration, TaskDuration),
+  (UpdatePriority, TaskPriority),
+  (UpdateRequiresInternet, bool),
+  (UpdateStatus, TaskStatus),
+  (UpdateTaskTitle, String)
+);
+
+macro_rules! prepare_action {
+  ( $enum_value:ident, $task_id:expr, $old_value:expr, $new_value:expr, $connection:expr ) => {
+    if $old_value == $new_value { None } else {
+      Some(TaskUpdateAction::$enum_value {
+        task_id: $task_id,
+        old_value: $old_value,
+        new_value: $new_value,
+        connection: Rc::clone($connection),
       })
     }
   }
 }
 
-#[derive(Clone)]
-pub enum TaskUpdateAction {
-  UpdateDuration {
-    task_id: i32,
-    update: TaskValueUpdate<TaskDuration>,
-    connection: Rc<PgConnection>,
-  },
-  UpdatePriority {
-    task_id: i32,
-    update: TaskValueUpdate<TaskPriority>,
-    connection: Rc<PgConnection>,
-  },
-  UpdateRequiresInternet {
-    task_id: i32,
-    update: TaskValueUpdate<bool>,
-    connection: Rc<PgConnection>,
-  },
-  UpdateStatus {
-    task_id: i32,
-    update: TaskValueUpdate<TaskStatus>,
-    connection: Rc<PgConnection>,
-  },
-  UpdateTaskTitle {
-    task_id: i32,
-    update: TaskValueUpdate<String>,
-    connection: Rc<PgConnection>,
-  },
-}
-
-// TODO: Insane level of duplication. Macro time?
 impl TaskUpdateAction {
   pub fn prepare_from_cmd(
     cmd: TaskUpdateCommand,
@@ -60,7 +46,6 @@ impl TaskUpdateAction {
     window: &Window,
     connection: &Rc<PgConnection>,
   ) -> Option<TaskUpdateAction> {
-    use self::TaskUpdateAction as Action;
     use self::TaskUpdateCommand as Cmd;
 
     match cmd {
@@ -71,47 +56,53 @@ impl TaskUpdateAction {
           Some(new_task_title) => new_task_title,
         };
 
-        TaskValueUpdate::new(task.title.clone(), new_task_title).map(|update| {
-          Action::UpdateTaskTitle {
-            task_id: task.id,
-            update,
-            connection: Rc::clone(connection),
-          }
-        })
+        prepare_action!(
+          UpdateTaskTitle,
+          task.id,
+          task.title.clone(),
+          new_task_title,
+          connection
+        )
       }
+
       Cmd::ToggleRequiresInternet => {
-        TaskValueUpdate::new(task.requires_internet, !task.requires_internet).map(|update| {
-          Action::UpdateRequiresInternet {
-            task_id: task.id,
-            update,
-            connection: Rc::clone(connection),
-          }
-        })
+        prepare_action!(
+          UpdateRequiresInternet,
+          task.id,
+          task.requires_internet,
+          !task.requires_internet,
+          connection
+        )
       }
+
       Cmd::UpdateDuration(direction) => {
-        TaskValueUpdate::new(task.duration, task.duration.increment(direction)).map(|update| {
-          Action::UpdateDuration {
-            task_id: task.id,
-            update,
-            connection: Rc::clone(connection),
-          }
-        })
+        prepare_action!(
+          UpdateDuration,
+          task.id,
+          task.duration,
+          task.duration.increment(direction),
+          connection
+        )
       }
+
       Cmd::UpdatePriority(direction) => {
-        TaskValueUpdate::new(task.priority, task.priority.increment(direction)).map(|update| {
-          Action::UpdatePriority {
-            task_id: task.id,
-            update,
-            connection: Rc::clone(connection),
-          }
-        })
+        prepare_action!(
+          UpdatePriority,
+          task.id,
+          task.priority,
+          task.priority.increment(direction),
+          connection
+        )
       }
+
       Cmd::UpdateStatus(new_task_status) => {
-        TaskValueUpdate::new(task.status, new_task_status).map(|update| Action::UpdateStatus {
-          task_id: task.id,
-          update,
-          connection: Rc::clone(connection),
-        })
+        prepare_action!(
+          UpdateStatus,
+          task.id,
+          task.status,
+          new_task_status,
+          connection
+        )
       }
     }
   }

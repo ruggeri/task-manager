@@ -1,87 +1,56 @@
 use actions::TaskUpdateAction;
 use queries::task as task_queries;
 
-// TODO: Insane level of duplication. Macro time?
+macro_rules! update_match {
+  ($x:expr, $value:ident, ($( ($enum_value:ident, $update_fn:ident) ),*), ($( ($ref_enum_value:ident, $ref_update_fn:ident) ),*)) => {
+    match $x {
+      $(TaskUpdateAction::$enum_value {
+        task_id,
+        connection,
+        $value,
+        ..
+      } => {
+        task_queries::$update_fn(*task_id, *$value, connection);
+      })*
+
+      $(TaskUpdateAction::$ref_enum_value {
+        task_id,
+        connection,
+        $value,
+        ..
+      } => {
+        task_queries::$ref_update_fn(*task_id, $value, connection);
+      })*
+    }
+  }
+}
+
 impl TaskUpdateAction {
   pub fn execute(&mut self) {
-    use self::TaskUpdateAction::*;
-    match self {
-      UpdateDuration {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_duration(*task_id, update.new_value, connection);
-      }
-      UpdatePriority {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_priority(*task_id, update.new_value, connection);
-      }
-      UpdateRequiresInternet {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_requires_internet(*task_id, update.new_value, connection);
-      }
-      UpdateStatus {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_status(*task_id, update.new_value, connection);
-      }
-      UpdateTaskTitle {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_title(*task_id, &update.new_value, connection);
-      }
-    }
+    update_match!(
+      self,
+      new_value,
+      (
+        (UpdateDuration, update_duration),
+        (UpdatePriority, update_priority),
+        (UpdateRequiresInternet, update_requires_internet),
+        (UpdateStatus, update_status)
+      ),
+      ((UpdateTaskTitle, update_title))
+    )
   }
 
   pub fn unexecute(&mut self) {
-    use self::TaskUpdateAction::*;
-    match self {
-      UpdateDuration {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_duration(*task_id, update.old_value, connection);
-      }
-      UpdatePriority {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_priority(*task_id, update.old_value, connection);
-      }
-      UpdateRequiresInternet {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_requires_internet(*task_id, update.old_value, connection);
-      }
-      UpdateStatus {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_status(*task_id, update.old_value, connection);
-      }
-      UpdateTaskTitle {
-        task_id,
-        update,
-        connection,
-      } => {
-        task_queries::update_title(*task_id, &update.old_value, connection);
-      }
-    }
+    update_match!(
+      self,
+      old_value,
+      (
+        (UpdateDuration, update_duration),
+        (UpdatePriority, update_priority),
+        (UpdateRequiresInternet, update_requires_internet),
+        (UpdateStatus, update_status)
+      ),
+      ((UpdateTaskTitle, update_title))
+    )
   }
 }
