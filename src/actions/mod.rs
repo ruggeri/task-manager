@@ -3,8 +3,7 @@ mod active_tasks_view_action;
 mod active_tasks_view_action_execution;
 mod filterer_action;
 mod scroll_action;
-// TODO: Find a home for this code...
-pub mod scroller_state;
+mod scroller_state;
 mod task_action;
 mod task_action_execution;
 mod task_update_action;

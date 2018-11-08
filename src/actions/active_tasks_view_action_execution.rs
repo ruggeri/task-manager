@@ -1,7 +1,6 @@
 use actions::scroller_state::SavedScrolerState;
 use actions::{
-  ActiveTasksViewAction, FiltererAction, ForwardAction, ReversableAction, TaskAction,
-  TaskUpdateAction,
+  FiltererAction, ForwardAction, ReversableAction, TaskAction, TaskUpdateAction,
 };
 use components::Scroller;
 use models::End;
@@ -14,7 +13,7 @@ fn maybe_jump_to_task(scroller: &Scroller, task_id: Option<i32>) -> bool {
 
 // == EXECUTE CODE ==
 
-fn execute_filterer_action(
+pub fn execute_filterer_action(
   fa: &mut FiltererAction,
   view: &Weak<ActiveTasksView>,
   scroller_state: &mut SavedScrolerState,
@@ -32,7 +31,7 @@ fn execute_filterer_action(
   view.scroller.jump(End::Top);
 }
 
-fn execute_task_action(
+pub fn execute_task_action(
   ta: &mut TaskAction,
   view: &Weak<ActiveTasksView>,
   scroller_state: &mut SavedScrolerState,
@@ -76,7 +75,7 @@ fn execute_task_action(
 
 // == REDO CODE ==
 
-fn redo_filterer_action(
+pub fn redo_filterer_action(
   fa: &mut FiltererAction,
   view: &Weak<ActiveTasksView>,
   scroller_state: &mut SavedScrolerState,
@@ -98,7 +97,7 @@ fn redo_filterer_action(
   }
 }
 
-fn redo_task_action(
+pub fn redo_task_action(
   ta: &mut TaskAction,
   view: &Weak<ActiveTasksView>,
   scroller_state: &mut SavedScrolerState,
@@ -150,7 +149,7 @@ fn redo_task_action(
 
 // == UNDO CODE ==
 
-fn unexecute_filterer_action(
+pub fn unexecute_filterer_action(
   fa: &mut FiltererAction,
   view: &Weak<ActiveTasksView>,
   scroller_state: &mut SavedScrolerState,
@@ -177,7 +176,7 @@ fn unexecute_filterer_action(
   }
 }
 
-fn unexecute_task_action(
+pub fn unexecute_task_action(
   ta: &mut TaskAction,
   view: &Weak<ActiveTasksView>,
   scroller_state: &mut SavedScrolerState,
@@ -215,80 +214,6 @@ fn unexecute_task_action(
         // But if can't then jump to top.
         view.scroller.jump(End::Top);
       }
-    }
-  }
-}
-
-impl ForwardAction for ActiveTasksViewAction {
-  fn execute(&mut self) {
-    use self::ActiveTasksViewAction::*;
-    match self {
-      Filterer {
-        fa,
-        view,
-        scroller_state,
-      } => {
-        execute_filterer_action(fa, view, scroller_state);
-      }
-      Scroll { sa, .. } => {
-        sa.execute();
-      }
-      Task {
-        ta,
-        view,
-        scroller_state,
-      } => {
-        execute_task_action(ta, view, scroller_state);
-      }
-      UndoBuffer { uba } => uba.execute(),
-    };
-  }
-}
-
-impl ReversableAction for ActiveTasksViewAction {
-  fn redo(&mut self) {
-    use self::ActiveTasksViewAction::*;
-    match self {
-      Filterer {
-        fa,
-        view,
-        scroller_state,
-      } => {
-        redo_filterer_action(fa, view, scroller_state);
-      }
-      Scroll { .. } => {
-        panic!("Should not try to redo a Scroll action.");
-      }
-      Task {
-        ta,
-        view,
-        scroller_state,
-      } => {
-        redo_task_action(ta, view, scroller_state);
-      }
-      UndoBuffer { .. } => panic!("Should not try to redo an UndoBuffer action."),
-    };
-  }
-
-  fn unexecute(&mut self) {
-    use self::ActiveTasksViewAction::*;
-    match self {
-      Filterer {
-        fa,
-        view,
-        scroller_state,
-      } => {
-        unexecute_filterer_action(fa, view, scroller_state);
-      }
-      Scroll { .. } => panic!("Should not try to unexecute a Scroll action."),
-      Task {
-        ta,
-        view,
-        scroller_state,
-      } => {
-        unexecute_task_action(ta, view, scroller_state);
-      }
-      UndoBuffer { .. } => panic!("Should not try to unexecute an UnderBuffer action."),
     }
   }
 }

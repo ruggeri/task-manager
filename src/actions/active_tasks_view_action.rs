@@ -1,5 +1,6 @@
 use actions::scroller_state::SavedScrolerState;
-use actions::{FiltererAction, ScrollAction, TaskAction, UndoBufferAction};
+use actions::{FiltererAction, ForwardAction, ReversableAction, ScrollAction, TaskAction, UndoBufferAction};
+use actions::active_tasks_view_action_execution as execution_logic;
 use commands::ActiveTasksViewCommand;
 use components::UndoBuffer;
 use std::rc::{Rc, Weak};
@@ -73,6 +74,80 @@ impl ActiveTasksViewAction {
       Scroll { .. } => return,
       Task { .. } => undo_buffer.append_action(Box::new(self)),
       UndoBuffer { .. } => return,
+    }
+  }
+}
+
+impl ForwardAction for ActiveTasksViewAction {
+  fn execute(&mut self) {
+    use self::ActiveTasksViewAction::*;
+    match self {
+      Filterer {
+        fa,
+        view,
+        scroller_state,
+      } => {
+        execution_logic::execute_filterer_action(fa, view, scroller_state);
+      }
+      Scroll { sa, .. } => {
+        sa.execute();
+      }
+      Task {
+        ta,
+        view,
+        scroller_state,
+      } => {
+        execution_logic::execute_task_action(ta, view, scroller_state);
+      }
+      UndoBuffer { uba } => uba.execute(),
+    };
+  }
+}
+
+impl ReversableAction for ActiveTasksViewAction {
+  fn redo(&mut self) {
+    use self::ActiveTasksViewAction::*;
+    match self {
+      Filterer {
+        fa,
+        view,
+        scroller_state,
+      } => {
+        execution_logic::redo_filterer_action(fa, view, scroller_state);
+      }
+      Scroll { .. } => {
+        panic!("Should not try to redo a Scroll action.");
+      }
+      Task {
+        ta,
+        view,
+        scroller_state,
+      } => {
+        execution_logic::redo_task_action(ta, view, scroller_state);
+      }
+      UndoBuffer { .. } => panic!("Should not try to redo an UndoBuffer action."),
+    };
+  }
+
+  fn unexecute(&mut self) {
+    use self::ActiveTasksViewAction::*;
+    match self {
+      Filterer {
+        fa,
+        view,
+        scroller_state,
+      } => {
+        execution_logic::unexecute_filterer_action(fa, view, scroller_state);
+      }
+      Scroll { .. } => panic!("Should not try to unexecute a Scroll action."),
+      Task {
+        ta,
+        view,
+        scroller_state,
+      } => {
+        execution_logic::unexecute_task_action(ta, view, scroller_state);
+      }
+      UndoBuffer { .. } => panic!("Should not try to unexecute an UnderBuffer action."),
     }
   }
 }
