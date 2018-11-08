@@ -1,9 +1,15 @@
-use super::data_source;
-use super::Scroller;
+use components::{
+  data_source,
+  scroller::{ScrollerEvent, ScrollerState},
+};
 use chrono::Duration;
 use pancurses;
+use std::cell::RefCell;
+use std::ops::DerefMut;
 use std::rc::Rc;
 use util::ui::{ColorPair, UserInterface};
+
+type ResultsVec = Rc<Vec<data_source::Result>>;
 
 fn format_task_age(age: Duration) -> String {
   let weeks = age.num_weeks();
@@ -26,36 +32,100 @@ fn format_task_age(age: Duration) -> String {
 
 pub struct TaskResultsWindow {
   ui: Rc<UserInterface>,
+  scroller_state: RefCell<Option<ScrollerState>>,
 }
 
 // TODO: Can I clean this code up at all?
 impl TaskResultsWindow {
   pub fn new(ui: &Rc<UserInterface>) -> TaskResultsWindow {
-    TaskResultsWindow { ui: Rc::clone(ui) }
+    TaskResultsWindow {
+      ui: Rc::clone(ui),
+      scroller_state: RefCell::new(None),
+    }
+  }
+
+  fn results(&self) -> ResultsVec {
+    self
+      .scroller_state
+      .borrow()
+      .as_ref()
+      .expect("scroller_state should be set before trying to use results")
+      .results
+      .clone()
+  }
+
+  fn current_result_idx(&self) -> i32 {
+    self
+      .scroller_state
+      .borrow()
+      .as_ref()
+      .expect("scroller_state should be set before trying to use result idx")
+      .current_result_idx
+  }
+
+  fn save_scroller_state(&self, state: ScrollerState) {
+    *self.scroller_state.borrow_mut() = Some(state);
+  }
+
+  fn save_current_result_idx(&self, current_result_idx: i32) {
+    let mut state = self.scroller_state.borrow_mut();
+    let state = state.deref_mut();
+    match state {
+      None => panic!("scroller_state should be set before trying to set result idx individually"),
+      Some(state) => state.current_result_idx = current_result_idx,
+    }
   }
 
   fn pwindow(&self) -> &pancurses::Window {
     &self.ui.window
   }
 
-  pub fn redraw(&self, scroller: &Scroller) {
+  pub fn redraw(&self, event: ScrollerEvent) {
+    match event {
+      ScrollerEvent::ChangedScrollPosition {
+        old_result_idx,
+        new_state: ScrollerState {
+          current_result_idx,
+          ..
+        }
+      } => {
+        self.save_current_result_idx(current_result_idx);
+        self.incremental_redraw(old_result_idx, current_result_idx);
+        // Position cursor at bottom for text input.
+        self.pwindow().mv((self.results().len() + 1) as i32, 0);
+      },
+      ScrollerEvent::GotNewScrollResults { state } => {
+        self.save_scroller_state(state);
+        self.full_redraw();
+      },
+    }
+  }
+
+  pub fn full_redraw(&self) {
     self.pwindow().clear();
 
-    let max_title_len = scroller
+    self.display_header();
+    for (idx, result) in self.results().iter().enumerate() {
+      self.display_result(idx as i32, result);
+    }
+  }
+
+  pub fn max_title_len(&self) -> usize{
+    self
       .results()
       .iter()
       .map(|r| r.task.title.len())
       .max()
-      .unwrap_or(0);
-
-    self.display_header(max_title_len);
-
-    for (idx, ref result) in scroller.results().iter().enumerate() {
-      self.display_result(scroller, idx as i32, result, max_title_len);
-    }
+      .unwrap_or(0)
   }
 
-  fn display_header(&self, max_title_len: usize) {
+  pub fn incremental_redraw(&self, old_result_idx: i32, current_result_idx: i32) {
+    let results = &self.results();
+    self.display_result(old_result_idx, &results[old_result_idx as usize]);
+    self.display_result(current_result_idx, &results[current_result_idx as usize]);
+  }
+
+  fn display_header(&self) {
     let pwindow = self.pwindow();
     pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     pwindow.attron(pancurses::A_BOLD);
@@ -63,7 +133,7 @@ impl TaskResultsWindow {
       "  {id} | {title:title_width$} | {priority:5} | {durration:5} | {age:8} | {status:6} | {requires_internet:6} \n",
       id = "id",
       title = "title",
-      title_width = ::std::cmp::max(5, max_title_len + 2),
+      title_width = ::std::cmp::max(5, self.max_title_len() + 2),
       priority = "prior",
       durration = "durr",
       age = "age",
@@ -75,15 +145,14 @@ impl TaskResultsWindow {
 
   fn display_result(
     &self,
-    scroller: &Scroller,
     idx: i32,
     result: &data_source::Result,
-    max_title_len: usize,
   ) {
     let pwindow = self.pwindow();
+    pwindow.mv(idx + 1, 0);
 
     // Choose appropriate color.
-    if idx == scroller.current_result_idx() {
+    if idx == self.current_result_idx() {
       pwindow
         .attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
@@ -126,7 +195,7 @@ impl TaskResultsWindow {
       "{id:4} | {title:title_width$} | {priority:5} | {duration:5} | {age:8} | {status:6} | {requires_internet:6}\n",
       id = result.task.id,
       title = result.task.title,
-      title_width = ::std::cmp::max(5, max_title_len + 2),
+      title_width = ::std::cmp::max(5, self.max_title_len() + 2),
       priority = priority,
       duration = duration,
       age = format_task_age(result.last_effort_duration_since),
@@ -137,7 +206,7 @@ impl TaskResultsWindow {
     // Print the line!
     pwindow.printw(&s);
 
-    if idx == scroller.current_result_idx() {
+    if idx == self.current_result_idx() {
       pwindow
         .attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }

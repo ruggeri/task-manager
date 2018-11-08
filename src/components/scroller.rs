@@ -1,15 +1,26 @@
-use super::data_source;
+use components::data_source;
 use models::{Direction, End, Task};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-type Callback = dyn Fn(&Scroller) -> ();
+type Callback = dyn Fn(ScrollerEvent) -> ();
 type ResultsVec = Rc<Vec<data_source::Result>>;
 
 #[derive(Clone, Debug)]
-struct ScrollerState {
-  current_result_idx: i32,
-  results: ResultsVec,
+pub struct ScrollerState {
+  pub current_result_idx: i32,
+  pub results: ResultsVec,
+}
+
+#[derive(Clone)]
+pub enum ScrollerEvent {
+  ChangedScrollPosition {
+    old_result_idx: i32,
+    new_state: ScrollerState,
+  },
+  GotNewScrollResults {
+    state: ScrollerState,
+  }
 }
 
 pub struct Scroller {
@@ -69,20 +80,24 @@ impl Scroller {
   }
 
   pub fn scroll(&self, direction: Direction) {
-    let current_result_idx = self.current_result_idx();
+    let old_result_idx = self.current_result_idx();
     match direction {
       Direction::Decrease => {
-        self.set_current_result_idx(current_result_idx - 1)
+        self.set_current_result_idx(old_result_idx - 1)
       }
       Direction::Increase => {
-        self.set_current_result_idx(current_result_idx + 1)
+        self.set_current_result_idx(old_result_idx + 1)
       }
     };
 
-    self.push();
+    self.push(ScrollerEvent::ChangedScrollPosition {
+      old_result_idx,
+      new_state: self.state.borrow().clone(),
+    });
   }
 
   pub fn jump(&self, end: End) {
+    let old_result_idx = self.current_result_idx();
     match end {
       End::Top => self.set_current_result_idx(0),
       End::Bottom => {
@@ -90,7 +105,10 @@ impl Scroller {
       }
     }
 
-    self.push();
+    self.push(ScrollerEvent::ChangedScrollPosition {
+      old_result_idx,
+      new_state: self.state.borrow().clone(),
+    });
   }
 
   pub fn current_task(&self) -> Option<Task> {
@@ -99,9 +117,16 @@ impl Scroller {
   }
 
   pub fn jump_to_task_id(&self, task_id: i32) -> bool {
-    let result = self._jump_to_task_id(task_id);
-    self.push();
-    result
+    let old_result_idx = self.current_result_idx();
+    if self._jump_to_task_id(task_id) {
+      self.push(ScrollerEvent::ChangedScrollPosition {
+        old_result_idx,
+        new_state: self.state.borrow().clone(),
+      });
+      true
+    } else {
+      false
+    }
   }
 
   fn _jump_to_task_id(&self, task_id: i32) -> bool {
@@ -125,7 +150,9 @@ impl Scroller {
     self.try_to_maintain_scroll_position(old_task_id, old_result_idx);
 
     // Push changes on down the line.
-    self.push();
+    self.push(ScrollerEvent::GotNewScrollResults {
+      state: self.state.borrow().clone(),
+    });
   }
 
   fn try_to_maintain_scroll_position(
@@ -145,9 +172,9 @@ impl Scroller {
     self.set_current_result_idx(old_result_idx);
   }
 
-  pub fn push(&self) {
+  pub fn push(&self, event: ScrollerEvent) {
     for callback in &self.callbacks {
-      callback(&self);
+      callback(event.clone());
     }
   }
 }

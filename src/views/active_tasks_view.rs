@@ -33,8 +33,8 @@ impl ActiveTasksView {
     // TaskResultsWindow listens to Scroller.
     {
       let task_results_window = Rc::clone(&task_results_window);
-      scroller.add_callback(Box::new(move |scroller| {
-        task_results_window.redraw(scroller);
+      scroller.add_callback(Box::new(move |event| {
+        task_results_window.redraw(event);
       }));
     }
     let scroller = Rc::new(scroller);
@@ -92,7 +92,7 @@ impl ActiveTasksView {
 
     if !did_execute_action {
       // Redraw screen regardless.
-      view.task_results_window.redraw(&view.scroller);
+      view.task_results_window.full_redraw();
     }
   }
 }

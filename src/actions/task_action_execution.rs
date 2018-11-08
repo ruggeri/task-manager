@@ -1,4 +1,4 @@
-use super::{ForwardAction, ReversableAction, TaskAction};
+use actions::{ForwardAction, ReversableAction, TaskAction};
 use queries::{task as task_queries, task_event as te_queries};
 
 impl ForwardAction for TaskAction {

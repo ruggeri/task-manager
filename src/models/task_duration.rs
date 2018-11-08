@@ -1,4 +1,4 @@
-use super::Direction;
+use models::Direction;
 
 #[derive(Clone, Copy, DbEnum, Debug, Eq, PartialEq)]
 pub enum TaskDuration {
