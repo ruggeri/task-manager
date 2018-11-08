@@ -1,8 +1,8 @@
+use chrono::Duration;
 use components::{
   data_source,
   scroller::{ScrollerEvent, ScrollerState},
 };
-use chrono::Duration;
 use pancurses;
 use std::cell::RefCell;
 use std::ops::DerefMut;
@@ -49,8 +49,9 @@ impl TaskResultsWindow {
       .scroller_state
       .borrow()
       .as_ref()
-      .expect("scroller_state should be set before trying to use results")
-      .results
+      .expect(
+        "scroller_state should be set before trying to use results",
+      ).results
       .clone()
   }
 
@@ -59,8 +60,9 @@ impl TaskResultsWindow {
       .scroller_state
       .borrow()
       .as_ref()
-      .expect("scroller_state should be set before trying to use result idx")
-      .current_result_idx
+      .expect(
+        "scroller_state should be set before trying to use result idx",
+      ).current_result_idx
   }
 
   fn save_scroller_state(&self, state: ScrollerState) {
@@ -84,20 +86,20 @@ impl TaskResultsWindow {
     match event {
       ScrollerEvent::ChangedScrollPosition {
         old_result_idx,
-        new_state: ScrollerState {
-          current_result_idx,
-          ..
-        }
+        new_state:
+          ScrollerState {
+            current_result_idx, ..
+          },
       } => {
         self.save_current_result_idx(current_result_idx);
         self.incremental_redraw(old_result_idx, current_result_idx);
         // Position cursor at bottom for text input.
         self.pwindow().mv((self.results().len() + 1) as i32, 0);
-      },
+      }
       ScrollerEvent::GotNewScrollResults { state } => {
         self.save_scroller_state(state);
         self.full_redraw();
-      },
+      }
     }
   }
 
@@ -110,7 +112,7 @@ impl TaskResultsWindow {
     }
   }
 
-  pub fn max_title_len(&self) -> usize{
+  pub fn max_title_len(&self) -> usize {
     self
       .results()
       .iter()
@@ -119,10 +121,20 @@ impl TaskResultsWindow {
       .unwrap_or(0)
   }
 
-  pub fn incremental_redraw(&self, old_result_idx: i32, current_result_idx: i32) {
+  pub fn incremental_redraw(
+    &self,
+    old_result_idx: i32,
+    current_result_idx: i32,
+  ) {
     let results = &self.results();
-    self.display_result(old_result_idx, &results[old_result_idx as usize]);
-    self.display_result(current_result_idx, &results[current_result_idx as usize]);
+    self.display_result(
+      old_result_idx,
+      &results[old_result_idx as usize],
+    );
+    self.display_result(
+      current_result_idx,
+      &results[current_result_idx as usize],
+    );
   }
 
   fn display_header(&self) {
@@ -143,11 +155,7 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::A_BOLD);
   }
 
-  fn display_result(
-    &self,
-    idx: i32,
-    result: &data_source::Result,
-  ) {
+  fn display_result(&self, idx: i32, result: &data_source::Result) {
     let pwindow = self.pwindow();
     pwindow.mv(idx + 1, 0);
 

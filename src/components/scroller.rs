@@ -20,7 +20,7 @@ pub enum ScrollerEvent {
   },
   GotNewScrollResults {
     state: ScrollerState,
-  }
+  },
 }
 
 pub struct Scroller {
