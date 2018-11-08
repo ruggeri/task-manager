@@ -32,7 +32,7 @@ impl Application {
       }
 
       // TODO: eventually must handle multiple views.
-      self.view.handle_key(ch);
+      ActiveTasksView::handle_key(&self.view, ch);
     }
   }
 }

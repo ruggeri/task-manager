@@ -8,6 +8,7 @@ use util::ui::Window;
 pub enum FiltererAction {
   UpdateRequiresInternet {
     new_value: RequiresInternetFiltererValue,
+    old_value: RequiresInternetFiltererValue,
     filterer: Rc<Filterer>,
   },
 }
@@ -17,26 +18,21 @@ impl ForwardAction for FiltererAction {
     use self::FiltererAction::*;
 
     match self {
-      UpdateRequiresInternet {
-        new_value,
-        filterer,
-        ..
-      } => {
+      UpdateRequiresInternet { new_value, filterer, .. } => {
         filterer.set_requires_internet_value(*new_value);
       }
     }
   }
 }
 
-// TODO: Feels extremely weird that this is an undoable action but
-// nothing is actually undone???
 impl ReversableAction for FiltererAction {
   fn unexecute(&mut self) {
     use self::FiltererAction::*;
 
     match self {
-      UpdateRequiresInternet { .. } => {
+      UpdateRequiresInternet { old_value, filterer, .. } => {
         // Nothing special to undo. Simply restore the prior state.
+        filterer.set_requires_internet_value(*old_value);
       }
     }
   }
@@ -74,6 +70,7 @@ fn new_requires_internet_filterer_action(
 
   let fa = FiltererAction::UpdateRequiresInternet {
     new_value,
+    old_value,
     filterer: Rc::clone(filterer),
   };
 

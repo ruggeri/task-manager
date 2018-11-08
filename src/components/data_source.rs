@@ -84,14 +84,6 @@ impl DataSource {
       callback(&results);
     }
   }
-
-  pub fn state(&self) -> DataSourceState {
-    self.state.borrow().clone()
-  }
-
-  pub fn restore_state(&self, state: DataSourceState) {
-    *self.state.borrow_mut() = state;
-  }
 }
 
 impl Default for DataSource {

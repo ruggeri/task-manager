@@ -3,5 +3,9 @@ pub trait ForwardAction {
 }
 
 pub trait ReversableAction: ForwardAction {
+  fn redo(&mut self) {
+    self.execute();
+  }
+
   fn unexecute(&mut self);
 }

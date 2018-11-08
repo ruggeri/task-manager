@@ -6,18 +6,16 @@ use util::ui::Window;
 
 #[derive(Clone, Debug)]
 pub struct TaskValueUpdate<T: Eq> {
-  pub task_id: i32,
   pub old_value: T,
   pub new_value: T,
 }
 
 impl<T: Eq> TaskValueUpdate<T> {
-  pub fn new(task_id: i32, old_value: T, new_value: T) -> Option<TaskValueUpdate<T>> {
+  pub fn new(old_value: T, new_value: T) -> Option<TaskValueUpdate<T>> {
     if old_value == new_value {
       None
     } else {
       Some(TaskValueUpdate {
-        task_id,
         old_value,
         new_value,
       })
@@ -28,22 +26,27 @@ impl<T: Eq> TaskValueUpdate<T> {
 #[derive(Clone)]
 pub enum TaskUpdateAction {
   UpdateDuration {
+    task_id: i32,
     update: TaskValueUpdate<TaskDuration>,
     connection: Rc<PgConnection>,
   },
   UpdatePriority {
+    task_id: i32,
     update: TaskValueUpdate<TaskPriority>,
     connection: Rc<PgConnection>,
   },
   UpdateRequiresInternet {
+    task_id: i32,
     update: TaskValueUpdate<bool>,
     connection: Rc<PgConnection>,
   },
   UpdateStatus {
+    task_id: i32,
     update: TaskValueUpdate<TaskStatus>,
     connection: Rc<PgConnection>,
   },
   UpdateTaskTitle {
+    task_id: i32,
     update: TaskValueUpdate<String>,
     connection: Rc<PgConnection>,
   },
@@ -68,40 +71,45 @@ impl TaskUpdateAction {
           Some(new_task_title) => new_task_title,
         };
 
-        TaskValueUpdate::new(task.id, task.title.clone(), new_task_title).map(|update| {
+        TaskValueUpdate::new(task.title.clone(), new_task_title).map(|update| {
           Action::UpdateTaskTitle {
+            task_id: task.id,
             update,
             connection: Rc::clone(connection),
           }
         })
       }
       Cmd::ToggleRequiresInternet => {
-        TaskValueUpdate::new(task.id, task.requires_internet, !task.requires_internet).map(
+        TaskValueUpdate::new(task.requires_internet, !task.requires_internet).map(
           |update| Action::UpdateRequiresInternet {
+            task_id: task.id,
             update,
             connection: Rc::clone(connection),
           },
         )
       }
       Cmd::UpdateDuration(direction) => {
-        TaskValueUpdate::new(task.id, task.duration, task.duration.increment(direction)).map(
+        TaskValueUpdate::new(task.duration, task.duration.increment(direction)).map(
           |update| Action::UpdateDuration {
+            task_id: task.id,
             update,
             connection: Rc::clone(connection),
           },
         )
       }
       Cmd::UpdatePriority(direction) => {
-        TaskValueUpdate::new(task.id, task.priority, task.priority.increment(direction)).map(
+        TaskValueUpdate::new(task.priority, task.priority.increment(direction)).map(
           |update| Action::UpdatePriority {
+            task_id: task.id,
             update,
             connection: Rc::clone(connection),
           },
         )
       }
       Cmd::UpdateStatus(new_task_status) => {
-        TaskValueUpdate::new(task.id, task.status, new_task_status).map(|update| {
+        TaskValueUpdate::new(task.status, new_task_status).map(|update| {
           Action::UpdateStatus {
+            task_id: task.id,
             update,
             connection: Rc::clone(connection),
           }

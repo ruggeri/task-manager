@@ -151,14 +151,6 @@ impl Scroller {
       callback(&self);
     }
   }
-
-  pub fn state(&self) -> ScrollerState {
-    self.state.borrow().clone()
-  }
-
-  pub fn restore_state(&self, state: ScrollerState) {
-    *self.state.borrow_mut() = state;
-  }
 }
 
 impl Default for Scroller {

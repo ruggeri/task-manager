@@ -96,12 +96,4 @@ impl Filterer {
 
     self.push(FiltererEvent::FiltererCriteriaUpdated);
   }
-
-  pub fn state(&self) -> FiltererState {
-    self.state.borrow().clone()
-  }
-
-  pub fn restore_state(&self, state: FiltererState) {
-    *self.state.borrow_mut() = state
-  }
 }

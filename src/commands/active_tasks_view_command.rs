@@ -1,6 +1,7 @@
 use actions::ActiveTasksViewAction;
 use commands::{FiltererCommand, ScrollCommand, TaskCommand, TaskUpdateCommand, UndoBufferCommand};
 use models::{Direction, End, TaskStatus};
+use std::rc::Rc;
 use views::ActiveTasksView;
 
 #[derive(Clone, Copy, Debug)]
@@ -44,7 +45,7 @@ impl ActiveTasksViewCommand {
     Some(command)
   }
 
-  pub fn to_action(self, view: &ActiveTasksView) -> Option<ActiveTasksViewAction> {
-    ActiveTasksViewAction::prepare_from_command(self, view)
+  pub fn to_action(self, view: &Rc<ActiveTasksView>) -> Option<ActiveTasksViewAction> {
+    ActiveTasksViewAction::prepare_from_command(self, &view)
   }
 }
