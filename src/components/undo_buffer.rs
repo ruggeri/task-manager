@@ -1,7 +1,7 @@
 use actions::ReversableAction;
 use std::cell::{Cell, Ref, RefCell};
 
-type Callback<ActionType, State> = Fn(&State, &ActionType) -> ();
+type Callback<ActionType, State> = Fn(&State, &ActionType) -> State;
 
 pub struct CallbackPair<ActionType, State> {
   pub redo_callback: Box<Callback<ActionType, State>>,
@@ -89,10 +89,11 @@ impl<ActionType, State> UndoBuffer<ActionType, State>
 
     self.idx.set(Some(redo_idx));
 
-    self.redo_callback()(
+    let state_to_save = self.redo_callback()(
       &self.state_at_idx(Some(redo_idx)),
       self.action_at_idx(redo_idx).as_ref(),
     );
+    self.set_current_state(state_to_save);
   }
 
   pub fn undo(&self) {
@@ -109,10 +110,11 @@ impl<ActionType, State> UndoBuffer<ActionType, State>
 
     self.idx.set(if undo_idx > 0 { Some(undo_idx - 1) } else { None });
 
-    self.undo_callback()(
+    let state_to_save = self.undo_callback()(
       &self.state_at_idx(self.idx.get()),
       self.action_at_idx(undo_idx).as_ref(),
     );
+    self.set_current_state(state_to_save);
   }
 
   pub fn set_current_state(&self, state: State) {
@@ -136,6 +138,8 @@ impl<ActionType, State> UndoBuffer<ActionType, State>
       // Notice I want to keep the first `idx + 1` actions because I
       // want `idx` to remain a valid index.
       items.truncate(idx + 1);
+    } else {
+      items.truncate(0);
     }
 
     items.push(item);

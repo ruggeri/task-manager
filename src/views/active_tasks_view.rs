@@ -104,19 +104,19 @@ impl ActiveTasksView {
 
     {
       let weak_view = Rc::downgrade(&view);
-      let undo_callback = Box::new(move |state: &ActiveTasksViewState, action: &ActiveTasksViewAction| {
+      let undo_callback = Box::new(move |state: &ActiveTasksViewState, action: &ActiveTasksViewAction| -> ActiveTasksViewState {
         let view = weak_view
           .upgrade()
           .expect("How did undo buffer callback outlive view?");
-        view.handle_action_undo(state, action);
+        view.handle_action_undo(state, action)
       });
 
       let weak_view = Rc::downgrade(&view);
-      let redo_callback = Box::new(move |state: &ActiveTasksViewState, action: &ActiveTasksViewAction| {
+      let redo_callback = Box::new(move |state: &ActiveTasksViewState, action: &ActiveTasksViewAction| -> ActiveTasksViewState {
         let view = weak_view
           .upgrade()
           .expect("How did undo buffer callback outlive view?");
-        view.handle_action_redo(state, action);
+        view.handle_action_redo(state, action)
       });
 
       view.undo_buffer.set_callback_pair(CallbackPair {
@@ -167,7 +167,7 @@ impl ActiveTasksView {
     }
   }
 
-  pub fn handle_action_undo(&self, state: &ActiveTasksViewState, action: &ActiveTasksViewAction) {
+  pub fn handle_action_undo(&self, state: &ActiveTasksViewState, action: &ActiveTasksViewAction) -> ActiveTasksViewState{
     use self::ActiveTasksViewAction::*;
     match action {
       Filterer { .. } => {
@@ -187,9 +187,11 @@ impl ActiveTasksView {
         panic!("Unexpected action to undo");
       }
     }
+
+    self.state()
   }
 
-  pub fn handle_action_redo(&self, state: &ActiveTasksViewState, action: &ActiveTasksViewAction) {
+  pub fn handle_action_redo(&self, state: &ActiveTasksViewState, action: &ActiveTasksViewAction) -> ActiveTasksViewState {
     use self::ActiveTasksViewAction::*;
     match action {
       Filterer { .. } => {
@@ -209,6 +211,8 @@ impl ActiveTasksView {
         panic!("Unexpected action to undo");
       }
     }
+
+    self.state()
   }
 
   pub fn state(&self) -> ActiveTasksViewState {
