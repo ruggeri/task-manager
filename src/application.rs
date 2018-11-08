@@ -4,8 +4,8 @@ use views::ActiveTasksView;
 
 pub struct Application {
   // TODO: Will someday become multiple views.
-  pub view: Rc<ActiveTasksView>,
-  pub window: Rc<Window>,
+  view: Rc<ActiveTasksView>,
+  window: Rc<Window>,
 }
 
 impl Application {

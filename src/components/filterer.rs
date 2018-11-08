@@ -32,7 +32,7 @@ pub struct FiltererState {
 
 #[derive(Default)]
 pub struct Filterer {
-  pub state: RefCell<FiltererState>,
+  state: RefCell<FiltererState>,
   callbacks: Vec<Box<Callback>>,
 }
 
@@ -53,7 +53,7 @@ impl Filterer {
     self.callbacks.push(callback);
   }
 
-  pub fn filter_result(&self, result: &data_source::Result) -> bool {
+  fn filter_result(&self, result: &data_source::Result) -> bool {
     use self::RequiresInternetFiltererValue::*;
 
     match self.requires_internet_value() {
@@ -63,7 +63,7 @@ impl Filterer {
     }
   }
 
-  pub fn push(&self, event: FiltererEvent) {
+  fn push(&self, event: FiltererEvent) {
     let state = self.state.borrow();
     for callback in &self.callbacks {
       callback(&state.results, event);

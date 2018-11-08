@@ -12,7 +12,7 @@ fn assert_is_sorted_backward(task_events: &[TaskEvent]) {
 }
 
 impl Scorer {
-  pub fn delay_amount(task_events: &[TaskEvent]) -> i64 {
+  fn delay_amount(task_events: &[TaskEvent]) -> i64 {
     assert_is_sorted_backward(task_events);
 
     let num_delay_events = task_events
