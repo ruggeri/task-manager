@@ -12,16 +12,19 @@ pub enum TaskAction {
     task: Option<Task>,
     connection: Rc<PgConnection>,
   },
+
   RecordTaskEffort {
     task_id: i32,
     task_event: Option<TaskEvent>,
     connection: Rc<PgConnection>,
   },
+
   RequestTaskDelay {
     task_id: i32,
     task_event: Option<TaskEvent>,
     connection: Rc<PgConnection>,
   },
+
   TaskUpdate(TaskUpdateAction),
 }
 

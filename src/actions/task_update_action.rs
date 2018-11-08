@@ -28,7 +28,9 @@ define_task_update_action!(
 
 macro_rules! prepare_action {
   ( $enum_value:ident, $task_id:expr, $old_value:expr, $new_value:expr, $connection:expr ) => {
-    if $old_value == $new_value { None } else {
+    if $old_value == $new_value {
+      None
+    } else {
       Some(TaskUpdateAction::$enum_value {
         task_id: $task_id,
         old_value: $old_value,
@@ -36,7 +38,7 @@ macro_rules! prepare_action {
         connection: Rc::clone($connection),
       })
     }
-  }
+  };
 }
 
 impl TaskUpdateAction {
@@ -49,6 +51,7 @@ impl TaskUpdateAction {
     use self::TaskUpdateCommand as Cmd;
 
     match cmd {
+      // Edit a task title.
       Cmd::EditTaskTitle => {
         let new_task_title = match window.read_line("Edit task title: ") {
           // If they hit Ctrl-C don't make the task afterall.
@@ -65,45 +68,41 @@ impl TaskUpdateAction {
         )
       }
 
-      Cmd::ToggleRequiresInternet => {
-        prepare_action!(
-          UpdateRequiresInternet,
-          task.id,
-          task.requires_internet,
-          !task.requires_internet,
-          connection
-        )
-      }
+      // Toggle whether a task requires internet.
+      Cmd::ToggleRequiresInternet => prepare_action!(
+        UpdateRequiresInternet,
+        task.id,
+        task.requires_internet,
+        !task.requires_internet,
+        connection
+      ),
 
-      Cmd::UpdateDuration(direction) => {
-        prepare_action!(
-          UpdateDuration,
-          task.id,
-          task.duration,
-          task.duration.increment(direction),
-          connection
-        )
-      }
+      // Update a task's duration.
+      Cmd::UpdateDuration(direction) => prepare_action!(
+        UpdateDuration,
+        task.id,
+        task.duration,
+        task.duration.increment(direction),
+        connection
+      ),
 
-      Cmd::UpdatePriority(direction) => {
-        prepare_action!(
-          UpdatePriority,
-          task.id,
-          task.priority,
-          task.priority.increment(direction),
-          connection
-        )
-      }
+      // Update a task's priority.
+      Cmd::UpdatePriority(direction) => prepare_action!(
+        UpdatePriority,
+        task.id,
+        task.priority,
+        task.priority.increment(direction),
+        connection
+      ),
 
-      Cmd::UpdateStatus(new_task_status) => {
-        prepare_action!(
-          UpdateStatus,
-          task.id,
-          task.status,
-          new_task_status,
-          connection
-        )
-      }
+      // Update a task's status.
+      Cmd::UpdateStatus(new_task_status) => prepare_action!(
+        UpdateStatus,
+        task.id,
+        task.status,
+        new_task_status,
+        connection
+      ),
     }
   }
 }

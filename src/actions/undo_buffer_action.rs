@@ -10,7 +10,10 @@ pub struct UndoBufferAction {
 }
 
 impl UndoBufferAction {
-  pub fn prepare_from_cmd(cmd: UndoBufferCommand, undo_buffer: &Rc<UndoBuffer>) -> UndoBufferAction {
+  pub fn prepare_from_cmd(
+    cmd: UndoBufferCommand,
+    undo_buffer: &Rc<UndoBuffer>,
+  ) -> UndoBufferAction {
     UndoBufferAction {
       cmd,
       undo_buffer: Rc::clone(undo_buffer),
