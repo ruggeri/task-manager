@@ -3,7 +3,7 @@ use commands::TaskCommand;
 use diesel::pg::PgConnection;
 use models::{Task, TaskEvent};
 use std::rc::Rc;
-use util::ui::Window;
+use util::ui::UserInterface;
 
 #[derive(Clone)]
 pub enum TaskAction {
@@ -31,7 +31,7 @@ pub enum TaskAction {
 impl TaskAction {
   pub fn prepare_from_cmd<F>(
     cmd: TaskCommand,
-    window: &Window,
+    ui: &UserInterface,
     connection: &Rc<PgConnection>,
     current_task_fn: F,
   ) -> Option<TaskAction>
@@ -41,7 +41,7 @@ impl TaskAction {
     match cmd {
       // Create a task.
       TaskCommand::CreateTask => {
-        let task_title = match window.read_line("Edit task title: ") {
+        let task_title = match ui.read_line("Edit task title: ") {
           // If they hit Ctrl-C don't make the task afterall.
           None => return None,
           Some(task_title) => task_title,
@@ -74,7 +74,7 @@ impl TaskAction {
 
       // Update a task attribute.
       TaskCommand::UpdateTask(cmd) => current_task_fn()
-        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, &task, window, connection))
+        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, &task, ui, connection))
         .map(TaskAction::TaskUpdate),
     }
   }

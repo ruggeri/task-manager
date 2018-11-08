@@ -2,7 +2,7 @@ use actions::{ForwardAction, ReversableAction};
 use commands::FiltererCommand;
 use components::{filterer::FiltererRequiresInternetValue, Filterer};
 use std::rc::Rc;
-use util::ui::Window;
+use util::ui::UserInterface;
 
 #[derive(Clone)]
 pub enum FiltererAction {
@@ -45,8 +45,8 @@ impl ReversableAction for FiltererAction {
   }
 }
 
-fn read_requires_internet_value(window: &Window) -> Option<FiltererRequiresInternetValue> {
-  let str_value = window.read_line("Requires internet value: ");
+fn read_requires_internet_value(ui: &UserInterface) -> Option<FiltererRequiresInternetValue> {
+  let str_value = ui.read_line("Requires internet value: ");
 
   use self::FiltererRequiresInternetValue::*;
   // Gross. Cannot compare a String with a &str. So need to call
@@ -62,10 +62,10 @@ fn read_requires_internet_value(window: &Window) -> Option<FiltererRequiresInter
 }
 
 fn new_requires_internet_filterer_action(
-  window: &Window,
+  ui: &UserInterface,
   filterer: &Rc<Filterer>,
 ) -> Option<FiltererAction> {
-  read_requires_internet_value(window).and_then(|new_value| {
+  read_requires_internet_value(ui).and_then(|new_value| {
     let old_value = filterer.requires_internet_value();
     if old_value == new_value {
       None
@@ -82,12 +82,12 @@ fn new_requires_internet_filterer_action(
 impl FiltererAction {
   pub fn prepare_from_cmd(
     cmd: FiltererCommand,
-    window: &Window,
+    ui: &UserInterface,
     filterer: &Rc<Filterer>,
   ) -> Option<FiltererAction> {
     use self::FiltererCommand::*;
     match cmd {
-      FilterByRequiresInternet => new_requires_internet_filterer_action(window, filterer),
+      FilterByRequiresInternet => new_requires_internet_filterer_action(ui, filterer),
     }
   }
 }

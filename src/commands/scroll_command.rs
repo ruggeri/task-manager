@@ -2,7 +2,7 @@ use actions::ScrollAction;
 use components::Scroller;
 use models::{Direction, End};
 use std::rc::Rc;
-use util::ui::Window;
+use util::ui::UserInterface;
 
 #[derive(Clone, Copy, Debug)]
 pub enum ScrollCommand {
@@ -12,14 +12,14 @@ pub enum ScrollCommand {
 }
 
 impl ScrollCommand {
-  pub fn to_action(self, window: &Window, scroller: &Rc<Scroller>) -> Option<ScrollAction> {
+  pub fn to_action(self, ui: &UserInterface, scroller: &Rc<Scroller>) -> Option<ScrollAction> {
     match self {
       ScrollCommand::Jump(end) => Some(ScrollAction::Jump {
         end,
         scroller: Rc::clone(scroller),
       }),
       ScrollCommand::JumpToTask => {
-        read_task_to_jump_to(window).map(|task_id| ScrollAction::JumpToTask {
+        read_task_to_jump_to(ui).map(|task_id| ScrollAction::JumpToTask {
           task_id,
           scroller: Rc::clone(scroller),
         })
@@ -32,8 +32,8 @@ impl ScrollCommand {
   }
 }
 
-fn read_task_to_jump_to(window: &Window) -> Option<i32> {
-  let task_id_str = match window.read_line("Task id to jump to: ") {
+fn read_task_to_jump_to(ui: &UserInterface) -> Option<i32> {
+  let task_id_str = match ui.read_line("Task id to jump to: ") {
     None => return None,
     Some(task_id_str) => task_id_str,
   };

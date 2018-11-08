@@ -8,12 +8,12 @@ pub enum ColorPair {
   Highlight,
 }
 
-pub struct Window {
+pub struct UserInterface {
   pub window: pancurses::Window,
 }
 
-impl Window {
-  pub fn initscr() -> Window {
+impl UserInterface {
+  pub fn initscr() -> UserInterface {
     // Important! You must initscr before you can do any of the start
     // color stuff. Otherwise you get a wonderful segfault...
     let window = pancurses::initscr();
@@ -25,7 +25,7 @@ impl Window {
     pancurses::noecho();
     window.keypad(true);
 
-    Window { window }
+    UserInterface { window }
   }
 
   pub fn getch(&self) -> Option<char> {
@@ -77,7 +77,7 @@ impl Window {
   }
 }
 
-impl Drop for Window {
+impl Drop for UserInterface {
   fn drop(&mut self) {
     pancurses::endwin();
   }

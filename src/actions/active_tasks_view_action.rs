@@ -44,7 +44,7 @@ impl ActiveTasksViewAction {
 
     match cmd {
       Filterer(fc) => {
-        fc.to_action(&view.root_window, &view.filterer)
+        fc.to_action(&view.ui, &view.filterer)
           .map(|fa| ActiveTasksViewAction::Filterer {
             fa,
             view: Rc::downgrade(&Rc::clone(view)),
@@ -55,16 +55,15 @@ impl ActiveTasksViewAction {
           })
       }
       Scroll(sc) => {
-        sc.to_action(&view.root_window, &view.scroller)
+        sc.to_action(&view.ui, &view.scroller)
           .map(|sa| ActiveTasksViewAction::Scroll {
             sa,
             view: Rc::downgrade(&Rc::clone(view)),
           })
       }
       Task(tc) => tc
-        .to_action(&view.root_window, &view.connection, || {
-          view.scroller.current_task()
-        }).map(|ta| ActiveTasksViewAction::Task {
+        .to_action(&view.ui, &view.connection, || view.scroller.current_task())
+        .map(|ta| ActiveTasksViewAction::Task {
           ta,
           view: Rc::downgrade(&Rc::clone(view)),
           scroller_state: SavedScrolerState {

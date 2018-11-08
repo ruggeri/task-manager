@@ -1,7 +1,7 @@
 use actions::FiltererAction;
 use components::Filterer;
 use std::rc::Rc;
-use util::ui::Window;
+use util::ui::UserInterface;
 
 #[derive(Clone, Copy, Debug)]
 pub enum FiltererCommand {
@@ -9,7 +9,7 @@ pub enum FiltererCommand {
 }
 
 impl FiltererCommand {
-  pub fn to_action(self, window: &Window, filterer: &Rc<Filterer>) -> Option<FiltererAction> {
-    FiltererAction::prepare_from_cmd(self, window, filterer)
+  pub fn to_action(self, ui: &UserInterface, filterer: &Rc<Filterer>) -> Option<FiltererAction> {
+    FiltererAction::prepare_from_cmd(self, ui, filterer)
   }
 }

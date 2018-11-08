@@ -3,11 +3,11 @@ use commands::ActiveTasksViewCommand;
 use components::{DataSource, Filterer, Scroller, TaskResultsWindow, UndoBuffer};
 use diesel::pg::PgConnection;
 use std::rc::Rc;
-use util::{get_connection, ui::Window};
+use util::{get_connection, ui::UserInterface};
 
 pub struct ActiveTasksView {
   pub connection: Rc<PgConnection>,
-  pub root_window: Rc<Window>,
+  pub ui: Rc<UserInterface>,
   pub task_results_window: Rc<TaskResultsWindow>,
   pub scroller: Rc<Scroller>,
   pub filterer: Rc<Filterer>,
@@ -16,15 +16,15 @@ pub struct ActiveTasksView {
 }
 
 impl ActiveTasksView {
-  pub fn new(root_window: &Rc<Window>) -> Rc<ActiveTasksView> {
+  pub fn new(ui: &Rc<UserInterface>) -> Rc<ActiveTasksView> {
     // We need our own copy of the root window.
-    let root_window = Rc::clone(root_window);
+    let ui = Rc::clone(ui);
 
     // Setup connection
     let connection = Rc::new(get_connection());
 
     // Setup TaskResultsWindow
-    let task_results_window = Rc::new(TaskResultsWindow::new(&root_window));
+    let task_results_window = Rc::new(TaskResultsWindow::new(&ui));
 
     // Setup Scroller.
     let mut scroller = Scroller::new();
@@ -64,7 +64,7 @@ impl ActiveTasksView {
 
     let view = ActiveTasksView {
       connection,
-      root_window,
+      ui,
       task_results_window,
       scroller,
       filterer,

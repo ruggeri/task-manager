@@ -2,7 +2,7 @@ use commands::TaskUpdateCommand;
 use diesel::pg::PgConnection;
 use models::*;
 use std::rc::Rc;
-use util::ui::Window;
+use util::ui::UserInterface;
 
 macro_rules! define_task_update_action {
   ( $( ($value:ident, $type:ty) ),* ) => {
@@ -45,7 +45,7 @@ impl TaskUpdateAction {
   pub fn prepare_from_cmd(
     cmd: TaskUpdateCommand,
     task: &Task,
-    window: &Window,
+    ui: &UserInterface,
     connection: &Rc<PgConnection>,
   ) -> Option<TaskUpdateAction> {
     use self::TaskUpdateCommand as Cmd;
@@ -53,7 +53,7 @@ impl TaskUpdateAction {
     match cmd {
       // Edit a task title.
       Cmd::EditTaskTitle => {
-        let new_task_title = match window.read_line("Edit task title: ") {
+        let new_task_title = match ui.read_line("Edit task title: ") {
           // If they hit Ctrl-C don't make the task afterall.
           None => return None,
           Some(new_task_title) => new_task_title,

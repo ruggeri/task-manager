@@ -3,7 +3,7 @@ use super::Scroller;
 use chrono::Duration;
 use pancurses;
 use std::rc::Rc;
-use util::ui::{ColorPair, Window as UiWindow};
+use util::ui::{ColorPair, UserInterface};
 
 fn format_task_age(age: Duration) -> String {
   let weeks = age.num_weeks();
@@ -25,19 +25,17 @@ fn format_task_age(age: Duration) -> String {
 }
 
 pub struct TaskResultsWindow {
-  window: Rc<UiWindow>,
+  ui: Rc<UserInterface>,
 }
 
 // TODO: Can I clean this code up at all?
 impl TaskResultsWindow {
-  pub fn new(window: &Rc<UiWindow>) -> TaskResultsWindow {
-    TaskResultsWindow {
-      window: Rc::clone(window),
-    }
+  pub fn new(ui: &Rc<UserInterface>) -> TaskResultsWindow {
+    TaskResultsWindow { ui: Rc::clone(ui) }
   }
 
   fn pwindow(&self) -> &pancurses::Window {
-    &self.window.window
+    &self.ui.window
   }
 
   pub fn redraw(&self, scroller: &Scroller) {
