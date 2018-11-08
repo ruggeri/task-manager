@@ -12,21 +12,21 @@ pub enum FiltererEvent {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum RequiresInternetFiltererValue {
+pub enum FiltererRequiresInternetValue {
   Any,
   No,
   Yes,
 }
 
-impl Default for RequiresInternetFiltererValue {
-  fn default() -> RequiresInternetFiltererValue {
-    RequiresInternetFiltererValue::Any
+impl Default for FiltererRequiresInternetValue {
+  fn default() -> FiltererRequiresInternetValue {
+    FiltererRequiresInternetValue::Any
   }
 }
 
 #[derive(Clone, Debug, Default)]
 pub struct FiltererState {
-  requires_internet_value: RequiresInternetFiltererValue,
+  requires_internet_value: FiltererRequiresInternetValue,
   results: ResultsVec,
 }
 
@@ -39,7 +39,7 @@ pub struct Filterer {
 impl Filterer {
   pub fn new() -> Filterer {
     let state = FiltererState {
-      requires_internet_value: RequiresInternetFiltererValue::Any,
+      requires_internet_value: FiltererRequiresInternetValue::Any,
       results: Rc::new(vec![]),
     };
 
@@ -54,7 +54,7 @@ impl Filterer {
   }
 
   fn filter_result(&self, result: &data_source::Result) -> bool {
-    use self::RequiresInternetFiltererValue::*;
+    use self::FiltererRequiresInternetValue::*;
 
     match self.requires_internet_value() {
       Any => true,
@@ -84,11 +84,11 @@ impl Filterer {
     self.push(FiltererEvent::FiltererGotUpdatedResults);
   }
 
-  pub fn requires_internet_value(&self) -> RequiresInternetFiltererValue {
+  pub fn requires_internet_value(&self) -> FiltererRequiresInternetValue {
     self.state.borrow().requires_internet_value
   }
 
-  pub fn set_requires_internet_value(&self, new_value: RequiresInternetFiltererValue) {
+  pub fn set_requires_internet_value(&self, new_value: FiltererRequiresInternetValue) {
     {
       let mut state = self.state.borrow_mut();
       state.requires_internet_value = new_value;
