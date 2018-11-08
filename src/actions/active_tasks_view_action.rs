@@ -2,7 +2,6 @@ use actions::{
   FiltererAction, ForwardAction, ReversableAction, ScrollAction, TaskAction, UndoBufferAction,
 };
 use commands::ActiveTasksViewCommand;
-use std::rc::Rc;
 use views::{ActiveTasksView, ActiveTasksViewState};
 
 #[derive(Clone)]
@@ -35,12 +34,10 @@ impl ActiveTasksViewAction {
       Scroll(sc) => sc
         .to_action(&view.root_window, &view.scroller)
         .map(|sa| ActiveTasksViewAction::Scroll { sa }),
-      Task(tc) => {
-        let scroller = Rc::clone(&view.scroller);
-        tc.to_action(&view.root_window, &view.connection, || {
-          scroller.current_task()
-        }).map(|ta| ActiveTasksViewAction::Task { ta })
-      }
+      Task(tc) => tc
+        .to_action(&view.root_window, &view.connection, || {
+          view.scroller.current_task()
+        }).map(|ta| ActiveTasksViewAction::Task { ta }),
       UndoBuffer(ubc) => {
         let uba = ubc.to_action(&view.undo_buffer);
         Some(ActiveTasksViewAction::UndoBuffer { uba })
@@ -53,19 +50,11 @@ impl ForwardAction for ActiveTasksViewAction {
   fn execute(&mut self) {
     use self::ActiveTasksViewAction::*;
     match self {
-      Filterer { fa } => {
-        fa.execute();
-      }
-      Scroll { sa } => {
-        sa.execute();
-      }
-      Task { ta } => {
-        ta.execute();
-      }
-      UndoBuffer { uba } => {
-        uba.execute();
-      }
-    }
+      Filterer { fa } => fa.execute(),
+      Scroll { sa } => sa.execute(),
+      Task { ta } => ta.execute(),
+      UndoBuffer { uba } => uba.execute(),
+    };
   }
 }
 
