@@ -42,16 +42,8 @@ impl ActiveTasksView {
     // Scroller pulls from Filterer.
     {
       let scroller = Rc::clone(&scroller);
-      filterer.add_callback(Box::new(move |filtered_results, event| {
-        use components::FiltererEvent::*;
-        use components::ScrollerRefreshType::*;
-
-        let refresh_type = match event {
-          FiltererCriteriaUpdated => MajorRefresh,
-          FiltererGotUpdatedResults => MinorRefresh,
-        };
-
-        scroller.refresh(filtered_results, refresh_type);
+      filterer.add_callback(Box::new(move |filtered_results, _event| {
+        scroller.refresh(filtered_results);
       }));
     }
     let filterer = Rc::new(filterer);

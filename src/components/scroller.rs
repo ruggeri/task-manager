@@ -6,21 +6,15 @@ use std::rc::Rc;
 type Callback = dyn Fn(&Scroller) -> ();
 type ResultsVec = Rc<Vec<data_source::Result>>;
 
-#[derive(Clone, Copy)]
-pub enum ScrollerRefreshType {
-  MajorRefresh,
-  MinorRefresh,
-}
-
 #[derive(Clone, Debug)]
-pub struct ScrollerState {
-  pub current_result_idx: i32,
-  pub results: ResultsVec,
+struct ScrollerState {
+  current_result_idx: i32,
+  results: ResultsVec,
 }
 
 pub struct Scroller {
-  pub state: RefCell<ScrollerState>,
-  pub callbacks: Vec<Box<Callback>>,
+  state: RefCell<ScrollerState>,
+  callbacks: Vec<Box<Callback>>,
 }
 
 impl Scroller {
@@ -63,8 +57,7 @@ impl Scroller {
       new_result_idx = num_results - 1;
     }
 
-    let mut state = self.state.borrow_mut();
-    state.current_result_idx = new_result_idx;
+    self.state.borrow_mut().current_result_idx = new_result_idx;
   }
 
   pub fn results(&self) -> Rc<Vec<data_source::Result>> {
@@ -114,7 +107,7 @@ impl Scroller {
       .is_some()
   }
 
-  pub fn refresh(&self, results: &ResultsVec, refresh_type: ScrollerRefreshType) {
+  pub fn refresh(&self, results: &ResultsVec) {
     let old_task_id = self.current_task_id();
     let old_result_idx = self.current_result_idx();
 
@@ -123,11 +116,7 @@ impl Scroller {
       state.results = Rc::clone(results);
     }
 
-    use self::ScrollerRefreshType::*;
-    match refresh_type {
-      MajorRefresh => self.set_current_result_idx(0),
-      MinorRefresh => self.try_to_maintain_scroll_position(old_task_id, old_result_idx),
-    }
+    self.try_to_maintain_scroll_position(old_task_id, old_result_idx);
 
     // Push changes on down the line.
     self.push();

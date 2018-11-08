@@ -28,6 +28,7 @@ pub struct TaskResultsWindow {
   window: Rc<UiWindow>,
 }
 
+// TODO: Can I clean this code up at all?
 impl TaskResultsWindow {
   pub fn new(window: &Rc<UiWindow>) -> TaskResultsWindow {
     TaskResultsWindow {
@@ -51,8 +52,6 @@ impl TaskResultsWindow {
 
     self.display_header(max_title_len);
 
-    // TODO: This is a bad idea. I want to have interior mutability, but
-    // here we can see it's sneaking out.
     for (idx, ref result) in scroller.results().iter().enumerate() {
       self.display_result(scroller, idx as i32, result, max_title_len);
     }
