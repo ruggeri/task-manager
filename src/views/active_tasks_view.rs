@@ -1,8 +1,6 @@
 use actions::ForwardAction;
 use commands::ActiveTasksViewCommand;
-use components::{
-  DataSource, Filterer, Scroller, TaskResultsWindow, UndoBuffer,
-};
+use components::{DataSource, Filterer, Scroller, TaskResultsWindow, UndoBuffer};
 use diesel::pg::PgConnection;
 use std::rc::Rc;
 use util::{get_connection, ui::Window};
@@ -94,8 +92,7 @@ impl ActiveTasksView {
       .map(|mut action| {
         action.execute();
         action.maybe_add_to_undo_buffer(&view.undo_buffer);
-      })
-      .is_some();
+      }).is_some();
 
     if !did_execute_action {
       // Redraw screen regardless.

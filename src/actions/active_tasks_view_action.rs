@@ -1,5 +1,6 @@
 use actions::{
-  FiltererAction, ForwardAction, ReversableAction, ScrollAction, TaskAction, TaskUpdateAction, UndoBufferAction,
+  FiltererAction, ForwardAction, ReversableAction, ScrollAction, TaskAction, TaskUpdateAction,
+  UndoBufferAction,
 };
 use commands::ActiveTasksViewCommand;
 use components::{Scroller, UndoBuffer};
@@ -42,22 +43,24 @@ impl ActiveTasksViewAction {
     use self::ActiveTasksViewCommand::*;
 
     match cmd {
-      Filterer(fc) => fc
-        .to_action(&view.root_window, &view.filterer)
-        .map(|fa| ActiveTasksViewAction::Filterer {
-          fa,
-          view: Rc::downgrade(&Rc::clone(view)),
-          scroller_state: SavedScrolerState {
-            old_id: view.scroller.current_task_id(),
-            new_id: None,
-           }
-        }),
-      Scroll(sc) => sc
-        .to_action(&view.root_window, &view.scroller)
-        .map(|sa| ActiveTasksViewAction::Scroll {
-          sa,
-          view: Rc::downgrade(&Rc::clone(view)),
-        }),
+      Filterer(fc) => {
+        fc.to_action(&view.root_window, &view.filterer)
+          .map(|fa| ActiveTasksViewAction::Filterer {
+            fa,
+            view: Rc::downgrade(&Rc::clone(view)),
+            scroller_state: SavedScrolerState {
+              old_id: view.scroller.current_task_id(),
+              new_id: None,
+            },
+          })
+      }
+      Scroll(sc) => {
+        sc.to_action(&view.root_window, &view.scroller)
+          .map(|sa| ActiveTasksViewAction::Scroll {
+            sa,
+            view: Rc::downgrade(&Rc::clone(view)),
+          })
+      }
       Task(tc) => tc
         .to_action(&view.root_window, &view.connection, || {
           view.scroller.current_task()
@@ -67,7 +70,7 @@ impl ActiveTasksViewAction {
           scroller_state: SavedScrolerState {
             old_id: view.scroller.current_task_id(),
             new_id: None,
-           }
+          },
         }),
       UndoBuffer(ubc) => {
         let uba = ubc.to_action(&view.undo_buffer);
@@ -88,10 +91,14 @@ impl ActiveTasksViewAction {
 }
 
 fn maybe_jump_to_task(scroller: &Scroller, task_id: Option<i32>) -> bool {
-  task_id.map_or(false, |task_id| { scroller.jump_to_task_id(task_id) })
+  task_id.map_or(false, |task_id| scroller.jump_to_task_id(task_id))
 }
 
-fn execute_task_action(ta: &mut TaskAction, view: &Weak<ActiveTasksView>, scroller_state: &mut SavedScrolerState) {
+fn execute_task_action(
+  ta: &mut TaskAction,
+  view: &Weak<ActiveTasksView>,
+  scroller_state: &mut SavedScrolerState,
+) {
   let view = view.upgrade().expect("Action should not outlive view");
 
   // First save scroller position.
@@ -133,7 +140,11 @@ impl ForwardAction for ActiveTasksViewAction {
   fn execute(&mut self) {
     use self::ActiveTasksViewAction::*;
     match self {
-      Filterer { fa, view, scroller_state } => {
+      Filterer {
+        fa,
+        view,
+        scroller_state,
+      } => {
         let view = view.upgrade().expect("Action should not outlive view");
 
         // First save scroller position.
@@ -149,7 +160,11 @@ impl ForwardAction for ActiveTasksViewAction {
       Scroll { sa, .. } => {
         sa.execute();
       }
-      Task { ta, view, scroller_state } => {
+      Task {
+        ta,
+        view,
+        scroller_state,
+      } => {
         execute_task_action(ta, view, scroller_state);
       }
       UndoBuffer { uba } => uba.execute(),
@@ -157,7 +172,11 @@ impl ForwardAction for ActiveTasksViewAction {
   }
 }
 
-fn redo_task_action(ta: &mut TaskAction, view: &Weak<ActiveTasksView>, scroller_state: &mut SavedScrolerState) {
+fn redo_task_action(
+  ta: &mut TaskAction,
+  view: &Weak<ActiveTasksView>,
+  scroller_state: &mut SavedScrolerState,
+) {
   let view = view.upgrade().expect("Action should not outlive view");
 
   // First save scroller position.
@@ -194,7 +213,7 @@ fn redo_task_action(ta: &mut TaskAction, view: &Weak<ActiveTasksView>, scroller_
       // cursor.
       let did_update_scroller =
         view.scroller.jump_to_task_id(*task_id)
-        || maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap());
+          || maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap());
 
       if !did_update_scroller {
         view.scroller.jump(End::Top);
@@ -203,7 +222,11 @@ fn redo_task_action(ta: &mut TaskAction, view: &Weak<ActiveTasksView>, scroller_
   }
 }
 
-fn unexecute_task_action(ta: &mut TaskAction, view: &Weak<ActiveTasksView>, scroller_state: &mut SavedScrolerState) {
+fn unexecute_task_action(
+  ta: &mut TaskAction,
+  view: &Weak<ActiveTasksView>,
+  scroller_state: &mut SavedScrolerState,
+) {
   let view = view.upgrade().expect("Action should not outlive view");
 
   // First save scroller position.
@@ -241,12 +264,15 @@ fn unexecute_task_action(ta: &mut TaskAction, view: &Weak<ActiveTasksView>, scro
   }
 }
 
-
 impl ReversableAction for ActiveTasksViewAction {
   fn redo(&mut self) {
     use self::ActiveTasksViewAction::*;
     match self {
-      Filterer { fa, view, scroller_state } => {
+      Filterer {
+        fa,
+        view,
+        scroller_state,
+      } => {
         let view = view.upgrade().expect("Action should not outlive view");
 
         // First save scroller position.
@@ -266,19 +292,25 @@ impl ReversableAction for ActiveTasksViewAction {
       Scroll { .. } => {
         panic!("Should not try to redo a Scroll action.");
       }
-      Task { ta, view, scroller_state } => {
+      Task {
+        ta,
+        view,
+        scroller_state,
+      } => {
         redo_task_action(ta, view, scroller_state);
       }
-      UndoBuffer { .. } => {
-        panic!("Should not try to redo an UndoBuffer action.")
-      }
+      UndoBuffer { .. } => panic!("Should not try to redo an UndoBuffer action."),
     };
   }
 
   fn unexecute(&mut self) {
     use self::ActiveTasksViewAction::*;
     match self {
-      Filterer { fa, view, scroller_state } => {
+      Filterer {
+        fa,
+        view,
+        scroller_state,
+      } => {
         let view = view.upgrade().expect("Action should not outlive view");
 
         // First save scroller position.
@@ -291,8 +323,7 @@ impl ReversableAction for ActiveTasksViewAction {
         view.data_source.pull(&view.connection);
 
         // Restore scroller.
-        let did_jump_to_task_id = scroller_state.old_id.map_or(
-          false, |old_task_id| {
+        let did_jump_to_task_id = scroller_state.old_id.map_or(false, |old_task_id| {
           view.scroller.jump_to_task_id(old_task_id)
         });
 
@@ -301,15 +332,15 @@ impl ReversableAction for ActiveTasksViewAction {
           view.scroller.jump(End::Top);
         }
       }
-      Scroll { .. } => {
-        panic!("Should not try to unexecute a Scroll action.")
-      },
-      Task { ta, view, scroller_state } => {
+      Scroll { .. } => panic!("Should not try to unexecute a Scroll action."),
+      Task {
+        ta,
+        view,
+        scroller_state,
+      } => {
         unexecute_task_action(ta, view, scroller_state);
       }
-      UndoBuffer { .. } => {
-        panic!("Should not try to unexecute an UnderBuffer action.")
-      }
+      UndoBuffer { .. } => panic!("Should not try to unexecute an UnderBuffer action."),
     }
   }
 }

@@ -80,39 +80,37 @@ impl TaskUpdateAction {
         })
       }
       Cmd::ToggleRequiresInternet => {
-        TaskValueUpdate::new(task.requires_internet, !task.requires_internet).map(
-          |update| Action::UpdateRequiresInternet {
-            task_id: task.id,
-            update,
-            connection: Rc::clone(connection),
-          },
-        )
-      }
-      Cmd::UpdateDuration(direction) => {
-        TaskValueUpdate::new(task.duration, task.duration.increment(direction)).map(
-          |update| Action::UpdateDuration {
-            task_id: task.id,
-            update,
-            connection: Rc::clone(connection),
-          },
-        )
-      }
-      Cmd::UpdatePriority(direction) => {
-        TaskValueUpdate::new(task.priority, task.priority.increment(direction)).map(
-          |update| Action::UpdatePriority {
-            task_id: task.id,
-            update,
-            connection: Rc::clone(connection),
-          },
-        )
-      }
-      Cmd::UpdateStatus(new_task_status) => {
-        TaskValueUpdate::new(task.status, new_task_status).map(|update| {
-          Action::UpdateStatus {
+        TaskValueUpdate::new(task.requires_internet, !task.requires_internet).map(|update| {
+          Action::UpdateRequiresInternet {
             task_id: task.id,
             update,
             connection: Rc::clone(connection),
           }
+        })
+      }
+      Cmd::UpdateDuration(direction) => {
+        TaskValueUpdate::new(task.duration, task.duration.increment(direction)).map(|update| {
+          Action::UpdateDuration {
+            task_id: task.id,
+            update,
+            connection: Rc::clone(connection),
+          }
+        })
+      }
+      Cmd::UpdatePriority(direction) => {
+        TaskValueUpdate::new(task.priority, task.priority.increment(direction)).map(|update| {
+          Action::UpdatePriority {
+            task_id: task.id,
+            update,
+            connection: Rc::clone(connection),
+          }
+        })
+      }
+      Cmd::UpdateStatus(new_task_status) => {
+        TaskValueUpdate::new(task.status, new_task_status).map(|update| Action::UpdateStatus {
+          task_id: task.id,
+          update,
+          connection: Rc::clone(connection),
         })
       }
     }

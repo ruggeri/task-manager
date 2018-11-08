@@ -10,7 +10,7 @@ pub struct UndoBufferAction {
 }
 
 impl ForwardAction for UndoBufferAction {
- fn execute(&mut self) {
+  fn execute(&mut self) {
     use self::UndoBufferCommand::*;
 
     match self.cmd {

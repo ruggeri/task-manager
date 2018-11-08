@@ -18,7 +18,11 @@ impl ForwardAction for FiltererAction {
     use self::FiltererAction::*;
 
     match self {
-      UpdateRequiresInternet { new_value, filterer, .. } => {
+      UpdateRequiresInternet {
+        new_value,
+        filterer,
+        ..
+      } => {
         filterer.set_requires_internet_value(*new_value);
       }
     }
@@ -30,7 +34,11 @@ impl ReversableAction for FiltererAction {
     use self::FiltererAction::*;
 
     match self {
-      UpdateRequiresInternet { old_value, filterer, .. } => {
+      UpdateRequiresInternet {
+        old_value,
+        filterer,
+        ..
+      } => {
         // Nothing special to undo. Simply restore the prior state.
         filterer.set_requires_internet_value(*old_value);
       }
