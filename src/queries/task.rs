@@ -15,7 +15,9 @@ struct NewTask {
   pub status: TaskStatus,
 }
 
-pub fn all_available_to_perform(connection: &PgConnection) -> Vec<Task> {
+pub fn all_available_to_perform(
+  connection: &PgConnection,
+) -> Vec<Task> {
   use schema::tasks::dsl::*;
   tasks
     .filter(

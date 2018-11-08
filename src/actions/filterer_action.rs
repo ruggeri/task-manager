@@ -45,7 +45,9 @@ impl ReversableAction for FiltererAction {
   }
 }
 
-fn read_requires_internet_value(ui: &UserInterface) -> Option<FiltererRequiresInternetValue> {
+fn read_requires_internet_value(
+  ui: &UserInterface,
+) -> Option<FiltererRequiresInternetValue> {
   let str_value = ui.read_line("Requires internet value: ");
 
   use self::FiltererRequiresInternetValue::*;
@@ -87,7 +89,9 @@ impl FiltererAction {
   ) -> Option<FiltererAction> {
     use self::FiltererCommand::*;
     match cmd {
-      FilterByRequiresInternet => new_requires_internet_filterer_action(ui, filterer),
+      FilterByRequiresInternet => {
+        new_requires_internet_filterer_action(ui, filterer)
+      }
     }
   }
 }

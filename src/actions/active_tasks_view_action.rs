@@ -1,6 +1,9 @@
-use actions::scroller_state::SavedScrolerState;
-use actions::{FiltererAction, ForwardAction, ReversableAction, ScrollAction, TaskAction, UndoBufferAction};
 use actions::active_tasks_view_action_execution as execution_logic;
+use actions::scroller_state::SavedScrolerState;
+use actions::{
+  FiltererAction, ForwardAction, ReversableAction, ScrollAction,
+  TaskAction, UndoBufferAction,
+};
 use commands::ActiveTasksViewCommand;
 use components::UndoBuffer;
 use std::rc::{Rc, Weak};
@@ -36,25 +39,26 @@ impl ActiveTasksViewAction {
 
     match cmd {
       Filterer(fc) => {
-        fc.to_action(&view.ui, &view.filterer)
-          .map(|fa| ActiveTasksViewAction::Filterer {
+        fc.to_action(&view.ui, &view.filterer).map(|fa| {
+          ActiveTasksViewAction::Filterer {
             fa,
             view: Rc::downgrade(&view),
             scroller_state: SavedScrolerState::new(&view.scroller),
-          })
+          }
+        })
       }
 
-      Scroll(sc) => {
-        sc.to_action(&view.ui, &view.scroller)
-          .map(|sa| ActiveTasksViewAction::Scroll {
-            sa,
-            view: Rc::downgrade(&Rc::clone(view)),
-          })
-      }
+      Scroll(sc) => sc.to_action(&view.ui, &view.scroller).map(|sa| {
+        ActiveTasksViewAction::Scroll {
+          sa,
+          view: Rc::downgrade(&Rc::clone(view)),
+        }
+      }),
 
       Task(tc) => tc
-        .to_action(&view.ui, &view.connection, || view.scroller.current_task())
-        .map(|ta| ActiveTasksViewAction::Task {
+        .to_action(&view.ui, &view.connection, || {
+          view.scroller.current_task()
+        }).map(|ta| ActiveTasksViewAction::Task {
           ta,
           view: Rc::downgrade(&Rc::clone(view)),
           scroller_state: SavedScrolerState::new(&view.scroller),
@@ -87,7 +91,11 @@ impl ForwardAction for ActiveTasksViewAction {
         view,
         scroller_state,
       } => {
-        execution_logic::execute_filterer_action(fa, view, scroller_state);
+        execution_logic::execute_filterer_action(
+          fa,
+          view,
+          scroller_state,
+        );
       }
       Scroll { sa, .. } => {
         sa.execute();
@@ -125,7 +133,9 @@ impl ReversableAction for ActiveTasksViewAction {
       } => {
         execution_logic::redo_task_action(ta, view, scroller_state);
       }
-      UndoBuffer { .. } => panic!("Should not try to redo an UndoBuffer action."),
+      UndoBuffer { .. } => {
+        panic!("Should not try to redo an UndoBuffer action.")
+      }
     };
   }
 
@@ -137,17 +147,29 @@ impl ReversableAction for ActiveTasksViewAction {
         view,
         scroller_state,
       } => {
-        execution_logic::unexecute_filterer_action(fa, view, scroller_state);
+        execution_logic::unexecute_filterer_action(
+          fa,
+          view,
+          scroller_state,
+        );
       }
-      Scroll { .. } => panic!("Should not try to unexecute a Scroll action."),
+      Scroll { .. } => {
+        panic!("Should not try to unexecute a Scroll action.")
+      }
       Task {
         ta,
         view,
         scroller_state,
       } => {
-        execution_logic::unexecute_task_action(ta, view, scroller_state);
+        execution_logic::unexecute_task_action(
+          ta,
+          view,
+          scroller_state,
+        );
       }
-      UndoBuffer { .. } => panic!("Should not try to unexecute an UnderBuffer action."),
+      UndoBuffer { .. } => {
+        panic!("Should not try to unexecute an UnderBuffer action.")
+      }
     }
   }
 }

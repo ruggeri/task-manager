@@ -1,6 +1,10 @@
 macro_rules! define_update_attribute_fn {
   ($table:ident, $fn_name:ident, $value_type:ty, $field_name:ident) => {
-    pub fn $fn_name(id: i32, new_value: $value_type, connection: &PgConnection) {
+    pub fn $fn_name(
+      id: i32,
+      new_value: $value_type,
+      connection: &PgConnection,
+    ) {
       use schema::$table::dsl;
 
       let num_updated = diesel::update(dsl::$table.find(id))

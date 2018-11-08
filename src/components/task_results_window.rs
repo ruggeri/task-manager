@@ -84,7 +84,8 @@ impl TaskResultsWindow {
 
     // Choose appropriate color.
     if idx == scroller.current_result_idx() {
-      pwindow.attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
+      pwindow
+        .attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
 
     let priority = {
@@ -137,7 +138,8 @@ impl TaskResultsWindow {
     pwindow.printw(&s);
 
     if idx == scroller.current_result_idx() {
-      pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
+      pwindow
+        .attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     }
   }
 }

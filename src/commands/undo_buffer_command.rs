@@ -9,7 +9,10 @@ pub enum UndoBufferCommand {
 }
 
 impl UndoBufferCommand {
-  pub fn to_action(self, undo_buffer: &Rc<UndoBuffer>) -> UndoBufferAction {
+  pub fn to_action(
+    self,
+    undo_buffer: &Rc<UndoBuffer>,
+  ) -> UndoBufferAction {
     UndoBufferAction::prepare_from_cmd(self, undo_buffer)
   }
 }

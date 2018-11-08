@@ -39,22 +39,29 @@ impl DataSource {
   pub fn pull(&self, connection: &PgConnection) {
     let current_time = Utc::now();
 
-    let mut results: Vec<_> = task_queries::all_available_to_perform(&connection)
-      .into_iter()
-      .map(|task| {
-        let task_events = te_queries::task_events(&task, &connection);
-        let last_effort_time = Scorer::last_effort_time(&task, &task_events);
-        let last_effort_duration_since = current_time.signed_duration_since(last_effort_time);
-        let score = Scorer::score_task(&task, &task_events, last_effort_duration_since);
+    let mut results: Vec<_> =
+      task_queries::all_available_to_perform(&connection)
+        .into_iter()
+        .map(|task| {
+          let task_events = te_queries::task_events(&task, &connection);
+          let last_effort_time =
+            Scorer::last_effort_time(&task, &task_events);
+          let last_effort_duration_since =
+            current_time.signed_duration_since(last_effort_time);
+          let score = Scorer::score_task(
+            &task,
+            &task_events,
+            last_effort_duration_since,
+          );
 
-        Result {
-          task,
-          task_events,
-          last_effort_time,
-          last_effort_duration_since,
-          score,
-        }
-      }).collect();
+          Result {
+            task,
+            task_events,
+            last_effort_time,
+            last_effort_duration_since,
+            score,
+          }
+        }).collect();
 
     results.sort_by_key(|result| result.score);
     results.reverse();

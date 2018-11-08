@@ -12,16 +12,22 @@ pub enum ScrollCommand {
 }
 
 impl ScrollCommand {
-  pub fn to_action(self, ui: &UserInterface, scroller: &Rc<Scroller>) -> Option<ScrollAction> {
+  pub fn to_action(
+    self,
+    ui: &UserInterface,
+    scroller: &Rc<Scroller>,
+  ) -> Option<ScrollAction> {
     match self {
       ScrollCommand::Jump(end) => Some(ScrollAction::Jump {
         end,
         scroller: Rc::clone(scroller),
       }),
       ScrollCommand::JumpToTask => {
-        read_task_to_jump_to(ui).map(|task_id| ScrollAction::JumpToTask {
-          task_id,
-          scroller: Rc::clone(scroller),
+        read_task_to_jump_to(ui).map(|task_id| {
+          ScrollAction::JumpToTask {
+            task_id,
+            scroller: Rc::clone(scroller),
+          }
         })
       }
       ScrollCommand::Scroll(direction) => Some(ScrollAction::Scroll {

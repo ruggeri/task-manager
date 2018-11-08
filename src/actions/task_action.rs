@@ -55,27 +55,32 @@ impl TaskAction {
       }
 
       // Record a task effort.
-      TaskCommand::RecordTaskEffort => current_task_fn().and_then(|task| {
-        Some(TaskAction::RecordTaskEffort {
-          task_id: task.id,
-          task_event: None,
-          connection: Rc::clone(connection),
+      TaskCommand::RecordTaskEffort => {
+        current_task_fn().and_then(|task| {
+          Some(TaskAction::RecordTaskEffort {
+            task_id: task.id,
+            task_event: None,
+            connection: Rc::clone(connection),
+          })
         })
-      }),
+      }
 
       // Request a task delay.
-      TaskCommand::RequestTaskDelay => current_task_fn().and_then(|task| {
-        Some(TaskAction::RequestTaskDelay {
-          task_id: task.id,
-          task_event: None,
-          connection: Rc::clone(connection),
+      TaskCommand::RequestTaskDelay => {
+        current_task_fn().and_then(|task| {
+          Some(TaskAction::RequestTaskDelay {
+            task_id: task.id,
+            task_event: None,
+            connection: Rc::clone(connection),
+          })
         })
-      }),
+      }
 
       // Update a task attribute.
       TaskCommand::UpdateTask(cmd) => current_task_fn()
-        .and_then(|task| TaskUpdateAction::prepare_from_cmd(cmd, &task, ui, connection))
-        .map(TaskAction::TaskUpdate),
+        .and_then(|task| {
+          TaskUpdateAction::prepare_from_cmd(cmd, &task, ui, connection)
+        }).map(TaskAction::TaskUpdate),
     }
   }
 }

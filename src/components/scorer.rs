@@ -1,5 +1,7 @@
 use chrono::{DateTime, Duration, Utc};
-use models::{Task, TaskDuration, TaskEvent, TaskEventType, TaskPriority};
+use models::{
+  Task, TaskDuration, TaskEvent, TaskEventType, TaskPriority,
+};
 
 pub struct Scorer();
 
@@ -17,14 +19,18 @@ impl Scorer {
 
     let num_delay_events = task_events
       .iter()
-      .take_while(|te| te.event_type != TaskEventType::TaskEffortRecorded)
-      .filter(|te| te.event_type == TaskEventType::DelayRequested)
+      .take_while(|te| {
+        te.event_type != TaskEventType::TaskEffortRecorded
+      }).filter(|te| te.event_type == TaskEventType::DelayRequested)
       .count();
 
     Duration::days(num_delay_events as i64).num_seconds()
   }
 
-  pub fn last_effort_time(task: &Task, task_events: &[TaskEvent]) -> DateTime<Utc> {
+  pub fn last_effort_time(
+    task: &Task,
+    task_events: &[TaskEvent],
+  ) -> DateTime<Utc> {
     assert_is_sorted_backward(task_events);
 
     // Filter to just TaskEffortRecorded events.

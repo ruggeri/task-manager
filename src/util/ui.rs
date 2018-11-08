@@ -21,7 +21,11 @@ impl UserInterface {
     pancurses::start_color();
     pancurses::use_default_colors();
     pancurses::init_pair(ColorPair::Default as i16, -1, -1);
-    pancurses::init_pair(ColorPair::Highlight as i16, -1, pancurses::COLOR_BLUE);
+    pancurses::init_pair(
+      ColorPair::Highlight as i16,
+      -1,
+      pancurses::COLOR_BLUE,
+    );
     pancurses::noecho();
     window.keypad(true);
 

@@ -71,8 +71,12 @@ impl Scroller {
   pub fn scroll(&self, direction: Direction) {
     let current_result_idx = self.current_result_idx();
     match direction {
-      Direction::Decrease => self.set_current_result_idx(current_result_idx - 1),
-      Direction::Increase => self.set_current_result_idx(current_result_idx + 1),
+      Direction::Decrease => {
+        self.set_current_result_idx(current_result_idx - 1)
+      }
+      Direction::Increase => {
+        self.set_current_result_idx(current_result_idx + 1)
+      }
     };
 
     self.push();
@@ -81,7 +85,9 @@ impl Scroller {
   pub fn jump(&self, end: End) {
     match end {
       End::Top => self.set_current_result_idx(0),
-      End::Bottom => self.set_current_result_idx(self.num_results() - 1),
+      End::Bottom => {
+        self.set_current_result_idx(self.num_results() - 1)
+      }
     }
 
     self.push();
@@ -122,7 +128,11 @@ impl Scroller {
     self.push();
   }
 
-  fn try_to_maintain_scroll_position(&self, old_task_id: Option<i32>, old_result_idx: i32) {
+  fn try_to_maintain_scroll_position(
+    &self,
+    old_task_id: Option<i32>,
+    old_result_idx: i32,
+  ) {
     // First try to match to prev task's id. Find that idx.
     if let Some(old_task_id) = old_task_id {
       if self.jump_to_task_id(old_task_id) {

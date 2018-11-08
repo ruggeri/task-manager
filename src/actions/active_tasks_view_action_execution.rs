@@ -1,13 +1,17 @@
 use actions::scroller_state::SavedScrolerState;
 use actions::{
-  FiltererAction, ForwardAction, ReversableAction, TaskAction, TaskUpdateAction,
+  FiltererAction, ForwardAction, ReversableAction, TaskAction,
+  TaskUpdateAction,
 };
 use components::Scroller;
 use models::End;
 use std::rc::Weak;
 use views::ActiveTasksView;
 
-fn maybe_jump_to_task(scroller: &Scroller, task_id: Option<i32>) -> bool {
+fn maybe_jump_to_task(
+  scroller: &Scroller,
+  task_id: Option<i32>,
+) -> bool {
   task_id.map_or(false, |task_id| scroller.jump_to_task_id(task_id))
 }
 
@@ -92,7 +96,8 @@ pub fn redo_filterer_action(
   view.data_source.pull(&view.connection);
 
   // Try to restore new scroller state.
-  if !maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap()) {
+  if !maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap())
+  {
     view.scroller.jump(End::Top);
   }
 }
@@ -125,7 +130,10 @@ pub fn redo_task_action(
     }
     RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
       // Try to restore id that had been focused on.
-      if !maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap()) {
+      if !maybe_jump_to_task(
+        &view.scroller,
+        scroller_state.new_id.unwrap(),
+      ) {
         view.scroller.jump(End::Top);
       }
     }
@@ -136,9 +144,11 @@ pub fn redo_task_action(
     | TaskUpdate(UpdateTaskTitle { task_id, .. }) => {
       // Try to follow task, but if you can't, then try to restore
       // cursor.
-      let did_update_scroller =
-        view.scroller.jump_to_task_id(*task_id)
-          || maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap());
+      let did_update_scroller = view.scroller.jump_to_task_id(*task_id)
+        || maybe_jump_to_task(
+          &view.scroller,
+          scroller_state.new_id.unwrap(),
+        );
 
       if !did_update_scroller {
         view.scroller.jump(End::Top);
@@ -166,9 +176,10 @@ pub fn unexecute_filterer_action(
   view.data_source.pull(&view.connection);
 
   // Restore scroller.
-  let did_jump_to_task_id = scroller_state.old_id.map_or(false, |old_task_id| {
-    view.scroller.jump_to_task_id(old_task_id)
-  });
+  let did_jump_to_task_id =
+    scroller_state.old_id.map_or(false, |old_task_id| {
+      view.scroller.jump_to_task_id(old_task_id)
+    });
 
   // If couldn't jump to a task by id, then just jump to top.
   if !did_jump_to_task_id {

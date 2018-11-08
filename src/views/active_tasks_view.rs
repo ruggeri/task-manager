@@ -1,6 +1,8 @@
 use actions::ForwardAction;
 use commands::ActiveTasksViewCommand;
-use components::{DataSource, Filterer, Scroller, TaskResultsWindow, UndoBuffer};
+use components::{
+  DataSource, Filterer, Scroller, TaskResultsWindow, UndoBuffer,
+};
 use diesel::pg::PgConnection;
 use std::rc::Rc;
 use util::{get_connection, ui::UserInterface};
@@ -42,9 +44,11 @@ impl ActiveTasksView {
     // Scroller pulls from Filterer.
     {
       let scroller = Rc::clone(&scroller);
-      filterer.add_callback(Box::new(move |filtered_results, _event| {
-        scroller.refresh(filtered_results);
-      }));
+      filterer.add_callback(Box::new(
+        move |filtered_results, _event| {
+          scroller.refresh(filtered_results);
+        },
+      ));
     }
     let filterer = Rc::new(filterer);
 

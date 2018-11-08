@@ -1,5 +1,8 @@
 use actions::ActiveTasksViewAction;
-use commands::{FiltererCommand, ScrollCommand, TaskCommand, TaskUpdateCommand, UndoBufferCommand};
+use commands::{
+  FiltererCommand, ScrollCommand, TaskCommand, TaskUpdateCommand,
+  UndoBufferCommand,
+};
 use models::{Direction, End, TaskStatus};
 use std::rc::Rc;
 use views::ActiveTasksView;
@@ -15,8 +18,9 @@ pub enum ActiveTasksViewCommand {
 impl ActiveTasksViewCommand {
   pub fn from_key(ch: char) -> Option<ActiveTasksViewCommand> {
     use self::{
-      ActiveTasksViewCommand::*, Direction::*, End::*, FiltererCommand::*, ScrollCommand::*,
-      TaskCommand::*, TaskStatus::*, TaskUpdateCommand::*,
+      ActiveTasksViewCommand::*, Direction::*, End::*,
+      FiltererCommand::*, ScrollCommand::*, TaskCommand::*,
+      TaskStatus::*, TaskUpdateCommand::*,
     };
 
     let command = match ch {
@@ -24,8 +28,12 @@ impl ActiveTasksViewCommand {
       '$' => ActiveTasksViewCommand::Scroll(Jump(Bottom)),
       'g' => ActiveTasksViewCommand::Scroll(Jump(Top)),
       '/' => ActiveTasksViewCommand::Scroll(JumpToTask),
-      'k' => ActiveTasksViewCommand::Scroll(ScrollCommand::Scroll(Decrease)),
-      'j' => ActiveTasksViewCommand::Scroll(ScrollCommand::Scroll(Increase)),
+      'k' => {
+        ActiveTasksViewCommand::Scroll(ScrollCommand::Scroll(Decrease))
+      }
+      'j' => {
+        ActiveTasksViewCommand::Scroll(ScrollCommand::Scroll(Increase))
+      }
       'n' => Task(CreateTask),
       'r' => Task(RecordTaskEffort),
       'l' => Task(RequestTaskDelay),
@@ -37,15 +45,22 @@ impl ActiveTasksViewCommand {
       'P' => Task(UpdateTask(UpdatePriority(Increase))),
       'a' => Task(UpdateTask(UpdateStatus(Abandoned))),
       'c' => Task(UpdateTask(UpdateStatus(Completed))),
-      'U' => ActiveTasksViewCommand::UndoBuffer(UndoBufferCommand::Redo),
-      'u' => ActiveTasksViewCommand::UndoBuffer(UndoBufferCommand::Undo),
+      'U' => {
+        ActiveTasksViewCommand::UndoBuffer(UndoBufferCommand::Redo)
+      }
+      'u' => {
+        ActiveTasksViewCommand::UndoBuffer(UndoBufferCommand::Undo)
+      }
       _ => return None,
     };
 
     Some(command)
   }
 
-  pub fn to_action(self, view: &Rc<ActiveTasksView>) -> Option<ActiveTasksViewAction> {
+  pub fn to_action(
+    self,
+    view: &Rc<ActiveTasksView>,
+  ) -> Option<ActiveTasksViewAction> {
     ActiveTasksViewAction::prepare_from_command(self, &view)
   }
 }

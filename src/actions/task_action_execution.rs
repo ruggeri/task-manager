@@ -26,9 +26,14 @@ impl ForwardAction for TaskAction {
         connection,
       } => {
         if let Some(task_event) = task_event {
-          te_queries::update_destroyed(task_event.id, false, &connection);
+          te_queries::update_destroyed(
+            task_event.id,
+            false,
+            &connection,
+          );
         } else {
-          *task_event = Some(te_queries::record_task_effort(*task_id, &connection));
+          *task_event =
+            Some(te_queries::record_task_effort(*task_id, &connection));
         }
       }
 
@@ -39,9 +44,14 @@ impl ForwardAction for TaskAction {
         connection,
       } => {
         if let Some(task_event) = task_event {
-          te_queries::update_destroyed(task_event.id, false, &connection);
+          te_queries::update_destroyed(
+            task_event.id,
+            false,
+            &connection,
+          );
         } else {
-          *task_event = Some(te_queries::request_delay(*task_id, &connection));
+          *task_event =
+            Some(te_queries::request_delay(*task_id, &connection));
         }
       }
 
@@ -75,7 +85,9 @@ impl ReversableAction for TaskAction {
         ..
       } => {
         let task_event = match task_event {
-          None => panic!("Cannot undo a never performed record effort action"),
+          None => {
+            panic!("Cannot undo a never performed record effort action")
+          }
           Some(task_event) => task_event,
         };
 
@@ -89,7 +101,9 @@ impl ReversableAction for TaskAction {
         ..
       } => {
         let task_event = match task_event {
-          None => panic!("Cannot undo a never performed request delay action"),
+          None => {
+            panic!("Cannot undo a never performed request delay action")
+          }
           Some(task_event) => task_event,
         };
 

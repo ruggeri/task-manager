@@ -15,7 +15,10 @@ struct NewTaskEvent {
   pub event_type: TaskEventType,
 }
 
-pub fn task_events(task: &Task, connection: &PgConnection) -> Vec<TaskEvent> {
+pub fn task_events(
+  task: &Task,
+  connection: &PgConnection,
+) -> Vec<TaskEvent> {
   use schema::task_events::dsl::*;
 
   TaskEvent::belonging_to(task)
@@ -25,7 +28,10 @@ pub fn task_events(task: &Task, connection: &PgConnection) -> Vec<TaskEvent> {
     .unwrap()
 }
 
-pub fn record_task_effort(task_id: i32, connection: &PgConnection) -> TaskEvent {
+pub fn record_task_effort(
+  task_id: i32,
+  connection: &PgConnection,
+) -> TaskEvent {
   let new_te = NewTaskEvent {
     task_id,
     event_type: TaskEventType::TaskEffortRecorded,
@@ -37,7 +43,10 @@ pub fn record_task_effort(task_id: i32, connection: &PgConnection) -> TaskEvent 
     .unwrap()
 }
 
-pub fn request_delay(task_id: i32, connection: &PgConnection) -> TaskEvent {
+pub fn request_delay(
+  task_id: i32,
+  connection: &PgConnection,
+) -> TaskEvent {
   let new_te = NewTaskEvent {
     task_id,
     event_type: TaskEventType::DelayRequested,
@@ -49,4 +58,7 @@ pub fn request_delay(task_id: i32, connection: &PgConnection) -> TaskEvent {
     .unwrap()
 }
 
-define_update_attribute_fns!(task_events, (update_destroyed, bool, destroyed));
+define_update_attribute_fns!(
+  task_events,
+  (update_destroyed, bool, destroyed)
+);

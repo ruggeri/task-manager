@@ -84,11 +84,16 @@ impl Filterer {
     self.push(FiltererEvent::FiltererGotUpdatedResults);
   }
 
-  pub fn requires_internet_value(&self) -> FiltererRequiresInternetValue {
+  pub fn requires_internet_value(
+    &self,
+  ) -> FiltererRequiresInternetValue {
     self.state.borrow().requires_internet_value
   }
 
-  pub fn set_requires_internet_value(&self, new_value: FiltererRequiresInternetValue) {
+  pub fn set_requires_internet_value(
+    &self,
+    new_value: FiltererRequiresInternetValue,
+  ) {
     {
       let mut state = self.state.borrow_mut();
       state.requires_internet_value = new_value;
