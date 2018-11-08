@@ -8,11 +8,21 @@ use models::End;
 use std::rc::Weak;
 use views::ActiveTasksView;
 
-fn maybe_jump_to_task(
+fn jump_to_task_id_or_top(scroller: &Scroller, task_id: i32) {
+  if !scroller.jump_to_task_id(task_id) {
+    // Sometimes a task can sneak away. In that case just jump to top.
+    scroller.jump(End::Top);
+  }
+}
+
+fn jump_to_task_id_option_or_top(
   scroller: &Scroller,
-  task_id: Option<i32>,
-) -> bool {
-  task_id.map_or(false, |task_id| scroller.jump_to_task_id(task_id))
+  task_id_option: Option<i32>,
+) {
+  match task_id_option {
+    None => scroller.jump(End::Top),
+    Some(task_id) => jump_to_task_id_or_top(scroller, task_id),
+  }
 }
 
 // == EXECUTE CODE ==
@@ -56,14 +66,13 @@ pub fn execute_task_action(
   match ta {
     CreateTask { task, .. } => {
       let task = task.as_ref().expect("Task should have been created.");
-      if !view.scroller.jump_to_task_id(task.id) {
-        // Weird. Where did the task go?
-        view.scroller.jump(End::Top);
-      }
+      jump_to_task_id_or_top(&view.scroller, task.id);
     }
+
     RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
       // First time, just try to stay at the idx you are at.
     }
+
     TaskUpdate(UpdateDuration { task_id, .. })
     | TaskUpdate(UpdatePriority { task_id, .. })
     | TaskUpdate(UpdateRequiresInternet { task_id, .. })
@@ -71,7 +80,9 @@ pub fn execute_task_action(
     | TaskUpdate(UpdateTaskTitle { task_id, .. }) => {
       // Try to follow task
       if !view.scroller.jump_to_task_id(*task_id) {
-        // First time, just try to stay at the idx you are at.
+        // Maybe can't follow because for instance changed status and
+        // was removed from results. First time, just try to stay at the
+        // idx you are at.
       }
     }
   }
@@ -96,10 +107,8 @@ pub fn redo_filterer_action(
   view.data_source.pull(&view.connection);
 
   // Try to restore new scroller state.
-  if !maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap())
-  {
-    view.scroller.jump(End::Top);
-  }
+  let new_task_id = scroller_state.new_id.unwrap();
+  jump_to_task_id_option_or_top(&view.scroller, new_task_id);
 }
 
 pub fn redo_task_action(
@@ -123,35 +132,26 @@ pub fn redo_task_action(
   match ta {
     CreateTask { task, .. } => {
       let task = task.as_ref().expect("Task should have been created.");
-      if !view.scroller.jump_to_task_id(task.id) {
-        // Weird. Where did the task go?
-        view.scroller.jump(End::Top);
-      }
+      jump_to_task_id_or_top(&view.scroller, task.id);
     }
+
     RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
       // Try to restore id that had been focused on.
-      if !maybe_jump_to_task(
-        &view.scroller,
-        scroller_state.new_id.unwrap(),
-      ) {
-        view.scroller.jump(End::Top);
-      }
+      let new_task_id = scroller_state.new_id.unwrap();
+      jump_to_task_id_option_or_top(&view.scroller, new_task_id);
     }
+
     TaskUpdate(UpdateDuration { task_id, .. })
     | TaskUpdate(UpdatePriority { task_id, .. })
     | TaskUpdate(UpdateRequiresInternet { task_id, .. })
     | TaskUpdate(UpdateStatus { task_id, .. })
     | TaskUpdate(UpdateTaskTitle { task_id, .. }) => {
-      // Try to follow task, but if you can't, then try to restore
-      // cursor.
-      let did_update_scroller = view.scroller.jump_to_task_id(*task_id)
-        || maybe_jump_to_task(
-          &view.scroller,
-          scroller_state.new_id.unwrap(),
-        );
-
-      if !did_update_scroller {
-        view.scroller.jump(End::Top);
+      // Try to follow task forward.
+      if !view.scroller.jump_to_task_id(*task_id) {
+        // Task may have been been removed, in which case try to focus
+        // on last selected index.
+        let new_id = scroller_state.new_id.unwrap();
+        jump_to_task_id_option_or_top(&view.scroller, new_id);
       }
     }
   }
@@ -175,16 +175,8 @@ pub fn unexecute_filterer_action(
   // Fetch new data when filterer is applied.
   view.data_source.pull(&view.connection);
 
-  // Restore scroller.
-  let did_jump_to_task_id =
-    scroller_state.old_id.map_or(false, |old_task_id| {
-      view.scroller.jump_to_task_id(old_task_id)
-    });
-
-  // If couldn't jump to a task by id, then just jump to top.
-  if !did_jump_to_task_id {
-    view.scroller.jump(End::Top);
-  }
+  // Try to restore scroll position.
+  jump_to_task_id_option_or_top(&view.scroller, scroller_state.old_id);
 }
 
 pub fn unexecute_task_action(
@@ -207,12 +199,13 @@ pub fn unexecute_task_action(
   use self::TaskUpdateAction::*;
   match ta {
     CreateTask { .. } => {
-      // Try to return to old task id.
-      if !maybe_jump_to_task(&view.scroller, scroller_state.old_id) {
-        // But if can't then jump to top.
-        view.scroller.jump(End::Top);
-      }
+      // Try to return to previously focused task.
+      jump_to_task_id_option_or_top(
+        &view.scroller,
+        scroller_state.old_id,
+      );
     }
+
     RecordTaskEffort { task_id, .. }
     | RequestTaskDelay { task_id, .. }
     | TaskUpdate(UpdateDuration { task_id, .. })
@@ -220,11 +213,8 @@ pub fn unexecute_task_action(
     | TaskUpdate(UpdateRequiresInternet { task_id, .. })
     | TaskUpdate(UpdateStatus { task_id, .. })
     | TaskUpdate(UpdateTaskTitle { task_id, .. }) => {
-      // Try to follow task_id back.
-      if !view.scroller.jump_to_task_id(*task_id) {
-        // But if can't then jump to top.
-        view.scroller.jump(End::Top);
-      }
+      // Try to follow task id back.
+      jump_to_task_id_or_top(&view.scroller, *task_id);
     }
   }
 }
