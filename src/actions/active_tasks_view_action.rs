@@ -181,7 +181,7 @@ fn redo_task_action(ta: &mut TaskAction, view: &Weak<ActiveTasksView>, scroller_
     }
     RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
       // Try to restore id that had been focused on.
-      if maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap()) {
+      if !maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap()) {
         view.scroller.jump(End::Top);
       }
     }
@@ -220,7 +220,7 @@ fn unexecute_task_action(ta: &mut TaskAction, view: &Weak<ActiveTasksView>, scro
   match ta {
     CreateTask { .. } => {
       // Try to return to old task id.
-      if maybe_jump_to_task(&view.scroller, scroller_state.old_id) {
+      if !maybe_jump_to_task(&view.scroller, scroller_state.old_id) {
         // But if can't then jump to top.
         view.scroller.jump(End::Top);
       }
@@ -246,9 +246,22 @@ impl ReversableAction for ActiveTasksViewAction {
   fn redo(&mut self) {
     use self::ActiveTasksViewAction::*;
     match self {
-      Filterer { .. } => {
-        // Same as execute. Scroll to top.
-        self.execute();
+      Filterer { fa, view, scroller_state } => {
+        let view = view.upgrade().expect("Action should not outlive view");
+
+        // First save scroller position.
+        scroller_state.old_id = view.scroller.current_task_id();
+
+        // Now execute filtering action.
+        fa.execute();
+
+        // Fetch new data when filterer is applied.
+        view.data_source.pull(&view.connection);
+
+        // Try to restore new scroller state.
+        if !maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap()) {
+          view.scroller.jump(End::Top);
+        }
       }
       Scroll { .. } => {
         panic!("Should not try to redo a Scroll action.");
