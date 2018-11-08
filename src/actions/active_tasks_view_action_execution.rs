@@ -1,6 +1,7 @@
 use actions::scroller_state::SavedScrolerState;
 use actions::{
-  ActiveTasksViewAction, ForwardAction, ReversableAction, TaskAction, TaskUpdateAction,
+  ActiveTasksViewAction, FiltererAction, ForwardAction, ReversableAction, TaskAction,
+  TaskUpdateAction,
 };
 use components::Scroller;
 use models::End;
@@ -9,6 +10,26 @@ use views::ActiveTasksView;
 
 fn maybe_jump_to_task(scroller: &Scroller, task_id: Option<i32>) -> bool {
   task_id.map_or(false, |task_id| scroller.jump_to_task_id(task_id))
+}
+
+// == EXECUTE CODE ==
+
+fn execute_filterer_action(
+  fa: &mut FiltererAction,
+  view: &Weak<ActiveTasksView>,
+  scroller_state: &mut SavedScrolerState,
+) {
+  let view = view.upgrade().expect("Action should not outlive view");
+
+  // First save scroller position.
+  scroller_state.old_id = view.scroller.current_task_id();
+
+  // Now execute filtering action.
+  fa.execute();
+
+  // Fetch new data when filterer is applied.
+  view.data_source.pull(&view.connection);
+  view.scroller.jump(End::Top);
 }
 
 fn execute_task_action(
@@ -53,39 +74,27 @@ fn execute_task_action(
   }
 }
 
-impl ForwardAction for ActiveTasksViewAction {
-  fn execute(&mut self) {
-    use self::ActiveTasksViewAction::*;
-    match self {
-      Filterer {
-        fa,
-        view,
-        scroller_state,
-      } => {
-        let view = view.upgrade().expect("Action should not outlive view");
+// == REDO CODE ==
 
-        // First save scroller position.
-        scroller_state.old_id = view.scroller.current_task_id();
+fn redo_filterer_action(
+  fa: &mut FiltererAction,
+  view: &Weak<ActiveTasksView>,
+  scroller_state: &mut SavedScrolerState,
+) {
+  let view = view.upgrade().expect("Action should not outlive view");
 
-        // Now execute filtering action.
-        fa.execute();
+  // First save scroller position.
+  scroller_state.old_id = view.scroller.current_task_id();
 
-        // Fetch new data when filterer is applied.
-        view.data_source.pull(&view.connection);
-        view.scroller.jump(End::Top);
-      }
-      Scroll { sa, .. } => {
-        sa.execute();
-      }
-      Task {
-        ta,
-        view,
-        scroller_state,
-      } => {
-        execute_task_action(ta, view, scroller_state);
-      }
-      UndoBuffer { uba } => uba.execute(),
-    };
+  // Now execute filtering action.
+  fa.execute();
+
+  // Fetch new data when filterer is applied.
+  view.data_source.pull(&view.connection);
+
+  // Try to restore new scroller state.
+  if !maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap()) {
+    view.scroller.jump(End::Top);
   }
 }
 
@@ -139,6 +148,35 @@ fn redo_task_action(
   }
 }
 
+// == UNDO CODE ==
+
+fn unexecute_filterer_action(
+  fa: &mut FiltererAction,
+  view: &Weak<ActiveTasksView>,
+  scroller_state: &mut SavedScrolerState,
+) {
+  let view = view.upgrade().expect("Action should not outlive view");
+
+  // First save scroller position.
+  scroller_state.new_id = Some(view.scroller.current_task_id());
+
+  // Now execute filtering action.
+  fa.unexecute();
+
+  // Fetch new data when filterer is applied.
+  view.data_source.pull(&view.connection);
+
+  // Restore scroller.
+  let did_jump_to_task_id = scroller_state.old_id.map_or(false, |old_task_id| {
+    view.scroller.jump_to_task_id(old_task_id)
+  });
+
+  // If couldn't jump to a task by id, then just jump to top.
+  if !did_jump_to_task_id {
+    view.scroller.jump(End::Top);
+  }
+}
+
 fn unexecute_task_action(
   ta: &mut TaskAction,
   view: &Weak<ActiveTasksView>,
@@ -181,6 +219,32 @@ fn unexecute_task_action(
   }
 }
 
+impl ForwardAction for ActiveTasksViewAction {
+  fn execute(&mut self) {
+    use self::ActiveTasksViewAction::*;
+    match self {
+      Filterer {
+        fa,
+        view,
+        scroller_state,
+      } => {
+        execute_filterer_action(fa, view, scroller_state);
+      }
+      Scroll { sa, .. } => {
+        sa.execute();
+      }
+      Task {
+        ta,
+        view,
+        scroller_state,
+      } => {
+        execute_task_action(ta, view, scroller_state);
+      }
+      UndoBuffer { uba } => uba.execute(),
+    };
+  }
+}
+
 impl ReversableAction for ActiveTasksViewAction {
   fn redo(&mut self) {
     use self::ActiveTasksViewAction::*;
@@ -190,21 +254,7 @@ impl ReversableAction for ActiveTasksViewAction {
         view,
         scroller_state,
       } => {
-        let view = view.upgrade().expect("Action should not outlive view");
-
-        // First save scroller position.
-        scroller_state.old_id = view.scroller.current_task_id();
-
-        // Now execute filtering action.
-        fa.execute();
-
-        // Fetch new data when filterer is applied.
-        view.data_source.pull(&view.connection);
-
-        // Try to restore new scroller state.
-        if !maybe_jump_to_task(&view.scroller, scroller_state.new_id.unwrap()) {
-          view.scroller.jump(End::Top);
-        }
+        redo_filterer_action(fa, view, scroller_state);
       }
       Scroll { .. } => {
         panic!("Should not try to redo a Scroll action.");
@@ -228,26 +278,7 @@ impl ReversableAction for ActiveTasksViewAction {
         view,
         scroller_state,
       } => {
-        let view = view.upgrade().expect("Action should not outlive view");
-
-        // First save scroller position.
-        scroller_state.new_id = Some(view.scroller.current_task_id());
-
-        // Now execute filtering action.
-        fa.unexecute();
-
-        // Fetch new data when filterer is applied.
-        view.data_source.pull(&view.connection);
-
-        // Restore scroller.
-        let did_jump_to_task_id = scroller_state.old_id.map_or(false, |old_task_id| {
-          view.scroller.jump_to_task_id(old_task_id)
-        });
-
-        // If couldn't jump to a task by id, then just jump to top.
-        if !did_jump_to_task_id {
-          view.scroller.jump(End::Top);
-        }
+        unexecute_filterer_action(fa, view, scroller_state);
       }
       Scroll { .. } => panic!("Should not try to unexecute a Scroll action."),
       Task {
