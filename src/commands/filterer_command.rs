@@ -10,9 +10,6 @@ pub enum FiltererCommand {
 
 impl FiltererCommand {
   pub fn to_action(self, window: &Window, filterer: &Rc<Filterer>) -> Option<FiltererAction> {
-    use self::FiltererCommand::*;
-    match self {
-      FilterByRequiresInternet => FiltererAction::prepare_from_cmd(self, window, filterer),
-    }
+    FiltererAction::prepare_from_cmd(self, window, filterer)
   }
 }

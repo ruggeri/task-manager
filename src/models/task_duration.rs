@@ -1,5 +1,4 @@
 use super::Direction;
-use std::fmt;
 
 #[derive(Clone, Copy, DbEnum, Debug, Eq, PartialEq)]
 pub enum TaskDuration {
@@ -21,19 +20,5 @@ impl TaskDuration {
       (Increase, Medium) => Long,
       (Increase, Long) => Long,
     }
-  }
-}
-
-impl fmt::Display for TaskDuration {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    use self::TaskDuration::*;
-
-    let s = match self {
-      Long => "Long",
-      Medium => "Medium",
-      Short => "Short",
-    };
-
-    f.write_str(s)
   }
 }
