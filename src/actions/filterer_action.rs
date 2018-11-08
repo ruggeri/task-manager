@@ -28,6 +28,8 @@ impl ForwardAction for FiltererAction {
   }
 }
 
+// TODO: Feels extremely weird that this is an undoable action but
+// nothing is actually undone???
 impl ReversableAction for FiltererAction {
   fn unexecute(&mut self) {
     use self::FiltererAction::*;

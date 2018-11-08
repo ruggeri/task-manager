@@ -62,13 +62,9 @@ impl ReversableAction for ActiveTasksViewAction {
   fn unexecute(&mut self) {
     use self::ActiveTasksViewAction::*;
     match self {
-      Filterer { fa } => {
-        fa.unexecute();
-      }
+      Filterer { fa } => fa.unexecute(),
       Scroll { .. } => panic!("Should not try to unexecute an UnderBufferAction"),
-      Task { ta } => {
-        ta.unexecute();
-      }
+      Task { ta } => ta.unexecute(),
       UndoBuffer { .. } => panic!("Should not try to unexecute an UnderBufferAction"),
     }
   }
