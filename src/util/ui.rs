@@ -1,5 +1,5 @@
 use pancurses;
-use rustyline::{Editor, error::ReadlineError};
+use rustyline::{error::ReadlineError, Editor};
 use std::io::{stdout, Write};
 
 #[repr(C)]
@@ -41,7 +41,7 @@ impl Window {
         // display size.
 
         None
-      },
+      }
       // A character
       Some(pancurses::Input::Character(ch)) => Some(ch),
       // Not a character
@@ -57,7 +57,7 @@ impl Window {
         Ok(line) => {
           pancurses::noecho();
           return Some(line);
-        },
+        }
         // Corresponds to Ctrl-C
         Err(ReadlineError::Interrupted) => {
           pancurses::noecho();
@@ -69,8 +69,8 @@ impl Window {
             out.flush().unwrap();
           }
 
-          return None
-        },
+          return None;
+        }
         Err(_) => continue,
       }
     }

@@ -22,7 +22,9 @@ pub struct UndoBuffer<ActionType, State> {
 
 // TODO: Just need to pass in a method to perform the state update...
 impl<ActionType, State> UndoBuffer<ActionType, State>
-  where ActionType: ReversableAction {
+where
+  ActionType: ReversableAction,
+{
   pub fn new(initial_state: State) -> UndoBuffer<ActionType, State> {
     UndoBuffer {
       initial_state: RefCell::new(initial_state),
@@ -37,25 +39,17 @@ impl<ActionType, State> UndoBuffer<ActionType, State>
   }
 
   fn undo_callback(&self) -> Ref<Callback<ActionType, State>> {
-    Ref::map(
-      self.callback_pair.borrow(),
-      |cbp_option| {
-        match cbp_option {
-          None => panic!("UndoBuffer callback not set?"),
-          Some(ref cbp) => cbp.undo_callback.as_ref()
-        }
-      })
+    Ref::map(self.callback_pair.borrow(), |cbp_option| match cbp_option {
+      None => panic!("UndoBuffer callback not set?"),
+      Some(ref cbp) => cbp.undo_callback.as_ref(),
+    })
   }
 
   fn redo_callback(&self) -> Ref<Callback<ActionType, State>> {
-    Ref::map(
-      self.callback_pair.borrow(),
-      |cbp_option| {
-        match cbp_option {
-          None => panic!("UndoBuffer callback not set?"),
-          Some(ref cbp) => cbp.redo_callback.as_ref()
-        }
-      })
+    Ref::map(self.callback_pair.borrow(), |cbp_option| match cbp_option {
+      None => panic!("UndoBuffer callback not set?"),
+      Some(ref cbp) => cbp.redo_callback.as_ref(),
+    })
   }
 
   fn action_at_idx(&self, idx: usize) -> Ref<Box<ActionType>> {
@@ -65,9 +59,7 @@ impl<ActionType, State> UndoBuffer<ActionType, State>
   fn state_at_idx(&self, idx: Option<usize>) -> Ref<State> {
     match idx {
       None => self.initial_state.borrow(),
-      Some(idx) => {
-        Ref::map(self.items.borrow(), |items| &items[idx].state_after_action)
-      }
+      Some(idx) => Ref::map(self.items.borrow(), |items| &items[idx].state_after_action),
     }
   }
 
@@ -108,7 +100,11 @@ impl<ActionType, State> UndoBuffer<ActionType, State>
       action.unexecute();
     }
 
-    self.idx.set(if undo_idx > 0 { Some(undo_idx - 1) } else { None });
+    self.idx.set(if undo_idx > 0 {
+      Some(undo_idx - 1)
+    } else {
+      None
+    });
 
     let state_to_save = self.undo_callback()(
       &self.state_at_idx(self.idx.get()),
@@ -119,7 +115,9 @@ impl<ActionType, State> UndoBuffer<ActionType, State>
 
   pub fn set_current_state(&self, state: State) {
     match self.idx.get() {
-      None => { self.initial_state.replace(state); },
+      None => {
+        self.initial_state.replace(state);
+      }
       Some(idx) => {
         let mut items = self.items.borrow_mut();
         items[idx].state_after_action = state;

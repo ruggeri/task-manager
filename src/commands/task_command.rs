@@ -22,8 +22,15 @@ pub enum TaskUpdateCommand {
 }
 
 impl TaskCommand {
-  pub fn to_action<F>(self, window: &Window, connection: &Rc<PgConnection>, current_task_fn: F) -> Option<TaskAction>
-    where F: Fn() -> Option<Task> {
+  pub fn to_action<F>(
+    self,
+    window: &Window,
+    connection: &Rc<PgConnection>,
+    current_task_fn: F,
+  ) -> Option<TaskAction>
+  where
+    F: Fn() -> Option<Task>,
+  {
     TaskAction::prepare_from_cmd(self, window, connection, current_task_fn)
   }
 }

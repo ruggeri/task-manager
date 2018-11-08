@@ -19,10 +19,10 @@ pub fn all_available_to_perform(connection: &PgConnection) -> Vec<Task> {
   use schema::tasks::dsl::*;
   tasks
     .filter(
-      status.eq(TaskStatus::AvailableToPerform)
-      .and(destroyed.eq(false))
-    )
-    .order(id)
+      status
+        .eq(TaskStatus::AvailableToPerform)
+        .and(destroyed.eq(false)),
+    ).order(id)
     .load::<Task>(connection)
     .unwrap()
 }

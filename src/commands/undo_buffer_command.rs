@@ -9,8 +9,13 @@ pub enum UndoBufferCommand {
 }
 
 impl UndoBufferCommand {
-  pub fn to_action<ActionType, State>(self, undo_buffer: &Rc<UndoBuffer<ActionType, State>>) -> UndoBufferAction<ActionType, State>
-    where ActionType: ReversableAction {
+  pub fn to_action<ActionType, State>(
+    self,
+    undo_buffer: &Rc<UndoBuffer<ActionType, State>>,
+  ) -> UndoBufferAction<ActionType, State>
+  where
+    ActionType: ReversableAction,
+  {
     UndoBufferAction {
       cmd: self,
       undo_buffer: Rc::clone(undo_buffer),

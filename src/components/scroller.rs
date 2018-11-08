@@ -20,7 +20,7 @@ pub struct ScrollerState {
 
 pub struct Scroller {
   pub state: RefCell<ScrollerState>,
-  pub callbacks: Vec<Box<Callback>>
+  pub callbacks: Vec<Box<Callback>>,
 }
 
 impl Scroller {
@@ -126,12 +126,7 @@ impl Scroller {
     use self::ScrollerRefreshType::*;
     match refresh_type {
       MajorRefresh => self.set_current_result_idx(0),
-      MinorRefresh => {
-        self.try_to_maintain_scroll_position(
-          old_task_id,
-          old_result_idx,
-        )
-      }
+      MinorRefresh => self.try_to_maintain_scroll_position(old_task_id, old_result_idx),
     }
 
     // Push changes on down the line.

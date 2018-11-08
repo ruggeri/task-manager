@@ -26,15 +26,22 @@ pub enum TaskAction {
 }
 
 impl TaskAction {
-  pub fn prepare_from_cmd<F>(cmd: TaskCommand, window: &Window, connection: &Rc<PgConnection>, current_task_fn: F) -> Option<TaskAction>
-  where F: Fn() -> Option<Task> {
+  pub fn prepare_from_cmd<F>(
+    cmd: TaskCommand,
+    window: &Window,
+    connection: &Rc<PgConnection>,
+    current_task_fn: F,
+  ) -> Option<TaskAction>
+  where
+    F: Fn() -> Option<Task>,
+  {
     match cmd {
       // Create a task.
       TaskCommand::CreateTask => {
         let task_title = match window.read_line("Edit task title: ") {
           // If they hit Ctrl-C don't make the task afterall.
           None => return None,
-          Some(task_title) => task_title
+          Some(task_title) => task_title,
         };
 
         Some(TaskAction::CreateTask {

@@ -16,7 +16,7 @@ pub enum ScrollAction {
   Scroll {
     direction: Direction,
     scroller: Rc<Scroller>,
-  }
+  },
 }
 
 impl ForwardAction for ScrollAction {
@@ -24,15 +24,14 @@ impl ForwardAction for ScrollAction {
     use self::ScrollAction::*;
 
     match self {
-      Jump { end, scroller } => {
-        scroller.jump(*end)
-      }
-      JumpToTask { task_id, scroller} => {
+      Jump { end, scroller } => scroller.jump(*end),
+      JumpToTask { task_id, scroller } => {
         scroller.jump_to_task_id(*task_id);
       }
-      Scroll { direction, scroller } => {
-        scroller.scroll(*direction)
-      }
+      Scroll {
+        direction,
+        scroller,
+      } => scroller.scroll(*direction),
     }
   }
 }

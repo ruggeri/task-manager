@@ -1,9 +1,6 @@
 use actions::{ForwardAction, ReversableAction};
 use commands::FiltererCommand;
-use components::{
-  Filterer,
-  filterer::RequiresInternetFiltererValue
-};
+use components::{filterer::RequiresInternetFiltererValue, Filterer};
 use std::rc::Rc;
 use util::ui::Window;
 
@@ -20,7 +17,11 @@ impl ForwardAction for FiltererAction {
     use self::FiltererAction::*;
 
     match self {
-      UpdateRequiresInternet { new_value, filterer, .. } => {
+      UpdateRequiresInternet {
+        new_value,
+        filterer,
+        ..
+      } => {
         filterer.set_requires_internet_value(*new_value);
       }
     }
@@ -51,15 +52,18 @@ fn read_requires_internet_value(window: &Window) -> Option<RequiresInternetFilte
     Some("no") => Some(No),
     Some("any") => Some(Any),
     // Includes Ctrl-C
-    _ => None
+    _ => None,
   }
 }
 
-fn new_requires_internet_filterer_action(window: &Window, filterer: &Rc<Filterer>) -> Option<FiltererAction> {
+fn new_requires_internet_filterer_action(
+  window: &Window,
+  filterer: &Rc<Filterer>,
+) -> Option<FiltererAction> {
   let old_value = filterer.requires_internet_value();
   let new_value = match read_requires_internet_value(window) {
     None => return None,
-    Some(new_value) => new_value
+    Some(new_value) => new_value,
   };
 
   if old_value == new_value {
@@ -83,9 +87,7 @@ impl FiltererAction {
     use self::FiltererCommand::*;
 
     match cmd {
-      FilterByRequiresInternet => {
-        new_requires_internet_filterer_action(window, filterer)
-      }
+      FilterByRequiresInternet => new_requires_internet_filterer_action(window, filterer),
     }
   }
 }

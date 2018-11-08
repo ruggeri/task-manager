@@ -1,5 +1,5 @@
-use components::Scorer;
 use chrono::{Duration, Utc};
+use components::Scorer;
 use diesel::pg::PgConnection;
 use models::{Task, TaskEvent};
 use queries::{task as task_queries, task_event as te_queries};
@@ -21,7 +21,7 @@ pub struct Result {
 
 #[derive(Clone, Debug)]
 pub struct DataSourceState {
-  results: Option<ResultsVec>
+  results: Option<ResultsVec>,
 }
 
 pub struct DataSource {
@@ -31,9 +31,7 @@ pub struct DataSource {
 
 impl DataSource {
   pub fn new() -> DataSource {
-    let state = DataSourceState {
-      results: None
-    };
+    let state = DataSourceState { results: None };
 
     DataSource {
       state: RefCell::new(state),
@@ -56,7 +54,13 @@ impl DataSource {
         let last_effort_duration_since = current_time.signed_duration_since(last_effort_time);
         let score = Scorer::score_task(&task, &task_events, last_effort_duration_since);
 
-        Result { task, task_events, last_effort_time, last_effort_duration_since, score }
+        Result {
+          task,
+          task_events,
+          last_effort_time,
+          last_effort_duration_since,
+          score,
+        }
       }).collect();
 
     results.sort_by_key(|result| result.score);
@@ -73,7 +77,7 @@ impl DataSource {
     let state = self.state.borrow();
     let results = match state.results.clone() {
       None => panic!("Why are we pushing with no results?"),
-      Some(results) => results
+      Some(results) => results,
     };
 
     for callback in &self.callbacks {

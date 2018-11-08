@@ -38,7 +38,11 @@ impl Scorer {
     }
   }
 
-  pub fn score_task(task: &Task, task_events: &[TaskEvent], last_effort_duration_since: Duration) -> i64 {
+  pub fn score_task(
+    task: &Task,
+    task_events: &[TaskEvent],
+    last_effort_duration_since: Duration,
+  ) -> i64 {
     let mut score = last_effort_duration_since.num_seconds();
     score -= Scorer::delay_amount(task_events);
 

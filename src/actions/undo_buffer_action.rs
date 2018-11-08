@@ -5,13 +5,17 @@ use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct UndoBufferAction<ActionType, State>
-  where ActionType: ReversableAction {
+where
+  ActionType: ReversableAction,
+{
   pub cmd: UndoBufferCommand,
   pub undo_buffer: Rc<UndoBuffer<ActionType, State>>,
 }
 
 impl<ActionType, State> ForwardAction for UndoBufferAction<ActionType, State>
-  where ActionType: ReversableAction {
+where
+  ActionType: ReversableAction,
+{
   fn execute(&mut self) {
     use self::UndoBufferCommand::*;
 

@@ -7,7 +7,11 @@ impl ForwardAction for TaskAction {
 
     match self {
       // Create a task.
-      CreateTask { task_title, task, connection } => {
+      CreateTask {
+        task_title,
+        task,
+        connection,
+      } => {
         if let Some(task) = task {
           task_queries::update_destroyed(task.id, false, &connection);
         } else {
@@ -53,7 +57,9 @@ impl ReversableAction for TaskAction {
 
     match self {
       // Undo task creation.
-      CreateTask { task, connection, .. } => {
+      CreateTask {
+        task, connection, ..
+      } => {
         let task = match task {
           None => panic!("Cannot undo a never performed create action"),
           Some(task) => task,
@@ -63,7 +69,11 @@ impl ReversableAction for TaskAction {
       }
 
       // Undo task effort creation.
-      RecordTaskEffort { task_event, connection, .. } => {
+      RecordTaskEffort {
+        task_event,
+        connection,
+        ..
+      } => {
         let task_event = match task_event {
           None => panic!("Cannot undo a never performed record effort action"),
           Some(task_event) => task_event,
@@ -73,7 +83,11 @@ impl ReversableAction for TaskAction {
       }
 
       // Undo delay request.
-      RequestTaskDelay { task_event, connection, .. } => {
+      RequestTaskDelay {
+        task_event,
+        connection,
+        ..
+      } => {
         let task_event = match task_event {
           None => panic!("Cannot undo a never performed request delay action"),
           Some(task_event) => task_event,

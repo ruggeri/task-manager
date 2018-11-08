@@ -36,7 +36,4 @@ table! {
 
 joinable!(task_events -> tasks (task_id));
 
-allow_tables_to_appear_in_same_query!(
-    task_events,
-    tasks,
-);
+allow_tables_to_appear_in_same_query!(task_events, tasks,);

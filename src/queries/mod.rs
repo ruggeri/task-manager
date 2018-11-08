@@ -12,7 +12,7 @@ macro_rules! define_update_attribute_fn {
         panic!("Expected to update exactly one task");
       }
     }
-  }
+  };
 }
 
 macro_rules! define_update_attribute_fns {

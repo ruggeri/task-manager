@@ -19,9 +19,7 @@ pub fn task_events(task: &Task, connection: &PgConnection) -> Vec<TaskEvent> {
   use schema::task_events::dsl::*;
 
   TaskEvent::belonging_to(task)
-    .filter(
-      destroyed.eq(false)
-    )
+    .filter(destroyed.eq(false))
     .order(created_at.desc())
     .load::<TaskEvent>(connection)
     .unwrap()
@@ -51,7 +49,4 @@ pub fn request_delay(task_id: i32, connection: &PgConnection) -> TaskEvent {
     .unwrap()
 }
 
-define_update_attribute_fns!(
-  task_events,
-  (update_destroyed, bool, destroyed)
-);
+define_update_attribute_fns!(task_events, (update_destroyed, bool, destroyed));

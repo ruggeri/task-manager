@@ -16,7 +16,11 @@ impl<T: Eq> TaskValueUpdate<T> {
     if old_value == new_value {
       None
     } else {
-      Some(TaskValueUpdate { task_id, old_value, new_value })
+      Some(TaskValueUpdate {
+        task_id,
+        old_value,
+        new_value,
+      })
     }
   }
 }
@@ -61,7 +65,7 @@ impl TaskUpdateAction {
         let new_task_title = match window.read_line("Edit task title: ") {
           // If they hit Ctrl-C don't make the task afterall.
           None => return None,
-          Some(new_task_title) => new_task_title
+          Some(new_task_title) => new_task_title,
         };
 
         TaskValueUpdate::new(task.id, task.title.clone(), new_task_title).map(|update| {
@@ -72,28 +76,28 @@ impl TaskUpdateAction {
         })
       }
       Cmd::ToggleRequiresInternet => {
-        TaskValueUpdate::new(task.id, task.requires_internet, !task.requires_internet).map(|update| {
-          Action::UpdateRequiresInternet {
+        TaskValueUpdate::new(task.id, task.requires_internet, !task.requires_internet).map(
+          |update| Action::UpdateRequiresInternet {
             update,
             connection: Rc::clone(connection),
-          }
-        })
+          },
+        )
       }
       Cmd::UpdateDuration(direction) => {
-        TaskValueUpdate::new(task.id, task.duration, task.duration.increment(direction)).map(|update| {
-          Action::UpdateDuration {
-            update,
-            connection: Rc::clone(connection)
-          }
-        })
-      }
-      Cmd::UpdatePriority(direction) => {
-        TaskValueUpdate::new(task.id, task.priority, task.priority.increment(direction)).map(|update| {
-          Action::UpdatePriority {
+        TaskValueUpdate::new(task.id, task.duration, task.duration.increment(direction)).map(
+          |update| Action::UpdateDuration {
             update,
             connection: Rc::clone(connection),
-          }
-        })
+          },
+        )
+      }
+      Cmd::UpdatePriority(direction) => {
+        TaskValueUpdate::new(task.id, task.priority, task.priority.increment(direction)).map(
+          |update| Action::UpdatePriority {
+            update,
+            connection: Rc::clone(connection),
+          },
+        )
       }
       Cmd::UpdateStatus(new_task_status) => {
         TaskValueUpdate::new(task.id, task.status, new_task_status).map(|update| {

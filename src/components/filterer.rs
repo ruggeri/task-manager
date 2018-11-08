@@ -71,9 +71,11 @@ impl Filterer {
   }
 
   pub fn refresh(&self, results: &ResultsVec) {
-    let filtered_results: Vec<data_source::Result> = results.iter().filter(|result| {
-      self.filter_result(result)
-    }).cloned().collect();
+    let filtered_results: Vec<data_source::Result> = results
+      .iter()
+      .filter(|result| self.filter_result(result))
+      .cloned()
+      .collect();
 
     {
       let filtered_results = Rc::new(filtered_results);

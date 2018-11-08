@@ -14,8 +14,8 @@ pub enum ActiveTasksViewCommand {
 impl ActiveTasksViewCommand {
   pub fn from_key(ch: char) -> Option<ActiveTasksViewCommand> {
     use self::{
-      ActiveTasksViewCommand::*, Direction::*, End::*, FiltererCommand::*, ScrollCommand::*, TaskCommand::*, TaskStatus::*,
-      TaskUpdateCommand::*,
+      ActiveTasksViewCommand::*, Direction::*, End::*, FiltererCommand::*, ScrollCommand::*,
+      TaskCommand::*, TaskStatus::*, TaskUpdateCommand::*,
     };
 
     let command = match ch {

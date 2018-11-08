@@ -76,7 +76,13 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::A_BOLD);
   }
 
-  fn display_result(&self, scroller: &Scroller, idx: i32, result: &data_source::Result, max_title_len: usize) {
+  fn display_result(
+    &self,
+    scroller: &Scroller,
+    idx: i32,
+    result: &data_source::Result,
+    max_title_len: usize,
+  ) {
     let pwindow = self.pwindow();
 
     // Choose appropriate color.
@@ -87,14 +93,18 @@ impl TaskResultsWindow {
     let priority = {
       use models::TaskPriority::*;
       match result.task.priority {
-        Low => "Low", Medium => "Med", High => "High",
+        Low => "Low",
+        Medium => "Med",
+        High => "High",
       }
     };
 
     let duration = {
       use models::TaskDuration::*;
       match result.task.duration {
-        Short => "Short", Medium => "Med", Long => "Long",
+        Short => "Short",
+        Medium => "Med",
+        Long => "Long",
       }
     };
 
