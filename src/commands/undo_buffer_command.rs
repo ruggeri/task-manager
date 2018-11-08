@@ -1,4 +1,4 @@
-use actions::UndoBufferAction;
+use actions::{ReversableAction, UndoBufferAction};
 use components::UndoBuffer;
 use std::rc::Rc;
 
@@ -9,7 +9,8 @@ pub enum UndoBufferCommand {
 }
 
 impl UndoBufferCommand {
-  pub fn to_action<State>(self, undo_buffer: &Rc<UndoBuffer<State>>) -> UndoBufferAction<State> {
+  pub fn to_action<ActionType, State>(self, undo_buffer: &Rc<UndoBuffer<ActionType, State>>) -> UndoBufferAction<ActionType, State>
+    where ActionType: ReversableAction {
     UndoBufferAction {
       cmd: self,
       undo_buffer: Rc::clone(undo_buffer),

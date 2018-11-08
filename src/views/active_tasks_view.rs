@@ -1,6 +1,7 @@
 use actions::{ActiveTasksViewAction, ForwardAction};
 use commands::ActiveTasksViewCommand;
 use components::{
+  CallbackPair,
   DataSource,
   DataSourceState,
   Filterer,
@@ -21,7 +22,7 @@ pub struct ActiveTasksView {
   pub scroller: Rc<Scroller>,
   pub filterer: Rc<Filterer>,
   pub data_source: Rc<DataSource>,
-  pub undo_buffer: Rc<UndoBuffer<ActiveTasksViewState>>,
+  pub undo_buffer: Rc<UndoBuffer<ActiveTasksViewAction, ActiveTasksViewState>>,
 }
 
 #[derive(Clone, Debug)]
@@ -103,12 +104,25 @@ impl ActiveTasksView {
 
     {
       let weak_view = Rc::downgrade(&view);
-      view.undo_buffer.set_callback(Box::new(move |state| {
+      let undo_callback = Box::new(move |state: &ActiveTasksViewState, action: &ActiveTasksViewAction| {
         let view = weak_view
           .upgrade()
           .expect("How did undo buffer callback outlive view?");
-        view.restore_state(state.clone());
-      }));
+        view.handle_action_undo(state, action);
+      });
+
+      let weak_view = Rc::downgrade(&view);
+      let redo_callback = Box::new(move |state: &ActiveTasksViewState, action: &ActiveTasksViewAction| {
+        let view = weak_view
+          .upgrade()
+          .expect("How did undo buffer callback outlive view?");
+        view.handle_action_redo(state, action);
+      });
+
+      view.undo_buffer.set_callback_pair(CallbackPair {
+        undo_callback,
+        redo_callback
+      });
     }
 
     view.data_source.pull(&view.connection);
@@ -133,23 +147,66 @@ impl ActiveTasksView {
 
     use self::ActiveTasksViewAction::*;
     match action {
-      Filterer { fa } => {
+      Filterer { .. } => {
+        // Trigger a refresh when filtering.
         self.data_source.pull(&self.connection);
-        self.undo_buffer.append_item(self.state(), Box::new(fa));
+        self.undo_buffer.append_item(self.state(), Box::new(action));
       }
       Scroll { .. } => {
-        self.scroller.push();
         self.undo_buffer.set_current_state(self.state());
       }
-      Task { ta } => {
+      Task { .. } => {
+        // Trigger a refresh when task data may have changed.
         self.data_source.pull(&self.connection);
-        self.undo_buffer.append_item(self.state(), Box::new(ta));
+        self.undo_buffer.append_item(self.state(), Box::new(action));
       },
       UndoBuffer { .. } => {
-        // On any undo buffer action, after restoring the states, tell
-        // the data source to do a nice clean refresh.
-        self.data_source.pull(&self.connection);
+        // Undo/redo actions have their own logic handled elsewhere.
         self.undo_buffer.set_current_state(self.state());
+      }
+    }
+  }
+
+  pub fn handle_action_undo(&self, state: &ActiveTasksViewState, action: &ActiveTasksViewAction) {
+    use self::ActiveTasksViewAction::*;
+    match action {
+      Filterer { .. } => {
+        // Trigger a refresh when undoing filtering.
+        self.restore_state(state.clone());
+        self.data_source.pull(&self.connection);
+      }
+      Task { .. } => {
+        // Trigger a refresh when undoing anything that changes task
+        // data. But *don't* restore scroller state; try to stay where
+        // you are.
+        self.data_source.restore_state(state.data_source_state.clone());
+        self.filterer.restore_state(state.filterer_state.clone());
+        self.data_source.pull(&self.connection);
+      },
+      _ => {
+        panic!("Unexpected action to undo");
+      }
+    }
+  }
+
+  pub fn handle_action_redo(&self, state: &ActiveTasksViewState, action: &ActiveTasksViewAction) {
+    use self::ActiveTasksViewAction::*;
+    match action {
+      Filterer { .. } => {
+        // Trigger a refresh when redoing filtering.
+        self.restore_state(state.clone());
+        self.data_source.pull(&self.connection);
+      }
+      Task { .. } => {
+        // Trigger a refresh when undoing anything that changes task
+        // data. But *don't* restore scroller state; try to stay where
+        // you are.
+        self.data_source.restore_state(state.data_source_state.clone());
+        self.filterer.restore_state(state.filterer_state.clone());
+        self.data_source.pull(&self.connection);
+      },
+      _ => {
+        panic!("Unexpected action to undo");
       }
     }
   }

@@ -1,4 +1,4 @@
-use actions::{FiltererAction, ForwardAction, ScrollAction, TaskAction, UndoBufferAction};
+use actions::{FiltererAction, ForwardAction, ReversableAction, ScrollAction, TaskAction, UndoBufferAction};
 use commands::ActiveTasksViewCommand;
 use views::{ActiveTasksView, ActiveTasksViewState};
 use std::rc::Rc;
@@ -15,7 +15,7 @@ pub enum ActiveTasksViewAction {
     ta: TaskAction,
   },
   UndoBuffer {
-    uba: UndoBufferAction<ActiveTasksViewState>,
+    uba: UndoBufferAction<ActiveTasksViewAction, ActiveTasksViewState>,
   },
 }
 
@@ -75,6 +75,26 @@ impl ForwardAction for ActiveTasksViewAction {
       },
       UndoBuffer { uba } => {
         uba.execute();
+      },
+    }
+  }
+}
+
+impl ReversableAction for ActiveTasksViewAction {
+  fn unexecute(&mut self) {
+    use self::ActiveTasksViewAction::*;
+    match self {
+      Filterer { fa } => {
+        fa.unexecute();
+      },
+      Scroll { .. } => {
+        panic!("Should not try to unexecute an UnderBufferAction")
+      },
+      Task { ta } => {
+        ta.unexecute();
+      },
+      UndoBuffer { .. } => {
+        panic!("Should not try to unexecute an UnderBufferAction")
       },
     }
   }
