@@ -19,22 +19,15 @@ pub struct Result {
   pub score: i64,
 }
 
-#[derive(Clone, Debug)]
-pub struct DataSourceState {
-  results: Option<ResultsVec>,
-}
-
 pub struct DataSource {
-  state: RefCell<DataSourceState>,
+  results: RefCell<Option<ResultsVec>>,
   callbacks: Vec<Box<Callback>>,
 }
 
 impl DataSource {
   pub fn new() -> DataSource {
-    let state = DataSourceState { results: None };
-
     DataSource {
-      state: RefCell::new(state),
+      results: RefCell::new(None),
       callbacks: vec![],
     }
   }
@@ -67,15 +60,14 @@ impl DataSource {
     results.reverse();
 
     {
-      let mut state = self.state.borrow_mut();
-      state.results = Some(Rc::new(results));
+      *self.results.borrow_mut() = Some(Rc::new(results));
     }
     self.push();
   }
 
   pub fn push(&self) {
-    let state = self.state.borrow();
-    let results = match state.results.clone() {
+    let results = self.results.borrow().clone();
+    let results = match results {
       None => panic!("Why are we pushing with no results?"),
       Some(results) => results,
     };
