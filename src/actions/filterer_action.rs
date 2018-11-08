@@ -92,7 +92,6 @@ impl FiltererAction {
     filterer: &Rc<Filterer>,
   ) -> Option<FiltererAction> {
     use self::FiltererCommand::*;
-
     match cmd {
       FilterByRequiresInternet => new_requires_internet_filterer_action(window, filterer),
     }

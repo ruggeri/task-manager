@@ -9,6 +9,15 @@ pub struct UndoBufferAction {
   pub undo_buffer: Rc<UndoBuffer>,
 }
 
+impl UndoBufferAction {
+  pub fn prepare_from_cmd(cmd: UndoBufferCommand, undo_buffer: &Rc<UndoBuffer>) -> UndoBufferAction {
+    UndoBufferAction {
+      cmd,
+      undo_buffer: Rc::clone(undo_buffer),
+    }
+  }
+}
+
 impl ForwardAction for UndoBufferAction {
   fn execute(&mut self) {
     use self::UndoBufferCommand::*;
