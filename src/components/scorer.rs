@@ -3,6 +3,8 @@ use models::{
   Task, TaskDuration, TaskEvent, TaskEventType, TaskPriority,
 };
 
+const BASE_PRIORITY_FACTOR: f64 = 1.42;
+
 pub struct Scorer();
 
 fn assert_is_sorted_backward(task_events: &[TaskEvent]) {
@@ -14,7 +16,7 @@ fn assert_is_sorted_backward(task_events: &[TaskEvent]) {
 }
 
 impl Scorer {
-  fn delay_amount(task_events: &[TaskEvent]) -> i64 {
+  fn delay_amount(task_events: &[TaskEvent]) -> f64 {
     assert_is_sorted_backward(task_events);
 
     let num_delay_events = task_events
@@ -24,7 +26,7 @@ impl Scorer {
       }).filter(|te| te.event_type == TaskEventType::DelayRequested)
       .count();
 
-    Duration::days(num_delay_events as i64).num_seconds()
+    Duration::days(num_delay_events as i64).num_seconds() as f64
   }
 
   pub fn last_effort_time(
@@ -49,21 +51,21 @@ impl Scorer {
     task_events: &[TaskEvent],
     last_effort_duration_since: Duration,
   ) -> i64 {
-    let mut score = last_effort_duration_since.num_seconds();
+    let mut score = last_effort_duration_since.num_seconds() as f64;
     score -= Scorer::delay_amount(task_events);
 
     score *= match task.priority {
-      TaskPriority::Low => 1,
-      TaskPriority::Medium => 2,
-      TaskPriority::High => 4,
+      TaskPriority::Low => 1.0,
+      TaskPriority::Medium => BASE_PRIORITY_FACTOR,
+      TaskPriority::High => BASE_PRIORITY_FACTOR * BASE_PRIORITY_FACTOR,
     };
 
     score *= match task.duration {
-      TaskDuration::Short => 4,
-      TaskDuration::Medium => 2,
-      TaskDuration::Long => 1,
+      TaskDuration::Short => BASE_PRIORITY_FACTOR * BASE_PRIORITY_FACTOR,
+      TaskDuration::Medium => BASE_PRIORITY_FACTOR,
+      TaskDuration::Long => 1.0,
     };
 
-    score
+    score as i64
   }
 }
