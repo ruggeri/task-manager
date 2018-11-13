@@ -5,7 +5,7 @@ use components::{
 };
 use diesel::pg::PgConnection;
 use std::rc::Rc;
-use util::{get_connection, ui::UserInterface};
+use util::{get_connection, UserInterface};
 
 pub struct ActiveTasksView {
   pub connection: Rc<PgConnection>,

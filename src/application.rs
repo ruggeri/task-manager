@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use util::ui::UserInterface;
+use util::UserInterface;
 use views::ActiveTasksView;
 
 pub struct Application {

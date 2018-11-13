@@ -1,8 +1,8 @@
-pub mod direction;
-pub mod end;
-pub mod task;
+mod direction;
+mod end;
+mod task;
 pub mod task_duration;
-pub mod task_event;
+mod task_event;
 pub mod task_event_type;
 pub mod task_priority;
 pub mod task_status;

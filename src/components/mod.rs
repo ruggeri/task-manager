@@ -1,11 +1,11 @@
-pub mod data_source;
+mod data_source;
 pub mod filterer;
-pub mod result;
-pub mod scorer;
-pub mod scroller;
-pub mod task_results_window;
-pub mod tasks_scroller;
-pub mod undo_buffer;
+mod result;
+mod scorer;
+mod scroller;
+mod task_results_window;
+mod tasks_scroller;
+mod undo_buffer;
 
 pub use self::data_source::DataSource;
 pub use self::filterer::{Filterer, FiltererEvent};
