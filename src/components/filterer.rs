@@ -1,4 +1,4 @@
-use components::TaskResult;
+use components::result::TaskResult;
 use std::cell::RefCell;
 use std::rc::Rc;
 

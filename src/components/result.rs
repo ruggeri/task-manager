@@ -62,18 +62,3 @@ pub struct TaskEventResult {
   pub task: Task,
   pub task_event: TaskEvent,
 }
-
-#[derive(Clone, Debug)]
-pub enum DataResult {
-  Task(TaskResult),
-  TaskEffort(TaskEventResult),
-}
-
-impl DataResult {
-  pub fn unwrap_task_result(&self) -> &TaskResult {
-    match self {
-      DataResult::Task(tr) => tr,
-      _ => panic!("Expected TaskResult!"),
-    }
-  }
-}

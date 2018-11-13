@@ -1,4 +1,4 @@
-use components::TaskResult;
+use components::result::TaskResult;
 use diesel::pg::PgConnection;
 use queries::task as task_queries;
 use std::cell::RefCell;

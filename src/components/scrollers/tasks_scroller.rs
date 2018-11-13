@@ -1,5 +1,5 @@
 use super::{BaseScroller, Scroller, ScrollerEvent};
-use components::TaskResult;
+use components::result::TaskResult;
 use models::{Direction, End, Task};
 use std::rc::Rc;
 
