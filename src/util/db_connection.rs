@@ -1,7 +1,7 @@
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 
-pub fn get_connection() -> PgConnection {
+pub fn get_db_connection() -> PgConnection {
   // TODO: Break this out into a configuration file I guess. Look how I
   // don't specify even localhost. By doing so, I will use a Unix domain
   // socket, which means I won't be blocked by my firewall.

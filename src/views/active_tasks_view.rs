@@ -5,7 +5,7 @@ use components::{
 };
 use diesel::pg::PgConnection;
 use std::rc::Rc;
-use util::{get_connection, UserInterface};
+use util::{get_db_connection, UserInterface};
 
 pub struct ActiveTasksView {
   pub connection: Rc<PgConnection>,
@@ -23,7 +23,7 @@ impl ActiveTasksView {
     let ui = Rc::clone(ui);
 
     // Setup connection
-    let connection = Rc::new(get_connection());
+    let connection = Rc::new(get_db_connection());
 
     // Setup TaskResultsWindow
     let task_results_window = Rc::new(TaskResultsWindow::new(&ui));
