@@ -1,7 +1,7 @@
 use actions::ActiveTasksViewAction;
 use commands::{
   FiltererCommand, ScrollCommand, TaskCommand, TaskUpdateCommand,
-  UndoBufferCommand,
+  TasksScrollCommand, UndoBufferCommand,
 };
 use models::{Direction, End, TaskStatus};
 use std::rc::Rc;
@@ -11,6 +11,7 @@ use views::ActiveTasksView;
 pub enum ActiveTasksViewCommand {
   Filterer(FiltererCommand),
   Scroll(ScrollCommand),
+  TasksScroll(TasksScrollCommand),
   Task(TaskCommand),
   UndoBuffer(UndoBufferCommand),
 }
@@ -20,14 +21,14 @@ impl ActiveTasksViewCommand {
     use self::{
       ActiveTasksViewCommand::*, Direction::*, End::*,
       FiltererCommand::*, ScrollCommand::*, TaskCommand::*,
-      TaskStatus::*, TaskUpdateCommand::*,
+      TaskStatus::*, TaskUpdateCommand::*, TasksScrollCommand::*,
     };
 
     let command = match ch {
       'F' => Filterer(FilterByRequiresInternet),
       '$' => ActiveTasksViewCommand::Scroll(Jump(Bottom)),
       'g' => ActiveTasksViewCommand::Scroll(Jump(Top)),
-      '/' => ActiveTasksViewCommand::Scroll(JumpToTask),
+      '/' => ActiveTasksViewCommand::TasksScroll(JumpToTask),
       'k' => {
         ActiveTasksViewCommand::Scroll(ScrollCommand::Scroll(Decrease))
       }

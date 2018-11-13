@@ -1,7 +1,7 @@
 use actions::ForwardAction;
 use commands::ActiveTasksViewCommand;
 use components::{
-  DataSource, Filterer, Scroller, TaskResultsWindow, UndoBuffer,
+  DataSource, Filterer, TasksScroller, TaskResultsWindow, UndoBuffer,
 };
 use diesel::pg::PgConnection;
 use std::rc::Rc;
@@ -11,7 +11,7 @@ pub struct ActiveTasksView {
   pub connection: Rc<PgConnection>,
   pub ui: Rc<UserInterface>,
   pub task_results_window: Rc<TaskResultsWindow>,
-  pub scroller: Rc<Scroller>,
+  pub scroller: Rc<TasksScroller>,
   pub filterer: Rc<Filterer>,
   pub data_source: Rc<DataSource>,
   pub undo_buffer: Rc<UndoBuffer>,
@@ -29,7 +29,7 @@ impl ActiveTasksView {
     let task_results_window = Rc::new(TaskResultsWindow::new(&ui));
 
     // Setup Scroller.
-    let mut scroller = Scroller::new();
+    let mut scroller = TasksScroller::new();
     // TaskResultsWindow listens to Scroller.
     {
       let task_results_window = Rc::clone(&task_results_window);

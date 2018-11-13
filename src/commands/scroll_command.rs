@@ -1,5 +1,5 @@
-use actions::ScrollAction;
-use components::Scroller;
+use actions::{ScrollAction, TasksScrollAction};
+use components::{Scroller, TasksScroller};
 use models::{Direction, End};
 use std::rc::Rc;
 use util::ui::UserInterface;
@@ -7,14 +7,17 @@ use util::ui::UserInterface;
 #[derive(Clone, Copy, Debug)]
 pub enum ScrollCommand {
   Jump(End),
-  JumpToTask,
   Scroll(Direction),
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum TasksScrollCommand {
+  JumpToTask,
 }
 
 impl ScrollCommand {
   pub fn to_action(
     self,
-    ui: &UserInterface,
     scroller: &Rc<Scroller>,
   ) -> Option<ScrollAction> {
     match self {
@@ -22,18 +25,29 @@ impl ScrollCommand {
         end,
         scroller: Rc::clone(scroller),
       }),
-      ScrollCommand::JumpToTask => {
+      ScrollCommand::Scroll(direction) => Some(ScrollAction::Scroll {
+        direction,
+        scroller: Rc::clone(scroller),
+      }),
+    }
+  }
+}
+
+impl TasksScrollCommand {
+  pub fn to_action(
+    self,
+    ui: &UserInterface,
+    scroller: &Rc<TasksScroller>,
+  ) -> Option<TasksScrollAction> {
+    match self {
+      TasksScrollCommand::JumpToTask => {
         read_task_to_jump_to(ui).map(|task_id| {
-          ScrollAction::JumpToTask {
+          TasksScrollAction::JumpToTask {
             task_id,
             scroller: Rc::clone(scroller),
           }
         })
       }
-      ScrollCommand::Scroll(direction) => Some(ScrollAction::Scroll {
-        direction,
-        scroller: Rc::clone(scroller),
-      }),
     }
   }
 }

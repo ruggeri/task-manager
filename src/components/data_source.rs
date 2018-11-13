@@ -1,23 +1,11 @@
-use chrono::{Duration, Utc};
-use components::Scorer;
+use components::TaskResult;
 use diesel::pg::PgConnection;
-use models::{Task, TaskEvent};
-use queries::{task as task_queries, task_event as te_queries};
+use queries::task as task_queries;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-type ResultsVec = Rc<Vec<Result>>;
+type ResultsVec = Rc<Vec<TaskResult>>;
 type Callback = dyn Fn(&ResultsVec) -> ();
-type DateTime = ::chrono::DateTime<::chrono::Utc>;
-
-#[derive(Clone, Debug)]
-pub struct Result {
-  pub task: Task,
-  pub task_events: Vec<TaskEvent>,
-  pub last_effort_time: DateTime,
-  pub last_effort_duration_since: Duration,
-  pub score: i64,
-}
 
 pub struct DataSource {
   results: RefCell<Option<ResultsVec>>,
@@ -37,30 +25,13 @@ impl DataSource {
   }
 
   pub fn pull(&self, connection: &PgConnection) {
-    let current_time = Utc::now();
+    let current_time = ::chrono::Utc::now();
 
     let mut results: Vec<_> =
-      task_queries::all_available_to_perform(&connection)
+      task_queries::all_available_to_perform(connection)
         .into_iter()
         .map(|task| {
-          let task_events = te_queries::task_events(&task, &connection);
-          let last_effort_time =
-            Scorer::last_effort_time(&task, &task_events);
-          let last_effort_duration_since =
-            current_time.signed_duration_since(last_effort_time);
-          let score = Scorer::score_task(
-            &task,
-            &task_events,
-            last_effort_duration_since,
-          );
-
-          Result {
-            task,
-            task_events,
-            last_effort_time,
-            last_effort_duration_since,
-            score,
-          }
+          TaskResult::from_task(task, current_time, connection)
         }).collect();
 
     results.sort_by_key(|result| result.score);

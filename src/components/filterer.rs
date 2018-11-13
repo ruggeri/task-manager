@@ -1,9 +1,9 @@
-use components::data_source;
+use components::TaskResult;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-type ResultsVec = Rc<Vec<data_source::Result>>;
 type Callback = dyn Fn(&ResultsVec, FiltererEvent) -> ();
+type ResultsVec = Rc<Vec<TaskResult>>;
 
 #[derive(Clone, Copy)]
 pub enum FiltererEvent {
@@ -53,7 +53,7 @@ impl Filterer {
     self.callbacks.push(callback);
   }
 
-  fn filter_result(&self, result: &data_source::Result) -> bool {
+  fn filter_result(&self, result: &TaskResult) -> bool {
     use self::FiltererRequiresInternetValue::*;
 
     match self.requires_internet_value() {
@@ -71,7 +71,7 @@ impl Filterer {
   }
 
   pub fn refresh(&self, results: &ResultsVec) {
-    let filtered_results: Vec<data_source::Result> = results
+    let filtered_results: Vec<TaskResult> = results
       .iter()
       .filter(|result| self.filter_result(result))
       .cloned()

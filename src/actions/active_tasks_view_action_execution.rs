@@ -1,14 +1,14 @@
-use actions::scroller_state::SavedScrolerState;
+use actions::scroller_state::SavedTasksScrolerState;
 use actions::{
   FiltererAction, ForwardAction, ReversableAction, TaskAction,
   TaskUpdateAction,
 };
-use components::Scroller;
+use components::{Scroller, TasksScroller};
 use models::End;
 use std::rc::Weak;
 use views::ActiveTasksView;
 
-fn jump_to_task_id_or_top(scroller: &Scroller, task_id: i32) {
+fn jump_to_task_id_or_top(scroller: &TasksScroller, task_id: i32) {
   if !scroller.jump_to_task_id(task_id) {
     // Sometimes a task can sneak away. In that case just jump to top.
     scroller.jump(End::Top);
@@ -16,7 +16,7 @@ fn jump_to_task_id_or_top(scroller: &Scroller, task_id: i32) {
 }
 
 fn jump_to_task_id_option_or_top(
-  scroller: &Scroller,
+  scroller: &TasksScroller,
   task_id_option: Option<i32>,
 ) {
   match task_id_option {
@@ -30,7 +30,7 @@ fn jump_to_task_id_option_or_top(
 pub fn execute_filterer_action(
   fa: &mut FiltererAction,
   view: &Weak<ActiveTasksView>,
-  scroller_state: &mut SavedScrolerState,
+  scroller_state: &mut SavedTasksScrolerState,
 ) {
   let view = view.upgrade().expect("Action should not outlive view");
 
@@ -48,7 +48,7 @@ pub fn execute_filterer_action(
 pub fn execute_task_action(
   ta: &mut TaskAction,
   view: &Weak<ActiveTasksView>,
-  scroller_state: &mut SavedScrolerState,
+  scroller_state: &mut SavedTasksScrolerState,
 ) {
   let view = view.upgrade().expect("Action should not outlive view");
 
@@ -93,7 +93,7 @@ pub fn execute_task_action(
 pub fn redo_filterer_action(
   fa: &mut FiltererAction,
   view: &Weak<ActiveTasksView>,
-  scroller_state: &mut SavedScrolerState,
+  scroller_state: &mut SavedTasksScrolerState,
 ) {
   let view = view.upgrade().expect("Action should not outlive view");
 
@@ -114,7 +114,7 @@ pub fn redo_filterer_action(
 pub fn redo_task_action(
   ta: &mut TaskAction,
   view: &Weak<ActiveTasksView>,
-  scroller_state: &mut SavedScrolerState,
+  scroller_state: &mut SavedTasksScrolerState,
 ) {
   let view = view.upgrade().expect("Action should not outlive view");
 
@@ -162,7 +162,7 @@ pub fn redo_task_action(
 pub fn unexecute_filterer_action(
   fa: &mut FiltererAction,
   view: &Weak<ActiveTasksView>,
-  scroller_state: &mut SavedScrolerState,
+  scroller_state: &mut SavedTasksScrolerState,
 ) {
   let view = view.upgrade().expect("Action should not outlive view");
 
@@ -182,7 +182,7 @@ pub fn unexecute_filterer_action(
 pub fn unexecute_task_action(
   ta: &mut TaskAction,
   view: &Weak<ActiveTasksView>,
-  scroller_state: &mut SavedScrolerState,
+  scroller_state: &mut SavedTasksScrolerState,
 ) {
   let view = view.upgrade().expect("Action should not outlive view");
 

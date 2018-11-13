@@ -1,6 +1,6 @@
 use chrono::Duration;
 use components::{
-  data_source,
+  result::TaskResult,
   scroller::{ScrollerEvent, ScrollerState},
 };
 use pancurses;
@@ -9,7 +9,7 @@ use std::ops::DerefMut;
 use std::rc::Rc;
 use util::ui::{ColorPair, UserInterface};
 
-type ResultsVec = Rc<Vec<data_source::Result>>;
+type ResultsVec = Rc<Vec<TaskResult>>;
 
 fn format_task_age(age: Duration) -> String {
   let weeks = age.num_weeks();
@@ -32,7 +32,7 @@ fn format_task_age(age: Duration) -> String {
 
 pub struct TaskResultsWindow {
   ui: Rc<UserInterface>,
-  scroller_state: RefCell<Option<ScrollerState>>,
+  scroller_state: RefCell<Option<ScrollerState<TaskResult>>>,
 }
 
 // TODO: Can I clean this code up at all?
@@ -65,7 +65,7 @@ impl TaskResultsWindow {
       ).current_result_idx
   }
 
-  fn save_scroller_state(&self, state: ScrollerState) {
+  fn save_scroller_state(&self, state: ScrollerState<TaskResult>) {
     *self.scroller_state.borrow_mut() = Some(state);
   }
 
@@ -82,7 +82,7 @@ impl TaskResultsWindow {
     &self.ui.window
   }
 
-  pub fn redraw(&self, event: ScrollerEvent) {
+  pub fn redraw(&self, event: ScrollerEvent<TaskResult>) {
     match event {
       ScrollerEvent::ChangedScrollPosition {
         old_result_idx,
@@ -155,7 +155,7 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::A_BOLD);
   }
 
-  fn display_result(&self, idx: i32, result: &data_source::Result) {
+  fn display_result(&self, idx: i32, result: &TaskResult) {
     let pwindow = self.pwindow();
     pwindow.mv(idx + 1, 0);
 
