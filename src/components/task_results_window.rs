@@ -142,8 +142,7 @@ impl TaskResultsWindow {
     pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
     pwindow.attron(pancurses::A_BOLD);
     pwindow.printw(&format!(
-      "  {id} | {title:title_width$} | {priority:5} | {durration:5} | {age:8} | {status:6} | {requires_internet:6} \n",
-      id = "id",
+      " {title:title_width$} | {priority:5} | {durration:5} | {age:8} | {status:6} | {requires_internet:6} \n",
       title = "title",
       title_width = ::std::cmp::max(5, self.max_title_len() + 2),
       priority = "prior",
@@ -200,8 +199,7 @@ impl TaskResultsWindow {
 
     // Display the task line.
     let s = format!(
-      "{id:4} | {title:title_width$} | {priority:5} | {duration:5} | {age:8} | {status:6} | {requires_internet:6}\n",
-      id = result.task.id,
+      " {title:title_width$} | {priority:5} | {duration:5} | {age:8} | {status:6} | {requires_internet:6}\n",
       title = result.task.title,
       title_width = ::std::cmp::max(5, self.max_title_len() + 2),
       priority = priority,
