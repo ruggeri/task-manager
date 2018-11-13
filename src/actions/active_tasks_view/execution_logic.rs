@@ -56,6 +56,7 @@ pub fn execute_task_action(
 
   // First save scroller position.
   scroller_state.old_id = view.scroller.current_task_id();
+  let old_result_idx = view.scroller.current_result_idx();
 
   // Now execute task action.
   ta.execute();
@@ -73,9 +74,7 @@ pub fn execute_task_action(
 
     RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
       // First time, just try to stay at the idx you are at.
-
-      // TODO: this is not actually respected because TasksScroller will
-      // try to maintain result id after pull of new data.
+      view.scroller.set_current_result_idx(old_result_idx);
     }
 
     TaskUpdate(UpdateDuration { task_id, .. })

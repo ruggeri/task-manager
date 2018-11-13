@@ -119,6 +119,10 @@ impl Scroller for TasksScroller {
   fn scroll(&self, direction: Direction) {
     self.base.scroll(direction)
   }
+
+  fn set_current_result_idx(&self, new_result_idx: i32) {
+    self.base.set_current_result_idx(new_result_idx)
+  }
 }
 
 impl Default for TasksScroller {

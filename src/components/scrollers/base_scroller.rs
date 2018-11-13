@@ -108,6 +108,15 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
 
     self.state.borrow_mut().current_result_idx = new_result_idx;
   }
+
+  pub fn set_current_result_idx(&self, new_result_idx: i32) {
+    let old_result_idx = self.current_result_idx();
+    self._set_current_result_idx(new_result_idx);
+    self._push(ScrollerEvent::ChangedScrollPosition {
+      old_result_idx,
+      new_state: self.state.borrow().clone(),
+    });
+  }
 }
 
 impl<ResultType: Clone> Default for BaseScroller<ResultType> {
@@ -131,5 +140,9 @@ impl<ResultType: Clone> Scroller for BaseScroller<ResultType> {
 
   fn scroll(&self, direction: Direction) {
     BaseScroller::<ResultType>::scroll(self, direction)
+  }
+
+  fn set_current_result_idx(&self, new_result_idx: i32) {
+    BaseScroller::<ResultType>::set_current_result_idx(self, new_result_idx)
   }
 }
