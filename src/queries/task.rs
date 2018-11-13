@@ -11,8 +11,8 @@ use schema::tasks;
 #[derive(Insertable)]
 #[table_name = "tasks"]
 struct NewTask {
-  pub title: String,
-  pub status: TaskStatus,
+  title: String,
+  status: TaskStatus,
 }
 
 pub fn all_available_to_perform(

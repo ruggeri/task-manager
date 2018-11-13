@@ -11,8 +11,8 @@ use schema::task_events;
 #[derive(Insertable)]
 #[table_name = "task_events"]
 struct NewTaskEvent {
-  pub task_id: i32,
-  pub event_type: TaskEventType,
+  task_id: i32,
+  event_type: TaskEventType,
 }
 
 pub fn task_events(
