@@ -48,7 +48,7 @@ impl TasksScroller {
       .iter()
       .position(|result| result.task.id == task_id)
       .map(|result_idx| {
-        self.base.set_current_result_idx(result_idx as i32)
+        self.base._set_current_result_idx(result_idx as i32)
       }).is_some()
   }
 
@@ -57,7 +57,7 @@ impl TasksScroller {
   pub fn jump_to_task_id(&self, task_id: i32) -> bool {
     let old_result_idx = self.base.current_result_idx();
     if self._jump_to_task_id(task_id) {
-      self.base.push(ScrollerEvent::ChangedScrollPosition {
+      self.base._push(ScrollerEvent::ChangedScrollPosition {
         old_result_idx,
         new_state: self.base.state.borrow().clone(),
       });
@@ -77,15 +77,15 @@ impl TasksScroller {
       state.results = Rc::clone(results);
     }
 
-    self.try_to_maintain_scroll_position(old_task_id, old_result_idx);
+    self._try_to_maintain_scroll_position(old_task_id, old_result_idx);
 
     // Push changes on down the line.
-    self.base.push(ScrollerEvent::GotNewScrollResults {
+    self.base._push(ScrollerEvent::GotNewScrollResults {
       state: self.base.state.borrow().clone(),
     });
   }
 
-  fn try_to_maintain_scroll_position(
+  fn _try_to_maintain_scroll_position(
     &self,
     old_task_id: Option<i32>,
     old_result_idx: i32,
@@ -99,7 +99,7 @@ impl TasksScroller {
 
     // Couldn't find moved task. Try to at least maintain current
     // position. We'll deal with falling off the end in the setter.
-    self.base.set_current_result_idx(old_result_idx);
+    self.base._set_current_result_idx(old_result_idx);
   }
 }
 

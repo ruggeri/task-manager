@@ -36,13 +36,13 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
   pub fn jump(&self, end: End) {
     let old_result_idx = self.current_result_idx();
     match end {
-      End::Top => self.set_current_result_idx(0),
+      End::Top => self._set_current_result_idx(0),
       End::Bottom => {
-        self.set_current_result_idx(self.num_results() - 1)
+        self._set_current_result_idx(self.num_results() - 1)
       }
     }
 
-    self.push(ScrollerEvent::ChangedScrollPosition {
+    self._push(ScrollerEvent::ChangedScrollPosition {
       old_result_idx,
       new_state: self.state.borrow().clone(),
     });
@@ -52,7 +52,7 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
     self.results().len() as i32
   }
 
-  pub(super) fn push(&self, event: ScrollerEvent<ResultType>) {
+  pub(super) fn _push(&self, event: ScrollerEvent<ResultType>) {
     for callback in &self.callbacks {
       callback(event.clone());
     }
@@ -66,10 +66,10 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
       state.results = Rc::clone(results);
     }
 
-    self.set_current_result_idx(old_result_idx);
+    self._set_current_result_idx(old_result_idx);
 
     // Push changes on down the line.
-    self.push(ScrollerEvent::GotNewScrollResults {
+    self._push(ScrollerEvent::GotNewScrollResults {
       state: self.state.borrow().clone(),
     });
   }
@@ -82,14 +82,14 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
     let old_result_idx = self.current_result_idx();
     match direction {
       Direction::Decrease => {
-        self.set_current_result_idx(old_result_idx - 1)
+        self._set_current_result_idx(old_result_idx - 1)
       }
       Direction::Increase => {
-        self.set_current_result_idx(old_result_idx + 1)
+        self._set_current_result_idx(old_result_idx + 1)
       }
     };
 
-    self.push(ScrollerEvent::ChangedScrollPosition {
+    self._push(ScrollerEvent::ChangedScrollPosition {
       old_result_idx,
       new_state: self.state.borrow().clone(),
     });
@@ -97,7 +97,7 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
 
   // Only "subclassers" should be using this internal method. Doesn't
   // fire events or call callbacks.
-  pub(super) fn set_current_result_idx(&self, mut new_result_idx: i32) {
+  pub(super) fn _set_current_result_idx(&self, mut new_result_idx: i32) {
     // Check for scrolling off either end.
     let num_results = self.num_results();
     if new_result_idx < 0 {
