@@ -1,5 +1,4 @@
 mod data_source;
-// TODO: I don't like that this is public...
 pub mod filterer;
 mod result;
 mod scorer;

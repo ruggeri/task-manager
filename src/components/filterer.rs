@@ -53,7 +53,7 @@ impl Filterer {
     self.callbacks.push(callback);
   }
 
-  fn filter_result(&self, result: &TaskResult) -> bool {
+  fn _filter_result(&self, result: &TaskResult) -> bool {
     use self::FiltererRequiresInternetValue::*;
 
     match self.requires_internet_value() {
@@ -63,7 +63,7 @@ impl Filterer {
     }
   }
 
-  fn push(&self, event: FiltererEvent) {
+  fn _push(&self, event: FiltererEvent) {
     let state = self.state.borrow();
     for callback in &self.callbacks {
       callback(&state.results, event);
@@ -73,7 +73,7 @@ impl Filterer {
   pub fn refresh(&self, results: &ResultsVec) {
     let filtered_results: Vec<TaskResult> = results
       .iter()
-      .filter(|result| self.filter_result(result))
+      .filter(|result| self._filter_result(result))
       .cloned()
       .collect();
 
@@ -81,7 +81,7 @@ impl Filterer {
       let filtered_results = Rc::new(filtered_results);
       self.state.borrow_mut().results = filtered_results;
     }
-    self.push(FiltererEvent::FiltererGotUpdatedResults);
+    self._push(FiltererEvent::FiltererGotUpdatedResults);
   }
 
   pub fn requires_internet_value(
@@ -99,6 +99,6 @@ impl Filterer {
       state.requires_internet_value = new_value;
     }
 
-    self.push(FiltererEvent::FiltererCriteriaUpdated);
+    self._push(FiltererEvent::FiltererCriteriaUpdated);
   }
 }
