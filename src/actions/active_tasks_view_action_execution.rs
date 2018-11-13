@@ -1,4 +1,4 @@
-use actions::scroller_state::SavedTasksScrolerState;
+use actions::scroller_state::{NewScrollerTaskId, SavedTasksScrolerState};
 use actions::{
   FiltererAction, ForwardAction, ReversableAction, TaskAction,
   TaskUpdateAction,
@@ -110,7 +110,7 @@ pub fn redo_filterer_action(
   view.data_source.pull(&view.connection);
 
   // Try to restore new scroller state.
-  let new_task_id = scroller_state.new_id.unwrap();
+  let new_task_id = scroller_state.unwrap_new_id();
   jump_to_task_id_option_or_top(&view.scroller, new_task_id);
 }
 
@@ -140,7 +140,7 @@ pub fn redo_task_action(
 
     RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
       // Try to restore id that had been focused on.
-      let new_task_id = scroller_state.new_id.unwrap();
+      let new_task_id = scroller_state.unwrap_new_id();
       jump_to_task_id_option_or_top(&view.scroller, new_task_id);
     }
 
@@ -153,7 +153,7 @@ pub fn redo_task_action(
       if !view.scroller.jump_to_task_id(*task_id) {
         // Task may have been been removed, in which case try to focus
         // on last selected index.
-        let new_id = scroller_state.new_id.unwrap();
+        let new_id = scroller_state.unwrap_new_id();
         jump_to_task_id_option_or_top(&view.scroller, new_id);
       }
     }
@@ -170,7 +170,7 @@ pub fn unexecute_filterer_action(
   let view = view.upgrade().expect("Action should not outlive view");
 
   // First save scroller position.
-  scroller_state.new_id = Some(view.scroller.current_task_id());
+  scroller_state.new_id = NewScrollerTaskId::Saved(view.scroller.current_task_id());
 
   // Now execute filtering action.
   fa.unexecute();
@@ -190,7 +190,7 @@ pub fn unexecute_task_action(
   let view = view.upgrade().expect("Action should not outlive view");
 
   // First save scroller position.
-  scroller_state.new_id = Some(view.scroller.current_task_id());
+  scroller_state.new_id = NewScrollerTaskId::Saved(view.scroller.current_task_id());
 
   // Now unexecute task action.
   ta.unexecute();
