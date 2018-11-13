@@ -1,11 +1,19 @@
 mod direction;
 mod end;
 mod task;
-pub mod task_duration;
+mod task_duration;
 mod task_event;
-pub mod task_event_type;
-pub mod task_priority;
-pub mod task_status;
+mod task_event_type;
+mod task_priority;
+mod task_status;
+
+// For the schema file.
+pub mod mappings {
+  pub use super::task_duration::TaskDurationMapping;
+  pub use super::task_event_type::TaskEventTypeMapping;
+  pub use super::task_priority::TaskPriorityMapping;
+  pub use super::task_status::TaskStatusMapping;
+}
 
 pub use self::direction::Direction;
 pub use self::end::End;

@@ -5,8 +5,8 @@ use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct UndoBufferAction {
-  pub cmd: UndoBufferCommand,
-  pub undo_buffer: Rc<UndoBuffer>,
+  cmd: UndoBufferCommand,
+  undo_buffer: Rc<UndoBuffer>,
 }
 
 impl UndoBufferAction {
