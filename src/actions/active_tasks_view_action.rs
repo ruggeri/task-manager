@@ -101,7 +101,7 @@ impl ActiveTasksViewAction {
       Filterer { .. } => undo_buffer.append_action(Box::new(self)),
       Scroll { .. } => return,
       Task { .. } => undo_buffer.append_action(Box::new(self)),
-      TasksScroll { .. } => undo_buffer.append_action(Box::new(self)),
+      TasksScroll { .. } => return,
       UndoBuffer { .. } => return,
     }
   }
