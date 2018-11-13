@@ -1,32 +1,14 @@
+use super::{ScrollerEvent, Scroller, ScrollerState};
 use models::{Direction, End};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-type Callback<ResultType> = dyn Fn(ScrollerEvent<ResultType>) -> ();
-type ResultsVec<ResultType> = Rc<Vec<ResultType>>;
-
-#[derive(Clone, Debug)]
-pub struct ScrollerState<ResultType: Clone> {
-  pub current_result_idx: i32,
-  pub results: ResultsVec<ResultType>,
-}
-
-#[derive(Clone)]
-pub enum ScrollerEvent<ResultType: Clone> {
-  ChangedScrollPosition {
-    old_result_idx: i32,
-    new_state: ScrollerState<ResultType>,
-  },
-
-  GotNewScrollResults {
-    state: ScrollerState<ResultType>,
-  },
-}
+pub type Callback<ResultType> = dyn Fn(ScrollerEvent<ResultType>) -> ();
+pub type ResultsVec<ResultType> = Rc<Vec<ResultType>>;
 
 pub struct BaseScroller<ResultType: Clone> {
-  // TODO: We'll make these private again soon.
-  pub state: RefCell<ScrollerState<ResultType>>,
-  pub callbacks: Vec<Box<Callback<ResultType>>>,
+  pub(super) state: RefCell<ScrollerState<ResultType>>,
+  pub(super) callbacks: Vec<Box<Callback<ResultType>>>,
 }
 
 impl<ResultType: Clone> BaseScroller<ResultType> {
@@ -51,24 +33,12 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
     state.current_result_idx
   }
 
-  pub fn _set_current_result_idx(&self, mut new_result_idx: i32) {
-    // Check for scrolling off either end.
-    let num_results = self.num_results();
-    if new_result_idx < 0 {
-      new_result_idx = 0;
-    } else if new_result_idx >= num_results {
-      new_result_idx = num_results - 1;
-    }
-
-    self.state.borrow_mut().current_result_idx = new_result_idx;
-  }
-
   pub fn jump(&self, end: End) {
     let old_result_idx = self.current_result_idx();
     match end {
-      End::Top => self._set_current_result_idx(0),
+      End::Top => self.set_current_result_idx(0),
       End::Bottom => {
-        self._set_current_result_idx(self.num_results() - 1)
+        self.set_current_result_idx(self.num_results() - 1)
       }
     }
 
@@ -82,31 +52,10 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
     self.results().len() as i32
   }
 
-  pub fn push(&self, event: ScrollerEvent<ResultType>) {
+  pub(super) fn push(&self, event: ScrollerEvent<ResultType>) {
     for callback in &self.callbacks {
       callback(event.clone());
     }
-  }
-
-  pub fn results(&self) -> ResultsVec<ResultType> {
-    Rc::clone(&self.state.borrow().results)
-  }
-
-  pub fn scroll(&self, direction: Direction) {
-    let old_result_idx = self.current_result_idx();
-    match direction {
-      Direction::Decrease => {
-        self._set_current_result_idx(old_result_idx - 1)
-      }
-      Direction::Increase => {
-        self._set_current_result_idx(old_result_idx + 1)
-      }
-    };
-
-    self.push(ScrollerEvent::ChangedScrollPosition {
-      old_result_idx,
-      new_state: self.state.borrow().clone(),
-    });
   }
 
   pub fn refresh(&self, results: &ResultsVec<ResultType>) {
@@ -117,12 +66,47 @@ impl<ResultType: Clone> BaseScroller<ResultType> {
       state.results = Rc::clone(results);
     }
 
-    self._set_current_result_idx(old_result_idx);
+    self.set_current_result_idx(old_result_idx);
 
     // Push changes on down the line.
     self.push(ScrollerEvent::GotNewScrollResults {
       state: self.state.borrow().clone(),
     });
+  }
+
+  pub fn results(&self) -> ResultsVec<ResultType> {
+    Rc::clone(&self.state.borrow().results)
+  }
+
+  pub fn scroll(&self, direction: Direction) {
+    let old_result_idx = self.current_result_idx();
+    match direction {
+      Direction::Decrease => {
+        self.set_current_result_idx(old_result_idx - 1)
+      }
+      Direction::Increase => {
+        self.set_current_result_idx(old_result_idx + 1)
+      }
+    };
+
+    self.push(ScrollerEvent::ChangedScrollPosition {
+      old_result_idx,
+      new_state: self.state.borrow().clone(),
+    });
+  }
+
+  // Only "subclassers" should be using this internal method. Doesn't
+  // fire events or call callbacks.
+  pub(super) fn set_current_result_idx(&self, mut new_result_idx: i32) {
+    // Check for scrolling off either end.
+    let num_results = self.num_results();
+    if new_result_idx < 0 {
+      new_result_idx = 0;
+    } else if new_result_idx >= num_results {
+      new_result_idx = num_results - 1;
+    }
+
+    self.state.borrow_mut().current_result_idx = new_result_idx;
   }
 }
 
@@ -130,13 +114,6 @@ impl<ResultType: Clone> Default for BaseScroller<ResultType> {
   fn default() -> BaseScroller<ResultType> {
     BaseScroller::new()
   }
-}
-
-pub trait Scroller {
-  fn current_result_idx(&self) -> i32;
-  fn jump(&self, end: End);
-  fn num_results(&self) -> i32;
-  fn scroll(&self, direction: Direction);
 }
 
 impl<ResultType: Clone> Scroller for BaseScroller<ResultType> {

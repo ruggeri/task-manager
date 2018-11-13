@@ -1,7 +1,7 @@
 use chrono::Duration;
 use components::{
   result::TaskResult,
-  scroller::{ScrollerEvent, ScrollerState},
+  scrollers::{ScrollerEvent, ScrollerState},
 };
 use pancurses;
 use std::cell::RefCell;

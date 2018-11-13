@@ -1,4 +1,5 @@
-use components::{BaseScroller, Scroller, ScrollerEvent, TaskResult};
+use super::{BaseScroller, Scroller, ScrollerEvent};
+use components::TaskResult;
 use models::{Direction, End, Task};
 use std::rc::Rc;
 
@@ -47,12 +48,12 @@ impl TasksScroller {
       .iter()
       .position(|result| result.task.id == task_id)
       .map(|result_idx| {
-        self.base._set_current_result_idx(result_idx as i32)
+        self.base.set_current_result_idx(result_idx as i32)
       }).is_some()
   }
 
-  // This is the method safe to use to jump to a task id. It pushes an
-  // event down to any followers.
+  // This is the method users should call to jump to a task id. It
+  // pushes an event down to any followers.
   pub fn jump_to_task_id(&self, task_id: i32) -> bool {
     let old_result_idx = self.base.current_result_idx();
     if self._jump_to_task_id(task_id) {
@@ -98,7 +99,7 @@ impl TasksScroller {
 
     // Couldn't find moved task. Try to at least maintain current
     // position. We'll deal with falling off the end in the setter.
-    self.base._set_current_result_idx(old_result_idx);
+    self.base.set_current_result_idx(old_result_idx);
   }
 }
 
