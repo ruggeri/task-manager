@@ -9,7 +9,7 @@ pub enum NewScrollerTaskId {
 #[derive(Clone, Copy)]
 pub struct SavedTasksScrolerState {
   pub old_id: Option<i32>,
-  pub new_id: NewScrollerTaskId
+  pub new_id: NewScrollerTaskId,
 }
 
 impl SavedTasksScrolerState {
@@ -24,7 +24,7 @@ impl SavedTasksScrolerState {
     use self::NewScrollerTaskId::*;
     match self.new_id {
       NeverSaved => panic!("Scroller state was never saved!"),
-      Saved(new_id) => new_id
+      Saved(new_id) => new_id,
     }
   }
 }

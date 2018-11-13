@@ -1,5 +1,6 @@
-use actions::active_tasks_view_action_execution as execution_logic;
-use actions::scroller_state::SavedTasksScrolerState;
+use super::{
+  execution_logic, saved_scroller_state::SavedTasksScrolerState,
+};
 use actions::{
   FiltererAction, ForwardAction, ReversableAction, ScrollAction,
   TaskAction, TasksScrollAction, UndoBufferAction,

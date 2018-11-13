@@ -1,4 +1,6 @@
-use actions::scroller_state::{NewScrollerTaskId, SavedTasksScrolerState};
+use super::saved_scroller_state::{
+  NewScrollerTaskId, SavedTasksScrolerState,
+};
 use actions::{
   FiltererAction, ForwardAction, ReversableAction, TaskAction,
   TaskUpdateAction,
@@ -170,7 +172,8 @@ pub fn unexecute_filterer_action(
   let view = view.upgrade().expect("Action should not outlive view");
 
   // First save scroller position.
-  scroller_state.new_id = NewScrollerTaskId::Saved(view.scroller.current_task_id());
+  scroller_state.new_id =
+    NewScrollerTaskId::Saved(view.scroller.current_task_id());
 
   // Now execute filtering action.
   fa.unexecute();
@@ -190,7 +193,8 @@ pub fn unexecute_task_action(
   let view = view.upgrade().expect("Action should not outlive view");
 
   // First save scroller position.
-  scroller_state.new_id = NewScrollerTaskId::Saved(view.scroller.current_task_id());
+  scroller_state.new_id =
+    NewScrollerTaskId::Saved(view.scroller.current_task_id());
 
   // Now unexecute task action.
   ta.unexecute();
