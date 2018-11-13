@@ -54,14 +54,7 @@ impl ActiveTasksViewAction {
       }
 
       Scroll(sc) => {
-        // This feels totally wack. To upcast an Rc do I need to do this
-        // unsafe code where I convert to/from a pointer??
-        //
-        // TODO: Ask StackOverflow about this...
-        let scroller = unsafe {
-          let ptr = Rc::into_raw(Rc::clone(&view.scroller));
-          Rc::<Scroller>::from_raw(ptr)
-        };
+        let scroller = Rc::clone(&view.scroller) as Rc<Scroller>;
 
         sc.to_action(&scroller).map(|sa| {
           ActiveTasksViewAction::Scroll {
