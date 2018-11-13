@@ -2,6 +2,8 @@ use actions::TaskUpdateAction;
 use queries::task as task_queries;
 
 macro_rules! update_match {
+  // Notice that I need two sets, because one of them is for updating by
+  // passing a *reference*, rather than a value.
   ($x:expr, $value:ident, ($( ($enum_value:ident, $update_fn:ident) ),*), ($( ($ref_enum_value:ident, $ref_update_fn:ident) ),*)) => {
     match $x {
       $(TaskUpdateAction::$enum_value {

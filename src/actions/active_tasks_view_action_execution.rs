@@ -71,6 +71,9 @@ pub fn execute_task_action(
 
     RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
       // First time, just try to stay at the idx you are at.
+
+      // TODO: this is not actually respected because TasksScroller will
+      // try to maintain result id after pull of new data.
     }
 
     TaskUpdate(UpdateDuration { task_id, .. })

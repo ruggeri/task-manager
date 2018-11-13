@@ -56,23 +56,19 @@ impl TaskAction {
 
       // Record a task effort.
       TaskCommand::RecordTaskEffort => {
-        current_task_fn().and_then(|task| {
-          Some(TaskAction::RecordTaskEffort {
-            task_id: task.id,
-            task_event: None,
-            connection: Rc::clone(connection),
-          })
+        current_task_fn().map(|task| TaskAction::RecordTaskEffort {
+          task_id: task.id,
+          task_event: None,
+          connection: Rc::clone(connection),
         })
       }
 
       // Request a task delay.
       TaskCommand::RequestTaskDelay => {
-        current_task_fn().and_then(|task| {
-          Some(TaskAction::RequestTaskDelay {
-            task_id: task.id,
-            task_event: None,
-            connection: Rc::clone(connection),
-          })
+        current_task_fn().map(|task| TaskAction::RequestTaskDelay {
+          task_id: task.id,
+          task_event: None,
+          connection: Rc::clone(connection),
         })
       }
 
