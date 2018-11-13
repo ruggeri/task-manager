@@ -15,22 +15,6 @@ pub struct TaskResult {
 }
 
 impl TaskResult {
-  pub fn new(
-    task: Task,
-    task_events: Vec<TaskEvent>,
-    last_effort_time: DateTime,
-    last_effort_duration_since: ::chrono::Duration,
-    score: i64,
-  ) -> TaskResult {
-    TaskResult {
-      task,
-      task_events,
-      last_effort_time,
-      last_effort_duration_since,
-      score,
-    }
-  }
-
   pub fn from_task(
     task: Task,
     current_time: DateTime,
@@ -47,13 +31,13 @@ impl TaskResult {
       last_effort_duration_since,
     );
 
-    TaskResult::new(
+    TaskResult {
       task,
       task_events,
       last_effort_time,
       last_effort_duration_since,
       score,
-    )
+    }
   }
 }
 
