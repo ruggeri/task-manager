@@ -31,6 +31,7 @@ impl UserInterface {
 
     pancurses::start_color();
     pancurses::use_default_colors();
+    // -1 means "default color".
     pancurses::init_pair(ColorPair::Default as i16, -1, -1);
     pancurses::init_pair(
       ColorPair::Highlight as i16,
@@ -38,6 +39,9 @@ impl UserInterface {
       pancurses::COLOR_BLUE,
     );
     pancurses::noecho();
+    // Keypad mode handles escape sequences. I think how it works is
+    // waits a small amount of time to get all characters that occur
+    // after the escape character.
     window.keypad(true);
 
     UserInterface { window }
