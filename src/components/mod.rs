@@ -9,7 +9,7 @@ pub mod undo_buffer;
 
 pub use self::data_source::DataSource;
 pub use self::filterer::{Filterer, FiltererEvent};
-pub use self::result::{DataResult, TaskResult, TaskEventResult};
+pub use self::result::{DataResult, TaskEventResult, TaskResult};
 pub use self::scorer::Scorer;
 pub use self::scroller::{BaseScroller, Scroller, ScrollerEvent};
 pub use self::task_results_window::TaskResultsWindow;

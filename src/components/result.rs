@@ -20,8 +20,8 @@ impl TaskResult {
     task_events: Vec<TaskEvent>,
     last_effort_time: DateTime,
     last_effort_duration_since: ::chrono::Duration,
-    score: i64) -> TaskResult {
-
+    score: i64,
+  ) -> TaskResult {
     TaskResult {
       task,
       task_events,
@@ -31,7 +31,11 @@ impl TaskResult {
     }
   }
 
-  pub fn from_task(task: Task, current_time: DateTime, connection: &PgConnection) -> TaskResult {
+  pub fn from_task(
+    task: Task,
+    current_time: DateTime,
+    connection: &PgConnection,
+  ) -> TaskResult {
     let task_events = te_queries::task_events(&task, connection);
     let last_effort_time =
       Scorer::last_effort_time(&task, &task_events);
@@ -69,7 +73,7 @@ impl DataResult {
   pub fn unwrap_task_result(&self) -> &TaskResult {
     match self {
       DataResult::Task(tr) => tr,
-      _ => panic!("Expected TaskResult!")
+      _ => panic!("Expected TaskResult!"),
     }
   }
 }

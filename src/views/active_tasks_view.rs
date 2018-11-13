@@ -1,7 +1,7 @@
 use actions::ForwardAction;
 use commands::ActiveTasksViewCommand;
 use components::{
-  DataSource, Filterer, TasksScroller, TaskResultsWindow, UndoBuffer,
+  DataSource, Filterer, TaskResultsWindow, TasksScroller, UndoBuffer,
 };
 use diesel::pg::PgConnection;
 use std::rc::Rc;

@@ -68,7 +68,7 @@ impl ActiveTasksViewAction {
             view: Rc::downgrade(&Rc::clone(view)),
           }
         })
-      },
+      }
 
       Task(tc) => tc
         .to_action(&view.ui, &view.connection, || {

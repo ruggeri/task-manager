@@ -12,7 +12,7 @@ pub struct TasksScroller {
 impl TasksScroller {
   pub fn new() -> TasksScroller {
     TasksScroller {
-      base: BaseScroller::new()
+      base: BaseScroller::new(),
     }
   }
 
@@ -22,7 +22,11 @@ impl TasksScroller {
 
   pub fn current_task(&self) -> Option<Task> {
     let idx = self.base.current_result_idx();
-    self.base.results().get(idx as usize).map(|result| result.task.clone())
+    self
+      .base
+      .results()
+      .get(idx as usize)
+      .map(|result| result.task.clone())
   }
 
   pub fn current_task_id(&self) -> Option<i32> {
@@ -37,14 +41,14 @@ impl TasksScroller {
 
   // This jumps to the task id, but doesn't push an event.
   fn _jump_to_task_id(&self, task_id: i32) -> bool {
-    self.base
+    self
+      .base
       .results()
       .iter()
       .position(|result| result.task.id == task_id)
       .map(|result_idx| {
         self.base._set_current_result_idx(result_idx as i32)
-      })
-      .is_some()
+      }).is_some()
   }
 
   // This is the method safe to use to jump to a task id. It pushes an

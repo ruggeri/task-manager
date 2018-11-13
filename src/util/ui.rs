@@ -21,9 +21,13 @@ impl UserInterface {
     let (max_y, max_x) = (window.get_max_y(), window.get_max_x());
     let num_rows = if max_y > 40 { 40 } else { max_y };
     let num_cols = if max_x > 100 { 100 } else { max_x };
-    let window = window.subwin(
-      num_rows, num_cols, (max_y - num_rows) / 2, (max_x - num_cols) / 2,
-    ).unwrap();
+    let window = window
+      .subwin(
+        num_rows,
+        num_cols,
+        (max_y - num_rows) / 2,
+        (max_x - num_cols) / 2,
+      ).unwrap();
 
     pancurses::start_color();
     pancurses::use_default_colors();

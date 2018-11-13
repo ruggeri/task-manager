@@ -61,7 +61,9 @@ impl Scorer {
     };
 
     score *= match task.duration {
-      TaskDuration::Short => BASE_PRIORITY_FACTOR * BASE_PRIORITY_FACTOR,
+      TaskDuration::Short => {
+        BASE_PRIORITY_FACTOR * BASE_PRIORITY_FACTOR
+      }
       TaskDuration::Medium => BASE_PRIORITY_FACTOR,
       TaskDuration::Long => 1.0,
     };
