@@ -3,13 +3,15 @@ use rustyline::{error::ReadlineError, Editor};
 use std::io::{stdout, Write};
 
 #[repr(C)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ColorPair {
   Default,
   Highlight,
+  Bold,
 }
 
 pub struct UserInterface {
-  pub window: pancurses::Window,
+  pub(super) window: pancurses::Window,
 }
 
 impl UserInterface {
@@ -17,17 +19,6 @@ impl UserInterface {
     // Important! You must initscr before you can do any of the start
     // color stuff. Otherwise you get a wonderful segfault...
     let window = pancurses::initscr();
-
-    let (max_y, max_x) = (window.get_max_y(), window.get_max_x());
-    let num_rows = if max_y > 40 { 40 } else { max_y };
-    let num_cols = if max_x > 100 { 100 } else { max_x };
-    let window = window
-      .subwin(
-        num_rows,
-        num_cols,
-        (max_y - num_rows) / 2,
-        (max_x - num_cols) / 2,
-      ).unwrap();
 
     pancurses::start_color();
     pancurses::use_default_colors();

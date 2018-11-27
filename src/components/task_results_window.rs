@@ -3,11 +3,13 @@ use components::{
   result::TaskResult,
   scrollers::{ScrollerEvent, ScrollerState},
 };
-use pancurses;
 use std::cell::RefCell;
 use std::ops::DerefMut;
 use std::rc::Rc;
-use util::ui::{ColorPair, UserInterface};
+use util::{
+  line_buffer::{Line, LineBuffer},
+  ui::{ColorPair, UserInterface}
+};
 
 type ResultsVec = Rc<Vec<TaskResult>>;
 
@@ -31,7 +33,7 @@ fn format_task_age(age: Duration) -> String {
 }
 
 pub struct TaskResultsWindow {
-  ui: Rc<UserInterface>,
+  line_buffer: LineBuffer,
   scroller_state: RefCell<Option<ScrollerState<TaskResult>>>,
 }
 
@@ -39,7 +41,7 @@ pub struct TaskResultsWindow {
 impl TaskResultsWindow {
   pub fn new(ui: &Rc<UserInterface>) -> TaskResultsWindow {
     TaskResultsWindow {
-      ui: Rc::clone(ui),
+      line_buffer: LineBuffer::new(ui),
       scroller_state: RefCell::new(None),
     }
   }
@@ -55,14 +57,14 @@ impl TaskResultsWindow {
       .clone()
   }
 
-  fn current_result_idx(&self) -> i32 {
+  fn current_result_idx(&self) -> usize {
     self
       .scroller_state
       .borrow()
       .as_ref()
       .expect(
         "scroller_state should be set before trying to use result idx",
-      ).current_result_idx
+      ).current_result_idx as usize
   }
 
   fn save_scroller_state(&self, state: ScrollerState<TaskResult>) {
@@ -78,10 +80,6 @@ impl TaskResultsWindow {
     }
   }
 
-  fn pwindow(&self) -> &pancurses::Window {
-    &self.ui.window
-  }
-
   pub fn redraw(&self, event: ScrollerEvent<TaskResult>) {
     match event {
       ScrollerEvent::ChangedScrollPosition {
@@ -92,23 +90,21 @@ impl TaskResultsWindow {
           },
       } => {
         self.save_current_result_idx(current_result_idx);
-        self.incremental_redraw(old_result_idx, current_result_idx);
-        // Position cursor at bottom for text input.
-        self.pwindow().mv((self.results().len() + 1) as i32, 0);
+        self.incremental_redraw(old_result_idx as usize, current_result_idx as usize);
       }
       ScrollerEvent::GotNewScrollResults { state } => {
         self.save_scroller_state(state);
         self.full_redraw();
       }
     }
+
+    self.line_buffer.redraw();
   }
 
   pub fn full_redraw(&self) {
-    self.pwindow().clear();
-
     self.display_header();
     for (idx, result) in self.results().iter().enumerate() {
-      self.display_result(idx as i32, result);
+      self.display_result(idx, result);
     }
   }
 
@@ -123,25 +119,22 @@ impl TaskResultsWindow {
 
   pub fn incremental_redraw(
     &self,
-    old_result_idx: i32,
-    current_result_idx: i32,
+    old_result_idx: usize,
+    current_result_idx: usize,
   ) {
     let results = &self.results();
     self.display_result(
       old_result_idx,
-      &results[old_result_idx as usize],
+      &results[old_result_idx],
     );
     self.display_result(
       current_result_idx,
-      &results[current_result_idx as usize],
+      &results[current_result_idx],
     );
   }
 
   fn display_header(&self) {
-    let pwindow = self.pwindow();
-    pwindow.attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
-    pwindow.attron(pancurses::A_BOLD);
-    pwindow.printw(&format!(
+    let text = format!(
       " {title:title_width$} | {priority:5} | {durration:5} | {age:8} | {status:6} | {requires_internet:6} \n",
       title = "title",
       title_width = ::std::cmp::max(5, self.max_title_len() + 2),
@@ -150,19 +143,18 @@ impl TaskResultsWindow {
       age = "age",
       status = "stat",
       requires_internet = "net",
-    ));
-    pwindow.attroff(pancurses::A_BOLD);
+    );
+
+    self.line_buffer.set_line(0, Line { text, color: ColorPair::Bold });
   }
 
-  fn display_result(&self, idx: i32, result: &TaskResult) {
-    let pwindow = self.pwindow();
-    pwindow.mv(idx + 1, 0);
-
+  fn display_result(&self, idx: usize, result: &TaskResult) {
     // Choose appropriate color.
-    if idx == self.current_result_idx() {
-      pwindow
-        .attron(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
-    }
+    let color = if idx == self.current_result_idx() {
+      ColorPair::Highlight
+    } else {
+      ColorPair::Default
+    };
 
     let priority = {
       use models::TaskPriority::*;
@@ -198,7 +190,7 @@ impl TaskResultsWindow {
     };
 
     // Display the task line.
-    let s = format!(
+    let text = format!(
       " {title:title_width$} | {priority:5} | {duration:5} | {age:8} | {status:6} | {requires_internet:6}\n",
       title = result.task.title,
       title_width = ::std::cmp::max(5, self.max_title_len() + 2),
@@ -210,11 +202,6 @@ impl TaskResultsWindow {
     );
 
     // Print the line!
-    pwindow.printw(&s);
-
-    if idx == self.current_result_idx() {
-      pwindow
-        .attroff(pancurses::COLOR_PAIR(ColorPair::Highlight as u32));
-    }
+    self.line_buffer.set_line(idx + 1, Line { text, color });
   }
 }
