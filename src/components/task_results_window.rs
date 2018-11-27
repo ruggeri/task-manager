@@ -106,6 +106,7 @@ impl TaskResultsWindow {
     for (idx, result) in self.results().iter().enumerate() {
       self.display_result(idx, result);
     }
+    self.line_buffer.truncate(self.results().len() + 1);
   }
 
   pub fn max_title_len(&self) -> usize {

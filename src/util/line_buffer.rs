@@ -166,6 +166,13 @@ impl LineBuffer {
     self.set_line(idx, Line::default());
   }
 
+  pub fn truncate(&self, new_len: usize) {
+    let len = self.state.borrow().line_updates.len();
+    for idx in new_len..len {
+      self.clear_line(idx);
+    }
+  }
+
   pub fn redraw(&self) {
     use self::LineUpdate::*;
     let mut state = self.state.borrow_mut();
@@ -193,8 +200,10 @@ impl LineBuffer {
   fn redraw_line(&self, idx: usize, margin_left: usize, margin_top: usize, line: &Line) {
     let window = &self.ui.window;
 
-    window.mv((margin_top + idx) as i32, margin_left as i32);
+    window.mv((margin_top + idx) as i32, 0);
+    window.clrtoeol();
 
+    window.mv((margin_top + idx) as i32, margin_left as i32);
     window.attron(line.color.to_attr());
     window.printw(&line.text);
     window.attroff(line.color.to_attr());
