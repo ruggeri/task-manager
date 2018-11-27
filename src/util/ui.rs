@@ -73,29 +73,30 @@ impl UserInterface {
 
   pub fn read_line(&self, prompt: &str) -> Option<String> {
     pancurses::echo();
-    loop {
+    let result = loop {
       let mut editor = Editor::<()>::new();
       match editor.readline(prompt) {
         Ok(line) => {
-          pancurses::noecho();
-          return Some(line);
+          break Some(line);
         }
         // Corresponds to Ctrl-C
         Err(ReadlineError::Interrupted) => {
-          pancurses::noecho();
-          // Super hacky. Otherwise "Ctrl-C" moves the cursor straight
-          // one line down. So here I move back a line and delete it.
-          {
-            let mut out = stdout();
-            out.write_all(b"\x1b[F\x1b[K").unwrap();
-            out.flush().unwrap();
-          }
-
-          return None;
+          break None;
         }
         Err(_) => continue,
       }
+    };
+
+    pancurses::noecho();
+    // Super hacky. Otherwise "Ctrl-C" moves the cursor straight
+    // one line down. So here I move back a line and delete it.
+    {
+      let mut out = stdout();
+      out.write_all(b"\x1b[F\x1b[K").unwrap();
+      out.flush().unwrap();
     }
+
+    result
   }
 }
 
