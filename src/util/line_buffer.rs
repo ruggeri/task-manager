@@ -172,6 +172,7 @@ impl LineBuffer {
     let window = &self.ui.window;
 
     let margin_left = (window.get_max_x() as usize - state.max_line_len) / 2;
+    let margin_top = (window.get_max_y() as usize - state.line_updates.len()) / 2;
 
     for (idx, line_update) in state.line_updates.iter_mut().enumerate() {
       {
@@ -180,19 +181,19 @@ impl LineBuffer {
           RedrawLine { new_line } => new_line
         };
 
-        self.redraw_line(idx, margin_left, new_line);
+        self.redraw_line(idx, margin_left, margin_top, new_line);
       }
 
       line_update.make_no_update();
     }
 
-    window.mv(state.line_updates.len() as i32, margin_left as i32);
+    window.mv((margin_top + state.line_updates.len()) as i32, margin_left as i32);
   }
 
-  fn redraw_line(&self, idx: usize, margin_left: usize, line: &Line) {
+  fn redraw_line(&self, idx: usize, margin_left: usize, margin_top: usize, line: &Line) {
     let window = &self.ui.window;
 
-    window.mv(idx as i32, margin_left as i32);
+    window.mv((margin_top + idx) as i32, margin_left as i32);
 
     window.attron(line.color.to_attr());
     window.printw(&line.text);
