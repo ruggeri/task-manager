@@ -10,6 +10,18 @@ pub enum ColorPair {
   Bold,
 }
 
+impl ColorPair {
+  pub fn to_attr(self) -> u32 {
+    use self::ColorPair::*;
+
+    match self {
+      Default => pancurses::COLOR_PAIR(self as u32),
+      Highlight => pancurses::COLOR_PAIR(self as u32),
+      Bold => pancurses::A_BOLD,
+    }
+  }
+}
+
 pub struct UserInterface {
   pub(super) window: pancurses::Window,
 }

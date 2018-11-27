@@ -1,5 +1,4 @@
 use ::util::ui::{ColorPair, UserInterface};
-use pancurses;
 use std::cell::RefCell;
 use std::mem;
 use std::rc::Rc;
@@ -195,8 +194,8 @@ impl LineBuffer {
 
     window.mv(idx as i32, margin_left as i32);
 
-    window.attron(pancurses::COLOR_PAIR(line.color as u32));
+    window.attron(line.color.to_attr());
     window.printw(&line.text);
-    window.attroff(pancurses::COLOR_PAIR(line.color as u32));
+    window.attroff(line.color.to_attr());
   }
 }
