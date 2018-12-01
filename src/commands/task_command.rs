@@ -8,6 +8,7 @@ use util::ui::UserInterface;
 pub enum TaskCommand {
   CreateTask,
   RecordTaskEffort,
+  RequestTaskAgeReset,
   RequestTaskDelay,
   UpdateTask(TaskUpdateCommand),
 }

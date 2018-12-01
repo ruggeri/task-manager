@@ -37,6 +37,24 @@ impl ForwardAction for TaskAction {
         }
       }
 
+      // Request a task age reset.
+      RequestTaskAgeReset {
+        task_id,
+        task_event,
+        connection,
+      } => {
+        if let Some(task_event) = task_event {
+          te_queries::update_destroyed(
+            task_event.id,
+            false,
+            &connection,
+          );
+        } else {
+          *task_event =
+            Some(te_queries::request_task_age_reset(*task_id, &connection));
+        }
+      }
+
       // Request a task delay.
       RequestTaskDelay {
         task_id,
@@ -87,6 +105,22 @@ impl ReversableAction for TaskAction {
         let task_event = match task_event {
           None => {
             panic!("Cannot undo a never performed record effort action")
+          }
+          Some(task_event) => task_event,
+        };
+
+        te_queries::update_destroyed(task_event.id, true, &connection);
+      }
+
+      // Undo age reset request.
+      RequestTaskAgeReset {
+        task_event,
+        connection,
+        ..
+      } => {
+        let task_event = match task_event {
+          None => {
+            panic!("Cannot undo a never performed request age reset action")
           }
           Some(task_event) => task_event,
         };

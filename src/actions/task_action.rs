@@ -19,6 +19,12 @@ pub enum TaskAction {
     connection: Rc<PgConnection>,
   },
 
+  RequestTaskAgeReset {
+    task_id: i32,
+    task_event: Option<TaskEvent>,
+    connection: Rc<PgConnection>,
+  },
+
   RequestTaskDelay {
     task_id: i32,
     task_event: Option<TaskEvent>,
@@ -57,6 +63,15 @@ impl TaskAction {
       // Record a task effort.
       TaskCommand::RecordTaskEffort => {
         current_task_fn().map(|task| TaskAction::RecordTaskEffort {
+          task_id: task.id,
+          task_event: None,
+          connection: Rc::clone(connection),
+        })
+      }
+
+      // Request a task age reset.
+      TaskCommand::RequestTaskAgeReset => {
+        current_task_fn().map(|task| TaskAction::RequestTaskAgeReset {
           task_id: task.id,
           task_event: None,
           connection: Rc::clone(connection),

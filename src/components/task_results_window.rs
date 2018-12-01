@@ -197,7 +197,7 @@ impl TaskResultsWindow {
       title_width = ::std::cmp::max(5, self.max_title_len() + 2),
       priority = priority,
       duration = duration,
-      age = format_task_age(result.last_effort_duration_since),
+      age = format_task_age(result.task_effort_age),
       status = status,
       requires_internet = requires_internet,
     );

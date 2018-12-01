@@ -16,29 +16,37 @@ fn assert_is_sorted_backward(task_events: &[TaskEvent]) {
 }
 
 impl Scorer {
+  fn task_event_is_age_basis_event(task_event: &TaskEvent) -> bool {
+    match task_event.event_type {
+      TaskEventType::AgeResetRequested => true,
+      TaskEventType::DelayRequested => false,
+      TaskEventType::TaskEffortRecorded => true,
+    }
+  }
+
   fn delay_amount(task_events: &[TaskEvent]) -> f64 {
     assert_is_sorted_backward(task_events);
 
+    // Find and count all delay events since the age basis was set.
     let num_delay_events = task_events
       .iter()
-      .take_while(|te| {
-        te.event_type != TaskEventType::TaskEffortRecorded
-      }).filter(|te| te.event_type == TaskEventType::DelayRequested)
+      .take_while(|te| Scorer::task_event_is_age_basis_event(te))
+      .filter(|te| te.event_type == TaskEventType::DelayRequested)
       .count();
 
     Duration::days(num_delay_events as i64).num_seconds() as f64
   }
 
-  pub fn last_effort_time(
+  fn last_effort_age_basis(
     task: &Task,
     task_events: &[TaskEvent],
   ) -> DateTime<Utc> {
     assert_is_sorted_backward(task_events);
 
-    // Filter to just TaskEffortRecorded events.
+    // Find most recent event that "reset" the task age basis.
     let latest_task_effort = task_events
       .iter()
-      .find(|te| te.event_type == TaskEventType::TaskEffortRecorded);
+      .find(|te| Scorer::task_event_is_age_basis_event(te));
 
     match latest_task_effort {
       None => task.created_at,
@@ -46,12 +54,16 @@ impl Scorer {
     }
   }
 
+  pub fn task_effort_age(task: &Task, task_events: &[TaskEvent], current_time: DateTime<Utc>) -> Duration {
+    current_time.signed_duration_since(Scorer::last_effort_age_basis(task, task_events))
+  }
+
   pub fn score_task(
     task: &Task,
     task_events: &[TaskEvent],
-    last_effort_duration_since: Duration,
+    task_effort_age: Duration,
   ) -> i64 {
-    let mut score = last_effort_duration_since.num_seconds() as f64;
+    let mut score = task_effort_age.num_seconds() as f64;
     score -= Scorer::delay_amount(task_events);
 
     score *= match task.priority {

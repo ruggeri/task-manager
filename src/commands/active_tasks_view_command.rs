@@ -38,6 +38,7 @@ impl ActiveTasksViewCommand {
       'n' => Task(CreateTask),
       'r' => Task(RecordTaskEffort),
       'l' => Task(RequestTaskDelay),
+      'L' => Task(RequestTaskAgeReset),
       'e' => Task(UpdateTask(EditTaskTitle)),
       'i' => Task(UpdateTask(ToggleRequiresInternet)),
       'd' => Task(UpdateTask(UpdateDuration(Decrease))),

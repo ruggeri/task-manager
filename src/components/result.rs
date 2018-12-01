@@ -9,8 +9,7 @@ type DateTime = ::chrono::DateTime<::chrono::Utc>;
 pub struct TaskResult {
   pub task: Task,
   pub task_events: Vec<TaskEvent>,
-  pub last_effort_time: DateTime,
-  pub last_effort_duration_since: ::chrono::Duration,
+  pub task_effort_age: ::chrono::Duration,
   pub score: i64,
 }
 
@@ -21,21 +20,17 @@ impl TaskResult {
     connection: &PgConnection,
   ) -> TaskResult {
     let task_events = te_queries::task_events(&task, connection);
-    let last_effort_time =
-      Scorer::last_effort_time(&task, &task_events);
-    let last_effort_duration_since =
-      current_time.signed_duration_since(last_effort_time);
+    let task_effort_age = Scorer::task_effort_age(&task, &task_events, current_time);
     let score = Scorer::score_task(
       &task,
       &task_events,
-      last_effort_duration_since,
+      task_effort_age,
     );
 
     TaskResult {
       task,
       task_events,
-      last_effort_time,
-      last_effort_duration_since,
+      task_effort_age,
       score,
     }
   }

@@ -72,7 +72,7 @@ pub fn execute_task_action(
       jump_to_task_id_or_top(&view.scroller, task.id);
     }
 
-    RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
+    RecordTaskEffort { .. } | RequestTaskAgeReset { .. } | RequestTaskDelay { .. } => {
       // First time, just try to stay at the idx you are at.
       view.scroller.set_current_result_idx(old_result_idx);
     }
@@ -139,7 +139,7 @@ pub fn redo_task_action(
       jump_to_task_id_or_top(&view.scroller, task.id);
     }
 
-    RecordTaskEffort { .. } | RequestTaskDelay { .. } => {
+    RecordTaskEffort { .. } | RequestTaskAgeReset { .. } | RequestTaskDelay { .. } => {
       // Try to restore id that had been focused on.
       let new_task_id = scroller_state.unwrap_new_id();
       jump_to_task_id_option_or_top(&view.scroller, new_task_id);
@@ -213,6 +213,7 @@ pub fn unexecute_task_action(
     }
 
     RecordTaskEffort { task_id, .. }
+    | RequestTaskAgeReset { task_id, .. }
     | RequestTaskDelay { task_id, .. }
     | TaskUpdate(UpdateDuration { task_id, .. })
     | TaskUpdate(UpdatePriority { task_id, .. })
