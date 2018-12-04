@@ -23,7 +23,7 @@ pub fn task_events(
 
   TaskEvent::belonging_to(task)
     .filter(destroyed.eq(false))
-    .order(created_at.desc())
+    .order((created_at.desc(), id))
     .load::<TaskEvent>(connection)
     .unwrap()
 }
