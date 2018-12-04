@@ -30,7 +30,7 @@ impl Scorer {
     // Find and count all delay events since the age basis was set.
     let num_delay_events = task_events
       .iter()
-      .take_while(|te| Scorer::task_event_is_age_basis_event(te))
+      .take_while(|te| !Scorer::task_event_is_age_basis_event(te))
       .filter(|te| te.event_type == TaskEventType::DelayRequested)
       .count();
 
