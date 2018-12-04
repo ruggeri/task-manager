@@ -24,7 +24,7 @@ impl Scorer {
     }
   }
 
-  fn delay_amount(task_events: &[TaskEvent]) -> f64 {
+  fn delay_amount(task_events: &[TaskEvent]) -> i64 {
     assert_is_sorted_backward(task_events);
 
     // Find and count all delay events since the age basis was set.
@@ -34,7 +34,7 @@ impl Scorer {
       .filter(|te| te.event_type == TaskEventType::DelayRequested)
       .count();
 
-    Duration::days(num_delay_events as i64).num_seconds() as f64
+    Duration::days(num_delay_events as i64).num_seconds()
   }
 
   fn last_effort_age_basis(
@@ -63,16 +63,16 @@ impl Scorer {
     task_events: &[TaskEvent],
     task_effort_age: Duration,
   ) -> i64 {
-    let mut score = task_effort_age.num_seconds() as f64;
+    let mut score = task_effort_age.num_milliseconds();
     score -= Scorer::delay_amount(task_events);
 
-    score *= match task.priority {
+    let mut multiplier = match task.priority {
       TaskPriority::Low => 1.0,
       TaskPriority::Medium => BASE_PRIORITY_FACTOR,
       TaskPriority::High => BASE_PRIORITY_FACTOR * BASE_PRIORITY_FACTOR,
     };
 
-    score *= match task.duration {
+    multiplier *= match task.duration {
       TaskDuration::Short => {
         BASE_PRIORITY_FACTOR * BASE_PRIORITY_FACTOR
       }
@@ -80,6 +80,8 @@ impl Scorer {
       TaskDuration::Long => 1.0,
     };
 
-    score as i64
+    let multiplier = ((multiplier * 100.0) as i64) / 100;
+
+    score * multiplier
   }
 }
