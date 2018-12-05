@@ -80,7 +80,7 @@ impl Scorer {
       TaskDuration::Long => 1.0,
     };
 
-    let multiplier = ((multiplier * 100.0) as i64) / 100;
+    let multiplier = (multiplier * 100.0) as i64;
 
     score * multiplier
   }
