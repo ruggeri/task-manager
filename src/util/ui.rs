@@ -79,6 +79,7 @@ impl UserInterface {
         Ok(line) => {
           break Some(line);
         }
+
         // Corresponds to Ctrl-C
         Err(ReadlineError::Interrupted) => {
           break None;
@@ -86,13 +87,18 @@ impl UserInterface {
         Err(_) => continue,
       }
     };
-
     pancurses::noecho();
-    // Super hacky. Otherwise "Ctrl-C" moves the cursor straight
-    // one line down. So here I move back a line and delete it.
+
+    // Super hacky. readline moves cursor without pancurses knowing.
     {
+      // y, x is the position to restore. Since pancurses doesn't know,
+      // the "cur_yx" is actually where we were before readline.
+      let (y, x) = self.window.get_cur_yx();
       let mut out = stdout();
-      out.write_all(b"\x1b[F\x1b[K").unwrap();
+      // Scroll back, then clear the line.
+      out.write_all(b"\x1b[F\x1b[2K").unwrap();
+      // Then reposition. Is this freaking one based???
+      out.write_all(format!("\x1b[{};{}H", y + 1, x + 1).as_bytes()).unwrap();
       out.flush().unwrap();
     }
 
