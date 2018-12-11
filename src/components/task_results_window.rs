@@ -7,7 +7,7 @@ use std::cell::RefCell;
 use std::ops::DerefMut;
 use std::rc::Rc;
 use util::{
-  line_buffer::{Line, LineBuffer},
+  line_buffer::{TerminalLine, LineBuffer},
   ui::{ColorPair, UserInterface}
 };
 
@@ -146,7 +146,7 @@ impl TaskResultsWindow {
       requires_internet = "net",
     );
 
-    self.line_buffer.set_line(0, Line { text, color: ColorPair::Bold });
+    self.line_buffer.replace_line(0, TerminalLine { text, color: ColorPair::Bold });
   }
 
   fn display_result(&self, idx: usize, result: &TaskResult) {
@@ -203,6 +203,6 @@ impl TaskResultsWindow {
     );
 
     // Print the line!
-    self.line_buffer.set_line(idx + 1, Line { text, color });
+    self.line_buffer.replace_line(idx + 1, TerminalLine { text, color });
   }
 }
