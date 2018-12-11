@@ -120,6 +120,17 @@ impl LineBuffer {
     }
   }
 
+  // TODO: WAIT. This is bullshit for when there are new lines added.
+  // That should triggers a whole new redraw.
+  //
+  // Classic example. I add a new task. It gets drawn in, BUT the
+  // *header* (or the row before focused row) gets clobbered.
+  //
+  // That's because we're only redrawing the previously focused row (to
+  // take the focus off). But we're redrawing AT THE WRONG PLACE.
+  //
+  // Note you'll only see this 1/2 the time because new lines only
+  // change centering every other time.
   pub fn set_line(&self, idx: usize, new_line: Line) {
     use self::LineUpdate::*;
     let mut state = self.state.borrow_mut();
